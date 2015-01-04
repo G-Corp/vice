@@ -1,0 +1,17 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+
+main([Path, Lib]) ->
+  {ok, [{_, _, _, Deps}]} = file:consult(Path),
+  X = string:join(
+        lists:foldl(
+          fun(P, Acc) ->
+              [filename:join(P, "ebin")|[filename:join([P, "apps", "*", "ebin"])|Acc]]
+          end, [], 
+          lists:map(
+            fun({Name, Vsn}) ->
+                filename:join(Lib, atom_to_list(Name) ++ "-" ++ Vsn)
+            end, Deps)),
+        " "),
+
+  io:format("~s", [X]).

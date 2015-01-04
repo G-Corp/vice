@@ -48,6 +48,7 @@ make_release(State, Apps) ->
     ok ->
       make_rel_file(State, RelDir, "vm.args", vm_args),
       make_rel_file(State, RelDir, "sys.config", sys_config),
+      make_rel_file(State, RelDir, "boot.erl", boot),
       make_release_file(State, RelDir, Apps);
     {error, Reason} ->
       ?HALT("Failed to create ~s: ~p", [RelDir, Reason])
