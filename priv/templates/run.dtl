@@ -35,10 +35,7 @@ help() {
   echo "Usage : $NAME [options] {start|stop|console|status}" 
   echo ""
   echo "Options :"
-  echo "  -C --compile     : Compile code before run"
-  echo "  -K --clean       : Clean and compile code before run"
   echo "  -h --help        : Display this message"
-  echo "     --dev         : Start in dev mode"
 }
 
 print_status() {
