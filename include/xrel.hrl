@@ -1,0 +1,4 @@
+-define(INFO(Fmt, Args),  io:format("~s~n", [color:green(io_lib:format(Fmt, Args))])).
+-define(DEBUG(Fmt, Args), io:format("~s~n", [color:yellow(io_lib:format(Fmt, Args))])).
+-define(ERROR(Fmt, Args), io:format("~s~n", [color:red(io_lib:format(Fmt, Args))])).
+-define(HALT(Fmt, Args), ?ERROR(Fmt, Args), halt(1)).

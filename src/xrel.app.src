@@ -1,0 +1,6 @@
+{application, xrel,
+  [{description, "eXtanded Release assembler for Erlang/OTP Releases"},
+  {vsn, "0.0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel, stdlib]}]}.

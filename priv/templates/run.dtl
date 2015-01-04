@@ -1,0 +1,117 @@
+#!/bin/sh
+
+OPTS=$*
+
+RUNNER_SCRIPT_DIR=$(cd ${0%/*} && pwd)
+NAME=`basename $0`
+PIDFILE=$RUNNER_SCRIPT_DIR"/."$NAME".pid"
+
+STARTED=false
+PID=""
+if [ -f $PIDFILE ] ; then 
+  STARTED=true
+  PID=`cat $PIDFILE | head -1`
+fi
+NOSHELL="-noshell -detached"
+DAEMON=true
+COMPILE=false
+CLEAN=false
+ACTION=""
+DEV_MODE=""
+
+help() {
+  MESSAGE=$1
+  if [ "x$MESSAGE" != "x" ] ; then
+    echo $MESSAGE
+  fi
+  echo "Usage : $NAME [options] {start|stop|console|status}" 
+  echo ""
+  echo "Options :"
+  echo "  -C --compile     : Compile code before run"
+  echo "  -K --clean       : Clean and compile code before run"
+  echo "  -h --help        : Display this message"
+  echo "     --dev         : Start in dev mode"
+}
+
+print_status() {
+  case $STARTED in
+    true)
+      echo "$NAME is running (PID $PID)" ;;
+    *)
+      echo "$NAME is not running" ;;
+  esac
+}
+
+start_app() {
+  if [ $STARTED = true ] ; then
+     echo "$NAME is already running (PID $PID)"
+   else
+     EXTRA_ARGS=""
+     if [ -f $PWD/config/vm.args ] ; then
+       EXTRA=$(cat $PWD/config/vm$DEV_MODE.args | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+       EXTRA_ARGS=$(eval echo $EXTRA)
+     fi
+     erl $EXTRA_ARGS -pa $PWD/ebin $PWD/apps/*/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/config/$NAME$DEV_MODE.config -s $NAME start 
+   fi
+}
+
+get_pid() {
+  if [ $DAEMON = true ] ; then
+    PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+    echo $PID > $PIDFILE
+  fi
+}
+
+stop_app() {
+  if [ $STARTED = true ] ; then
+    kill -9 $PID 2>/dev/null
+    rm -f $PIDFILE
+  else
+    echo "$NAME is not started"
+  fi
+}
+
+while [ $# -ne 0 ] ; do
+  case $1 in
+    console) 
+      NOSHELL="" ; DAEMON=false ; ACTION="console" ;;
+    start)
+      ACTION="start" ;;
+    stop)
+      ACTION="stop" ;;
+    status)
+      ACTION="status" ;;
+    -C|--compile) 
+      COMPILE=true ;;
+    -K|--clean) 
+      CLEAN=true ; COMPILE=true ;;
+    --dev)
+      DEV_MODE="-dev" ;;
+    -h|--help)
+      help ; exit 0 ;;
+    *)
+      help "Invalid option $1" ; exit 1 ;;  
+  esac
+  shift
+done
+
+if [ $CLEAN = true ] ; then
+  ./rebar clean
+fi
+if [ $COMPILE = true ] ; then
+  ./rebar compile
+fi
+
+case $ACTION in
+  stop)
+    stop_app ;;
+  start)
+    start_app ; get_pid ;;
+  console)
+    start_app ;;
+  status)
+    print_status ;;
+  *)
+    help ;;
+esac
+
