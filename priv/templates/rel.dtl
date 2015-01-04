@@ -1,6 +1,9 @@
 {release, 
   {"{{relname}}", "{{relvsn}}"},
   {erts, "{{ertsvsn}}"},
-  [{{apps}}]
+  [
+    {% for app in apps %}{ {{app.app}}, "{{app.vsn}}" }{% if not forloop.last %},
+    {% else %}
+  ]{% endif %}{% endfor %}
 }.
 

@@ -21,7 +21,7 @@ make_root(State) ->
 
 resolv_apps(State) ->
   {release, {_, _}, Apps} = xrel_config:get(State, release),
-  resolv_apps(State, Apps, []).
+  resolv_apps(State, Apps, [], []).
 
 make_lib(State, Apps) ->
   {outdir, Outdir} = xrel_config:get(State, outdir),
@@ -55,21 +55,34 @@ make_release(State, Apps) ->
 
 make_bin(State) ->
   {binfile, BinFile} = xrel_config:get(State, binfile),
+  {relvsn, Vsn} = xrel_config:get(State, relvsn),
+  {relname, Name} = xrel_config:get(State, relname),
+  BinFileWithVsn = BinFile ++ "-" ++ Vsn,
   ?INFO("* Generate ~s", [BinFile]),
   _ = case efile:make_dir(filename:dirname(BinFile)) of
     ok -> ok;
     {error, Reason} ->
       ?HALT("Failed to create ~s: ~p", [BinFile, Reason])
   end,
-  case run_dtl:render([]) of
+  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, erlang:system_info(version)}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok -> 
-          case file:change_mode(BinFile, 8#777) of
-            ok -> ok;
-            {error, Reason1} ->
-              ?HALT("Error while creating ~s: ~p", [BinFile, Reason1])
-          end;
+          ?INFO("* Generate ~s", [BinFileWithVsn]),
+          Bins = case file:copy(BinFile, BinFileWithVsn) of
+            {ok, _} -> 
+              [BinFile, BinFileWithVsn];
+            {error, Reason2} ->
+              ?ERROR("Error while creating ~s: ~p", [BinFileWithVsn, Reason2]),
+              [BinFile]
+          end,
+          lists:foreach(fun(Bin) ->
+                            case file:change_mode(Bin, 8#777) of
+                              ok -> ok;
+                              {error, Reason1} ->
+                                ?HALT("Can't set executable to ~s: ~p", [Bin, Reason1])
+                            end
+                        end, Bins);
         {error, Reason1} ->
           ?HALT("Error while creating ~s: ~p", [BinFile, Reason1])
       end;
@@ -98,8 +111,8 @@ include_erts(State) ->
 
 % Private
 
-resolv_apps(_, [], Apps) -> Apps;
-resolv_apps(State, [App|Rest], Apps) ->
+resolv_apps(_, [], _, Apps) -> Apps;
+resolv_apps(State, [App|Rest], Done, Apps) ->
   {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
                              notfound -> 
                                case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
@@ -109,9 +122,14 @@ resolv_apps(State, [App|Rest], Apps) ->
                                end;
                              R -> R
                            end,
+  Done1 = [App|Done],
+  Rest1 = elists:delete_if(fun(A) ->
+                               elists:include(Done1, A)
+                           end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
   resolv_apps(
     State,
-    lists:umerge(lists:sort(Rest), lists:sort(Deps)),
+    Rest1,
+    Done1,
     [#{app => App, vsn => Vsn, path => Path}| Apps]).
 
 resolv_app(State, Path, Name) ->
@@ -212,9 +230,7 @@ make_release_file(State, RelDir, Apps) ->
             {relname, Name},
             {relvsn, Vsn},
             {ertsvsn, erlang:system_info(version)},
-            {apps, lists:map(fun(#{app := App, vsn := AppVsn}) ->
-                                 {App, AppVsn}
-                             end, Apps)}
+            {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
   Dest = filename:join(RelDir, eutils:to_list(Name) ++ ".rel"),
   ?INFO("* Create ~s", [Dest]),
