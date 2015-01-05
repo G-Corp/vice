@@ -5,7 +5,7 @@
 
 main(Args) ->
   case getopt:parse(opts(), Args) of
-    {ok, {Options, _NonOptions}} ->
+    {ok, {Options, Commands}} ->
       case lists:member(version, Options) of
         true ->
           application:load(xrel),
@@ -14,25 +14,37 @@ main(Args) ->
         false ->
           case lists:member(help, Options) of
             true ->
-              help();
+              help(),
+              io:format("~nCommandes:~n~n"),
+              run(Options, [providers]);
             false ->
-              run(Options)
+              run(Options, Commands)
           end
       end;
     {error, Details} ->
       io:format("Error : ~p~n", [Details])
   end.
 
-run(Options) ->
-  ?INFO("== Start xrel", []),
+run(Options, Commands) ->
   State = xrel_config:to_state(Options),
-  AllApps = xrel_release:resolv_apps(State),
-  _ = xrel_release:make_root(State),
-  _ = xrel_release:make_lib(State, AllApps),
-  _ = xrel_release:make_release(State, AllApps),
-  _ = xrel_release:make_bin(State),
-  _ = xrel_release:include_erts(State),
-  ?INFO("== Done", []),
+  {providers, Providers} = xrel_config:get(State, providers, []),
+  {State1, Providers1} = case elists:include(Providers, release) of
+                           true -> 
+                             {State, Providers};
+                           false ->
+                             {xrel_config:set(State, {providers, [xrel_provider_release|Providers]}),
+                              [xrel_provider_release, xrel_provider_providers|Providers]}
+                         end,
+  State2 = lists:foldl(fun(P, S) ->
+                           P:init(S)
+                       end, State1, Providers1),
+  Commands2 = case lists:map(fun eutils:to_atom/1, Commands) of
+                [] -> [release];
+                Commands1 -> Commands1
+              end,
+  _ = lists:foldl(fun(P, S) ->
+                      xrel_provider:run(S, P)
+                  end, State2, Commands2),
   ok.
 
 opts() ->
@@ -43,7 +55,7 @@ opts() ->
    {help,         $h,        "help",         undefined,               "Display this help"},
    {version,      $V,        "version",      undefined,               "Display version"},
    {output_dir,   $o,        "output-dir",   {string, "./_xrel"},     "Output directory"},
-   {exclude_path, $e,        "exclude-path", {list, ["_xrel"]},       "Exclude directories"},
+   {exclude_dirs, $e,        "exclude-dirs", {list, ["_xrel"]},       "Exclude directories"},
    {include_src,  undefined, "include-src",  undefined,               "Include source"}
   ].
 

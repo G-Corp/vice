@@ -16,7 +16,7 @@ make_root(State) ->
     ok ->
       ?INFO("* Create directory ~s", [Outdir]);
     {error, Reason} ->
-      ?HALT("Failed to create ~s: ~p", [Outdir, Reason])
+      ?HALT("!!! Failed to create ~s: ~p", [Outdir, Reason])
   end.
 
 resolv_apps(State) ->
@@ -36,7 +36,7 @@ make_lib(State, Apps) ->
                         copy_deps(App, Vsn, Path, LibDir, Src)
                     end, Apps);
     {error, Reason} ->
-      ?HALT("Failed to create ~s: ~p", [LibDir, Reason])
+      ?HALT("!!! Failed to create ~s: ~p", [LibDir, Reason])
   end.
 
 make_release(State, Apps) ->
@@ -51,7 +51,7 @@ make_release(State, Apps) ->
       make_rel_file(State, RelDir, "boot.erl", boot),
       make_release_file(State, RelDir, Apps);
     {error, Reason} ->
-      ?HALT("Failed to create ~s: ~p", [RelDir, Reason])
+      ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
 
 make_bin(State) ->
@@ -63,7 +63,7 @@ make_bin(State) ->
   _ = case efile:make_dir(filename:dirname(BinFile)) of
     ok -> ok;
     {error, Reason} ->
-      ?HALT("Failed to create ~s: ~p", [BinFile, Reason])
+      ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
   end,
   case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, erlang:system_info(version)}]) of
     {ok, Data} ->
@@ -81,14 +81,14 @@ make_bin(State) ->
                             case file:change_mode(Bin, 8#777) of
                               ok -> ok;
                               {error, Reason1} ->
-                                ?HALT("Can't set executable to ~s: ~p", [Bin, Reason1])
+                                ?HALT("!!! Can't set executable to ~s: ~p", [Bin, Reason1])
                             end
                         end, Bins);
         {error, Reason1} ->
-          ?HALT("Error while creating ~s: ~p", [BinFile, Reason1])
+          ?HALT("!!! Error while creating ~s: ~p", [BinFile, Reason1])
       end;
     {error, Reason1} ->
-      ?HALT("Error while creating ~s: ~p", [BinFile, Reason1])
+      ?HALT("!!! Error while creating ~s: ~p", [BinFile, Reason1])
   end.
 
 include_erts(State) ->
@@ -97,7 +97,7 @@ include_erts(State) ->
          {include_erts, true} -> code:root_dir();
          {include_erts, X} when is_list(X) -> filename:absname(X);
          {include_erts, Y} ->
-           ?HALT("Invalid value for parameter include_erts: ~p", [Y])
+           ?HALT("!!! Invalid value for parameter include_erts: ~p", [Y])
        end of
     false ->
       ok;
@@ -118,7 +118,7 @@ resolv_apps(State, [App|Rest], Done, Apps) ->
                              notfound -> 
                                case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
                                  notfound ->
-                                   ?HALT("Can't find application ~s", [App]);
+                                   ?HALT("!!! Can't find application ~s", [App]);
                                  R -> R
                                end;
                              R -> R
@@ -134,7 +134,7 @@ resolv_apps(State, [App|Rest], Done, Apps) ->
     [#{app => App, vsn => Vsn, path => Path}| Apps]).
 
 resolv_app(State, Path, Name) ->
-  {exclude_path, Exclude} = xrel_config:get(State, exclude_path),
+  {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
   case efile:wildcard(
          filename:join(Path, eutils:to_list(Name) ++ ".app"),
          Exclude
@@ -154,7 +154,7 @@ resolv_app(State, Path, Name) ->
                  end,
           {Name, Vsn, app_path(Name, Vsn, AppPathFile), Deps};
         _ -> 
-          ?HALT("Invalid app file: ~s", [AppPathFile])
+          ?HALT("!!! Invalid app file: ~s", [AppPathFile])
       end
   end.
 
@@ -165,7 +165,7 @@ app_path(App, Vsn, Path) ->
     0 ->
       case string:str(Dirname, eutils:to_list(App)) of
         0 ->
-          ?HALT("Can't find root path for ~s", [App]);
+          ?HALT("!!! Can't find root path for ~s", [App]);
         N ->
           string:substr(Dirname, 1, N + length(eutils:to_list(App)))
       end;
@@ -186,7 +186,7 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
               case efile:remove_recursive(FinalDest) of
                 ok -> ok;
                 {error, Reason} ->
-                  ?HALT("Can't remove ~s: ~p", [FinalDest, Reason])
+                  ?HALT("!!! Can't remove ~s: ~p", [FinalDest, Reason])
               end;
             false ->
               ok
@@ -195,7 +195,7 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
         ok -> 
           ?INFO("* Move ~s to ~s", [CopyDest, FinalDest]);
         {error, Reason1} ->
-          ?HALT("Can't rename ~s: ~p", [CopyDest, Reason1])
+          ?HALT("!!! Can't rename ~s: ~p", [CopyDest, Reason1])
       end
   end.
 
@@ -211,16 +211,16 @@ make_rel_file(State, RelDir, File, Type) ->
           case file:write_file(Dest, Data) of
             ok -> ok;
             {error, Reason1} ->
-              ?HALT("Error while creating ~s: ~p", [Dest, Reason1])
+              ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
           end;
         {error, Reason} ->
-          ?HALT("Error while creating ~s: ~p", [Dest, Reason])
+          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
       end;
     {Type, Src} ->
       case file:copy(Src, Dest) of
         {ok, _} -> ok;
         {error, Reason} ->
-          ?HALT("Can't copy ~s to ~s: ~p", [Src, Dest, Reason])
+          ?HALT("!!! Can't copy ~s to ~s: ~p", [Src, Dest, Reason])
       end
   end.
 
@@ -240,9 +240,9 @@ make_release_file(State, RelDir, Apps) ->
       case file:write_file(Dest, Data) of
         ok -> ok;
         {error, Reason1} ->
-          ?HALT("Error while creating ~s: ~p", [Dest, Reason1])
+          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
       end;
     {error, Reason} ->
-      ?HALT("Error while creating ~s: ~p", [Dest, Reason])
+      ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
   end.
 

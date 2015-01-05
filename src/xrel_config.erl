@@ -3,6 +3,8 @@
 
 -export([
          to_state/1,
+         add_provider/2,
+         set/2,
          get/2,
          get/3
         ]).
@@ -24,6 +26,17 @@ to_state(Options) ->
               (E) when is_tuple(E) -> E;
               (E) -> {E, true}
             end, State).
+
+add_provider(State, Provider) ->
+  {providers_def, Providers} = get(State, providers_def, []),
+  set(State, {providers_def, [Provider|Providers]}).
+
+set(State, {Key, _} = Data) ->
+  State2 = lists:keyreplace(Key, 1, State, Data),
+  case lists:keyfind(Key, 1, State2) of
+    {Key, _} -> State2;
+    false -> [Data|State2]
+  end.
 
 get(State, outdir) ->
   {output_dir, Outdir} = get(State, output_dir),
@@ -65,7 +78,6 @@ get(State, Key, Default) ->
 % Private
   
 read_config(File) ->
-  ?INFO("* Read configuration from ~s", [File]),
   case file:consult(File) of
     {ok, Config} -> 
       Config;
