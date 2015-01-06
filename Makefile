@@ -14,7 +14,9 @@ get-deps:
 
 clean:
 	@$(REBAR) clean
-	rm -f erl_crash.dump
+	@rm -f erl_crash.dump
+	@rm -f priv/templates/*.dtl.erl
+	@rm -f xrel
 
 realclean: clean
 	@$(REBAR) delete-deps
@@ -26,7 +28,7 @@ doc:
 	$(REBAR) skip_deps=true doc
 
 dev:
-	@erl -pa ebin include deps/*/ebin deps/*/include -config config/picsou-dev.config
+	@erl -pa ebin include deps/*/ebin deps/*/include
 
 escript: compile
 	@$(REBAR) skip_deps=true escriptize

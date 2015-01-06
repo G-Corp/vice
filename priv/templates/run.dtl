@@ -15,7 +15,7 @@ REL_DIR=$ROOT_DIR/releases/$REL_VSN
 LIBDIR=$ROOT_DIR/lib
 SYS_CONFIG=$REL_DIR/sys.config
 VM_ARGS=$REL_DIR/vm.args
-REL_FILE=$REL_DIR/$REL_NAME.rel
+REL_FILE=$REL_DIR/$REL_NAME.release
 
 STARTED=false
 PID=""
@@ -56,7 +56,7 @@ start_app() {
        EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
        EXTRA_ARGS=$(eval echo $EXTRA)
      fi
-     LIBS=$($BINDIR/escript $REL_DIR/boot.erl $REL_FILE $LIBDIR)
+     LIBS=$($BINDIR/escript $REL_DIR/extrel $REL_FILE $LIBDIR)
      $BINDIR/erl $EXTRA_ARGS -pa $LIBS $NOSHELL -config $SYS_CONFIG -s $REL_NAME start 
    fi
 }

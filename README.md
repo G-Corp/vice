@@ -16,7 +16,8 @@ eXtanded Release assembler for Erlang/OTP Releases
 
 ## Providers
 
-* `xrel_provider_archive` : Create an archive
+* `xrel_provider_tar` : Create a Tar archive
+* `xrel_provider_zip` : Create a Zip archive
 
 ## Contributing
 

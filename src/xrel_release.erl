@@ -46,10 +46,18 @@ make_release(State, Apps) ->
   ?INFO("* Create ~s", [RelDir]),
   case efile:make_dir(RelDir) of 
     ok ->
-      make_rel_file(State, RelDir, "vm.args", vm_args),
-      make_rel_file(State, RelDir, "sys.config", sys_config),
-      make_rel_file(State, RelDir, "boot.erl", boot),
-      make_release_file(State, RelDir, Apps);
+      _ = make_rel_file(State, RelDir, "vm.args", vm_args),
+      _ = make_rel_file(State, RelDir, "sys.config", sys_config),
+      xrel_tempdir:mktmp(fun(TmpDir) ->
+                             BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
+                             BootExe = xrel_escript:build(BootErl, filename:dirname(BootErl)),
+                             case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
+                               ok -> ok;
+                               {error, Reason} ->
+                                 ?HALT("Can't copy ~s: ~p", [BootExe, Reason])
+                             end
+                         end),
+      _ = make_release_file(State, RelDir, Apps);
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
@@ -209,7 +217,7 @@ make_rel_file(State, RelDir, File, Type) ->
       case Mod:render([{relname, RelName}]) of
         {ok, Data} ->
           case file:write_file(Dest, Data) of
-            ok -> ok;
+            ok -> Dest;
             {error, Reason1} ->
               ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
           end;
@@ -218,7 +226,7 @@ make_rel_file(State, RelDir, File, Type) ->
       end;
     {Type, Src} ->
       case file:copy(Src, Dest) of
-        {ok, _} -> ok;
+        {ok, _} -> Dest;
         {error, Reason} ->
           ?HALT("!!! Can't copy ~s to ~s: ~p", [Src, Dest, Reason])
       end
@@ -233,7 +241,7 @@ make_release_file(State, RelDir, Apps) ->
             {ertsvsn, erlang:system_info(version)},
             {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
-  Dest = filename:join(RelDir, eutils:to_list(Name) ++ ".rel"),
+  Dest = filename:join(RelDir, eutils:to_list(Name) ++ ".release"),
   ?INFO("* Create ~s", [Dest]),
   case rel_dtl:render(Params) of
     {ok, Data} ->

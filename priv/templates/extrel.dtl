@@ -1,5 +1,5 @@
-#!/usr/bin/env escript
-%% -*- erlang -*-
+-module(extrel).
+-export([main/1]).
 
 main([Path, Lib]) ->
   {ok, [{_, _, _, Deps}]} = file:consult(Path),
