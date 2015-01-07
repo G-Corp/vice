@@ -4,10 +4,12 @@
 -export([
          make_root/1,
          resolv_apps/1,
+         resolv_boot/2,
          make_lib/2,
-         make_release/2,
+         make_release/3,
          make_bin/1,
-         include_erts/1
+         include_erts/1,
+         make_boot_script/1
         ]).
 
 make_root(State) ->
@@ -21,7 +23,17 @@ make_root(State) ->
 
 resolv_apps(State) ->
   {release, {_, _}, Apps} = xrel_config:get(State, release),
-  resolv_apps(State, Apps, [], []).
+  Apps1 = case xrel_config:get(State, all_deps, false) of
+    {all_deps, true} -> find_all_deps(State, Apps);
+    _ -> Apps
+  end,
+  resolv_apps(State, Apps1, [], []).
+
+resolv_boot(State, AllApps) ->
+  case xrel_config:get(State, boot, all) of
+    {boot, all} -> AllApps;
+    {boot, Apps} -> resolv_apps(State, Apps, [], [])
+  end.
 
 make_lib(State, Apps) ->
   {outdir, Outdir} = xrel_config:get(State, outdir),
@@ -39,7 +51,7 @@ make_lib(State, Apps) ->
       ?HALT("!!! Failed to create ~s: ~p", [LibDir, Reason])
   end.
 
-make_release(State, Apps) ->
+make_release(State, AllApps, BootApps) ->
   {outdir, Outdir} = xrel_config:get(State, outdir),
   {relvsn, Vsn} = xrel_config:get(State, relvsn),
   RelDir = filename:join([Outdir, "releases", Vsn]),
@@ -57,10 +69,38 @@ make_release(State, Apps) ->
                                  ?HALT("Can't copy ~s: ~p", [BootExe, Reason])
                              end
                          end),
-      _ = make_release_file(State, RelDir, Apps);
+      _ = make_release_file(State, RelDir, AllApps, ".deps"),
+      _ = make_release_file(State, RelDir, BootApps, ".rel");
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
+
+make_boot_script(State) ->
+  {outdir, Outdir} = xrel_config:get(State, outdir),
+  {relname, Relname} = xrel_config:get(State, relname),
+  {relvsn, RelVsn} = xrel_config:get(State, relvsn),
+  RelDir = filename:join("releases", RelVsn),
+  ?INFO("* Create boot script", []),
+  eos:in(Outdir, 
+         fun() ->
+             case systools:make_script(
+                    eutils:to_list(Relname), 
+                    [{path, 
+                      [RelDir|filelib:wildcard("lib/*/ebin")]},
+                     {outdir, RelDir},
+                     silent]) of
+               error -> 
+                 ?HALT("!!! Can't generate boot script", []);
+               {error, _, Error} ->
+                 ?HALT("!!! Error while generating boot script : ~p", [Error]);
+               {ok, _, []} ->
+                 ok;
+               {ok, _, Warnings} ->
+                 ?DEBUG("! Generate boot script : ~p", [Warnings]);
+               _ -> 
+                 ok
+             end
+         end).
 
 make_bin(State) ->
   {binfile, BinFile} = xrel_config:get(State, binfile),
@@ -120,8 +160,25 @@ include_erts(State) ->
 
 % Private
 
+find_all_deps(State, Apps) ->
+  {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
+  case efile:wildcard(
+         filename:join(["**", "ebin", "*.app"]),
+         Exclude
+        ) of
+    [] -> Apps;
+    DepsApps -> 
+      lists:foldl(fun(Path, Acc) ->
+                      App = filename:basename(Path, ".app"),
+                      case elists:include(Acc, App) of
+                        true -> Acc;
+                        false -> [eutils:to_atom(App)|Acc]
+                      end
+                  end, Apps, DepsApps)
+  end.
+
 resolv_apps(_, [], _, Apps) -> Apps;
-resolv_apps(State, [App|Rest], Done, Apps) ->
+resolv_apps(State, [App|Rest], Done, AllApps) ->
   {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
                              notfound -> 
                                case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
@@ -139,7 +196,7 @@ resolv_apps(State, [App|Rest], Done, Apps) ->
     State,
     Rest1,
     Done1,
-    [#{app => App, vsn => Vsn, path => Path}| Apps]).
+    [#{app => App, vsn => Vsn, path => Path}| AllApps]).
 
 resolv_app(State, Path, Name) ->
   {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
@@ -161,8 +218,8 @@ resolv_app(State, Path, Name) ->
                    _ -> []
                  end,
           {Name, Vsn, app_path(Name, Vsn, AppPathFile), Deps};
-        _ -> 
-          ?HALT("!!! Invalid app file: ~s", [AppPathFile])
+        E -> 
+          ?HALT("!!! Invalid ~p.app file ~s: ~p", [Name, AppPathFile, E])
       end
   end.
 
@@ -232,7 +289,7 @@ make_rel_file(State, RelDir, File, Type) ->
       end
   end.
 
-make_release_file(State, RelDir, Apps) ->
+make_release_file(State, RelDir, Apps, Ext) ->
   {relname, Name} = xrel_config:get(State, relname),
   {relvsn, Vsn} = xrel_config:get(State, relvsn),
   Params = [
@@ -241,7 +298,7 @@ make_release_file(State, RelDir, Apps) ->
             {ertsvsn, erlang:system_info(version)},
             {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
-  Dest = filename:join(RelDir, eutils:to_list(Name) ++ ".release"),
+  Dest = filename:join(RelDir, eutils:to_list(Name) ++ Ext),
   ?INFO("* Create ~s", [Dest]),
   case rel_dtl:render(Params) of
     {ok, Data} ->

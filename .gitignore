@@ -12,5 +12,6 @@ erl_crash.dump
 .eunit
 .rebar
 ext
+xrel
 _xrel
 _rel

@@ -20,9 +20,11 @@ init(State) ->
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
   AllApps = xrel_release:resolv_apps(State),
+  BootApps = xrel_release:resolv_boot(State, AllApps),
   _ = xrel_release:make_root(State),
   _ = xrel_release:make_lib(State, AllApps),
-  _ = xrel_release:make_release(State, AllApps),
+  _ = xrel_release:make_release(State, AllApps, BootApps),
+  _ = xrel_release:make_boot_script(State),
   _ = xrel_release:make_bin(State),
   _ = xrel_release:include_erts(State),
   ?INFO("== Provider ~p complete", [?PROVIDER]),

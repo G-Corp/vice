@@ -13,6 +13,8 @@ eXtanded Release assembler for Erlang/OTP Releases
 * `include_erts` : Include ERTS in the release (default: true)
 * `lib_dirs` : List of directory to search apps (default: none) / TODO
 * `providers` : Add providers (default: none)
+* `boot` : List of apps in boot script (default: all)
+* `disable_appup` : Enable/disable appup (default: true) / TODO
 
 ## Providers
 
