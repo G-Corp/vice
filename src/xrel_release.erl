@@ -9,7 +9,7 @@
          make_release/3,
          make_bin/1,
          include_erts/1,
-         make_boot_script/1
+         make_boot_script/2
         ]).
 
 make_root(State) ->
@@ -75,32 +75,36 @@ make_release(State, AllApps, BootApps) ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
 
-make_boot_script(State) ->
+make_boot_script(State, BootApps) ->
   {outdir, Outdir} = xrel_config:get(State, outdir),
   {relname, Relname} = xrel_config:get(State, relname),
   {relvsn, RelVsn} = xrel_config:get(State, relvsn),
-  RelDir = filename:join("releases", RelVsn),
+  AppsPaths = lists:foldl(
+                fun(#{app := App, vsn := Vsn}, Acc) ->
+                    filelib:wildcard(
+                      filename:join(
+                        [Outdir, "lib", eutils:to_list(App) ++ "-" ++ Vsn, "**", "ebin"]
+                       )) ++ Acc
+                end, [], BootApps),
+  RelDir = filename:join([Outdir, "releases", RelVsn]),
+  Paths = [RelDir|AppsPaths],
   ?INFO("* Create boot script", []),
-  eos:in(Outdir, 
-         fun() ->
-             case systools:make_script(
-                    eutils:to_list(Relname), 
-                    [{path, 
-                      [RelDir|filelib:wildcard("lib/*/ebin")]},
-                     {outdir, RelDir},
-                     silent]) of
-               error -> 
-                 ?HALT("!!! Can't generate boot script", []);
-               {error, _, Error} ->
-                 ?HALT("!!! Error while generating boot script : ~p", [Error]);
-               {ok, _, []} ->
-                 ok;
-               {ok, _, Warnings} ->
-                 ?DEBUG("! Generate boot script : ~p", [Warnings]);
-               _ -> 
-                 ok
-             end
-         end).
+  case systools:make_script(
+         eutils:to_list(Relname), 
+         [{path, Paths},
+          {outdir, RelDir},
+          silent]) of
+    error -> 
+      ?HALT("!!! Can't generate boot script", []);
+    {error, _, Error} ->
+      ?HALT("!!! Error while generating boot script : ~p", [Error]);
+    {ok, _, []} ->
+      ok;
+    {ok, _, Warnings} ->
+      ?DEBUG("! Generate boot script : ~p", [Warnings]);
+    _ -> 
+      ok
+  end.
 
 make_bin(State) ->
   {binfile, BinFile} = xrel_config:get(State, binfile),
@@ -213,10 +217,12 @@ resolv_app(State, Path, Name) ->
                   {vsn, Vsn1} -> Vsn1;
                   _ -> "0"
                 end,
-          Deps = case lists:keyfind(applications, 1, Config) of
-                   {applications, Apps} -> Apps;
-                   _ -> []
-                 end,
+          Deps = lists:foldl(fun(Type, Acc) ->
+                                 case lists:keyfind(Type, 1, Config) of
+                                   {Type, Apps} -> Acc ++ Apps;
+                                   _ -> Acc
+                                 end
+                             end, [], [applications, included_applications]),
           {Name, Vsn, app_path(Name, Vsn, AppPathFile), Deps};
         E -> 
           ?HALT("!!! Invalid ~p.app file ~s: ~p", [Name, AppPathFile, E])
