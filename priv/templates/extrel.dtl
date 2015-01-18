@@ -1,17 +1,22 @@
 -module(extrel).
 -export([main/1]).
 
-main([Path, Lib]) ->
+main([Action, Path, Lib]) ->
   {ok, [{_, _, _, Deps}]} = file:consult(Path),
-  X = string:join(
-        lists:foldl(
-          fun(P, Acc) ->
-              [filename:join(P, "ebin")|[filename:join([P, "apps", "*", "ebin"])|Acc]]
-          end, [], 
-          lists:map(
-            fun({Name, Vsn}) ->
-                filename:join(Lib, atom_to_list(Name) ++ "-" ++ Vsn)
-            end, Deps)),
-        " "),
-
+  X = if
+        Action =:= "get_libs" ->
+          string:join(
+            lists:foldl(
+              fun(P, Acc) ->
+                  [filename:join(P, "ebin")|[filename:join([P, "apps", "*", "ebin"])|Acc]]
+              end, [], deps_paths(Lib, Deps)), " "); 
+        Action =:= "get_erl_libs" ->
+          string:join(deps_paths(Lib, Deps), ":")
+      end,
   io:format("~s", [X]).
+
+deps_paths(Lib, Deps) ->
+  lists:map(
+    fun({Name, Vsn}) ->
+        filename:join(Lib, atom_to_list(Name) ++ "-" ++ Vsn)
+    end, Deps).
