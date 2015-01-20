@@ -20,6 +20,12 @@ eXtanded Release assembler for Erlang/OTP Releases
 
 * `xrel_provider_tar` : Create a Tar archive
 * `xrel_provider_zip` : Create a Zip archive
+* `xrel_provider_artifactory` : Deploy to artifactory. This provider use the following parameters :
+  * `url` :: `string()` : Artifactory URL (mandatory).
+  * `username` :: `env | string()` : Username (optional).
+  * `password` :: `env | string()` : Password (optional).
+  * `repository` :: `string()` : Repository (mandatory).
+  * `checksum` :: `string()` : Checksum when you want to deploy with checksum (optional).
 
 ## Contributing
 
@@ -28,3 +34,4 @@ eXtanded Release assembler for Erlang/OTP Releases
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
