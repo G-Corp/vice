@@ -22,13 +22,13 @@ DEPS_FILE="$REL_DIR/$REL_NAME.deps"
 
 ERTS_DIR="$ROOT_DIR/erts-$ERTS_VSN"
 if [ -d "$ERTS_DIR" ] ; then
-  BINDIR="$ERTS_DIR/bin"
+  export BINDIR="$ERTS_DIR/bin"
 else
   _ERL="$(which erl)"
   _CODE="io:format(\"~s\", [code:root_dir()]), halt()."
   _ERL_ROOT="$("$_ERL" -noshell -eval "$_CODE")"
   ERTS_DIR="$_ERL_ROOT/erts-$ERTS_VSN"
-  BINDIR="$ERTS_DIR/bin"
+  export BINDIR="$ERTS_DIR/bin"
 fi
 
 STARTED=false
@@ -72,7 +72,11 @@ start_app() {
      fi
      LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $DEPS_FILE $LIBDIR)
      export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $DEPS_FILE $LIBDIR)
-     $BINDIR/erl $EXTRA_ARGS -pa $LIBS $NOSHELL -config $SYS_CONFIG -boot $BOOT_FILE # -s $REL_NAME start 
+     export ROOTDIR="$ROOT_DIR"
+     export EMU="beam"
+     export PROGNAME="erl"
+     export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
+     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS $NOSHELL -config $SYS_CONFIG -boot $BOOT_FILE # -s $REL_NAME start 
    fi
 }
 

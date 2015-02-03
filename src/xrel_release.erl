@@ -159,7 +159,17 @@ include_erts(State) ->
       efile:copy(
         filename:join(Path, "erts-" ++ erlang:system_info(version)), 
         Outdir,
-        [recursive])
+        [recursive]),
+      ErtsBinDir = filename:join([Outdir, "erts-" ++ erlang:system_info(version), "bin"]),
+      ?INFO("Substituting in erl.src and start.src to form erl and start", []),
+      subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir, 
+                        [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
+                         {"EMU", "beam"}],
+                        [preserve]),
+      %%! Workaround for pre OTP 17.0: start.src and start_erl.src did
+      %%! not have correct permissions, so the above 'preserve' option did not help
+      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
+      ok = file:change_mode(filename:join(ErtsBinDir, "start_erl"), 8#0755)
   end.
 
 % Private
@@ -316,4 +326,64 @@ make_release_file(State, RelDir, Apps, Ext) ->
     {error, Reason} ->
       ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
   end.
+
+subst_src_scripts(Scripts, SrcDir, DestDir, Vars, Opts) ->
+  lists:foreach(fun(Script) ->
+                    subst_src_script(Script, SrcDir, DestDir,
+                                     Vars, Opts)
+                end, Scripts).
+
+subst_src_script(Script, SrcDir, DestDir, Vars, Opts) ->
+  subst_file(filename:join([SrcDir, Script ++ ".src"]),
+             filename:join([DestDir, Script]),
+             Vars, Opts).
+
+subst_file(Src, Dest, Vars, Opts) ->
+  {ok, Conts} = read_txt_file(Src),
+  NConts = subst(Conts, Vars),
+  write_file(Dest, NConts),
+  case lists:member(preserve, Opts) of
+    true ->
+      {ok, FileInfo} = file:read_file_info(Src),
+      file:write_file_info(Dest, FileInfo);
+    false ->
+      ok
+  end.
+
+read_txt_file(File) ->
+  {ok, Bin} = file:read_file(File),
+  {ok, binary_to_list(Bin)}.
+
+write_file(FName, Conts) ->
+  Enc = file:native_name_encoding(),
+  {ok, Fd} = file:open(FName, [write]),
+  file:write(Fd, unicode:characters_to_binary(Conts,Enc,Enc)),
+  file:close(Fd).
+
+subst(Str, Vars) ->
+  subst(Str, Vars, []).
+
+subst([$%, C| Rest], Vars, Result) when $A =< C, C =< $Z ->
+  subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when $a =< C, C =< $z ->
+  subst_var([C| Rest], Vars, Result, []);
+subst([$%, C| Rest], Vars, Result) when  C == $_ ->
+  subst_var([C| Rest], Vars, Result, []);
+subst([C| Rest], Vars, Result) ->
+  subst(Rest, Vars, [C| Result]);
+subst([], _Vars, Result) ->
+  lists:reverse(Result).
+
+subst_var([$%| Rest], Vars, Result, VarAcc) ->
+  Key = lists:reverse(VarAcc),
+  case lists:keysearch(Key, 1, Vars) of
+    {value, {Key, Value}} ->
+      subst(Rest, Vars, lists:reverse(Value, Result));
+    false ->
+      subst(Rest, Vars, [$%| VarAcc ++ [$%| Result]])
+  end;
+subst_var([C| Rest], Vars, Result, VarAcc) ->
+  subst_var(Rest, Vars, Result, [C| VarAcc]);
+subst_var([], Vars, Result, VarAcc) ->
+  subst([], Vars, [VarAcc ++ [$%| Result]]).
 
