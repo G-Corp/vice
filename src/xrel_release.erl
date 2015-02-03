@@ -166,10 +166,9 @@ include_erts(State) ->
                         [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
                          {"EMU", "beam"}],
                         [preserve]),
-      %%! Workaround for pre OTP 17.0: start.src and start_erl.src did
+      %%! Workaround for pre OTP 17.0: start.src does 
       %%! not have correct permissions, so the above 'preserve' option did not help
-      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
-      ok = file:change_mode(filename:join(ErtsBinDir, "start_erl"), 8#0755)
+      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755)
   end.
 
 % Private
