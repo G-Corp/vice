@@ -161,7 +161,7 @@ include_erts(State) ->
         Outdir,
         [recursive]),
       ErtsBinDir = filename:join([Outdir, "erts-" ++ erlang:system_info(version), "bin"]),
-      ?INFO("Substituting in erl.src and start.src to form erl and start", []),
+      ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
       subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir, 
                         [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
                          {"EMU", "beam"}],
