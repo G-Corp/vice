@@ -8,13 +8,17 @@
 init(State) ->
   ok = application:start(inets),
   {ok, _} = application:ensure_all_started(ssl),
+  {artifactory, Data} = xrel_config:get(State, artifactory, []),
+  Archive = elists:keyfind(deploy, 1, Data, zip),
   xrel_config:add_provider(
     State,
     {?PROVIDER, 
      #{
       module => ?MODULE,
-        depends => [zip],
-        desc => "Create an zip archive and deploy it to artifactory"
+        depends => [Archive],
+        desc => "Create an archive (" ++ 
+                eutils:to_string(Archive) ++ 
+                ") and deploy it to artifactory"
        }
     }
    ).
@@ -24,7 +28,7 @@ do(State) ->
   {output_dir, Outdir} = xrel_config:get(State, output_dir),
   {relname, RelName} = xrel_config:get(State, relname),
   {relvsn, RelVsn} = xrel_config:get(State, relvsn),
-  ZipFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".zip",
+  ZipFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
   ZipFull = filename:join(Outdir, ZipFile),
   {artifactory, Data} = xrel_config:get(State, artifactory, []),
   URL = case elists:keyfind(url, 1, Data, os:getenv("ARTIFACTORY_URL")) of
@@ -58,14 +62,14 @@ do(State) ->
   URL1 = URL ++ "/" ++ Repository ++ "/" ++ eutils:to_list(RelName) ++ "/" ++ RelVsn ++ "/" ++ ZipFile,
   Body = case file:read_file(ZipFull) of
            {ok, B} -> B;
-           _ -> ?HALT("Can't read zip file", [])
+           _ -> ?HALT("Can't read tgz file", [])
          end,
   Header = case elists:keyfind(checksum, 1, Data) of
              false -> [{"X-Checksum-Sha1", hexstring(crypto:hash(sha, Body))}|AuthHeader];
              Checksum -> [{"X-Checksum-Deploy", "true"}, {"X-Checksum-Sha1", Checksum}|AuthHeader]
            end,
   ?INFO("Deploy ~s to ~s", [ZipFile, URL1]),
-  _ = case httpc:request(put, {URL1, Header, "application/zip", Body}, [{ssl, [{verify, 0}]}], []) of
+  _ = case httpc:request(put, {URL1, Header, "application/x-gzip", Body}, [{ssl, [{verify, 0}]}], []) of
     {ok, {{_, 201, _}, _, _}} -> ok;
     {ok, {{_, Code, Message}, _, _}} -> ?HALT("Deploy faild HTTP ~p: ~s", [Code, Message]);
     {error, Reason} -> ?HALT("Deploy error: ~p", [Reason])
