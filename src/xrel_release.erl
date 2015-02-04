@@ -168,7 +168,11 @@ include_erts(State) ->
                         [preserve]),
       %%! Workaround for pre OTP 17.0: start.src does 
       %%! not have correct permissions, so the above 'preserve' option did not help
-      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755)
+      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
+      ?INFO("* Install start_clean.boot", []), 
+      Prefix = code:root_dir(),
+      ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]), 
+                      filename:join([Outdir, "bin", "start_clean.boot"]))
   end.
 
 % Private
