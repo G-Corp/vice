@@ -223,6 +223,7 @@ resolv_app(State, Path, Name) ->
         ) of
     [] -> notfound;
     [AppFile|_] -> 
+      ?INFO("== found ~s", [AppFile]),
       AppPathFile = efile:expand_path(AppFile),
       case file:consult(AppPathFile) of
         {ok, [{application, Name, Config}]} ->
@@ -245,9 +246,9 @@ resolv_app(State, Path, Name) ->
 app_path(App, Vsn, Path) ->
   Dirname = filename:dirname(Path),
   AppName = eutils:to_list(App) ++ "-" ++ Vsn,
-  case string:str(Dirname, AppName) of
+  case string:rstr(Dirname, AppName) of
     0 ->
-      case string:str(Dirname, eutils:to_list(App)) of
+      case string:rstr(Dirname, eutils:to_list(App)) of
         0 ->
           ?HALT("!!! Can't find root path for ~s", [App]);
         N ->
@@ -258,7 +259,7 @@ app_path(App, Vsn, Path) ->
   end.
 
 copy_deps(App, Vsn, Path, Dest, Extra) ->
-  ?INFO("* Copy ~s version ~s", [App, Vsn]),
+  ?INFO("* Copy ~s version ~s (~s)", [App, Vsn, Path]),
   efile:copy(Path, Dest, [recursive, {only, ["ebin", "priv"] ++ Extra}]),
   FinalDest = filename:join(Dest, eutils:to_list(App) ++ "-" ++ Vsn),
   CopyDest = filename:join(Dest, filename:basename(Path)),
