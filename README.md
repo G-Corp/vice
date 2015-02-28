@@ -2,6 +2,10 @@
 
 eXtanded Release assembler for Erlang/OTP Releases
 
+## Install
+
+Download [xrel](https://github.com/emedia-project/xrel/wiki/xrel), make it executable and place it in your PATH.
+
 ## Configuration
 
 * `output_dir` : Output directory (default: `_xrel`)
