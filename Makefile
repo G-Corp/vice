@@ -1,5 +1,6 @@
-REBAR = ./rebar
-RELX = ./xrel
+REBAR   = ./rebar
+RELX    = ./xrel
+VERSION = $(shell ./tag)
 
 .PHONY: compile get-deps test
 
@@ -34,5 +35,16 @@ escript: compile
 	@$(REBAR) skip_deps=true escriptize
 
 release: escript
-	@$(XREL)
+ifeq ($(VERSION),ERROR)
+	@echo "**> Can't find version!"
+else
+	@echo "==> Release version $(VERSION)"
+	git clone git@github.com:emedia-project/xrel.wiki.git
+	cp xrel xrel.wiki/xrel
+	cd xrel.wiki; git commit -am "New release $(VERSION)"; git push origin master
+	rm -rf xrel.wiki
+	git commit -am "Release version $(VERSION)"
+	git tag $(VERSION)
+	git push origin master --tags
+endif
 
