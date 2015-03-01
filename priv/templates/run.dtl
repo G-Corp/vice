@@ -14,9 +14,11 @@ REL_DIR="$ROOT_DIR/releases/$REL_VSN"
 LIBDIR="$ROOT_DIR/lib"
 
 PIDFILE="$SCRIPT_DIR/.$NAME.pid"
+PIPE_DIR="$SCRIPT_DIR/.erlang.$NAME.pipe"
+LOG_DIR="$ROOT_DIR/log"
 SYS_CONFIG="$REL_DIR/sys.config"
 VM_ARGS="$REL_DIR/vm.args"
-REL_FILE="$REL_DIR/$REL_NAME.r"el
+REL_FILE="$REL_DIR/$REL_NAME.rel"
 BOOT_FILE="$REL_DIR/$REL_NAME"
 DEPS_FILE="$REL_DIR/$REL_NAME.deps"
 
@@ -37,16 +39,13 @@ if [ -f $PIDFILE ] ; then
   STARTED=true
   PID=`cat $PIDFILE | head -1`
 fi
-NOSHELL="-noshell -detached"
-DAEMON=true
-ACTION=""
 
 help() {
   MESSAGE=$1
   if [ "x$MESSAGE" != "x" ] ; then
     echo $MESSAGE
   fi
-  echo "Usage : $NAME [options] {start|stop|console|status}" 
+  echo "Usage : $NAME [options] {start|attach|stop|console|status}" 
   echo ""
   echo "Options :"
   echo "  -h --help        : Display this message"
@@ -61,7 +60,7 @@ print_status() {
   esac
 }
 
-start_app() {
+run_app() {
   if [ $STARTED = true ] ; then
      echo "$NAME is already running (PID $PID)"
    else
@@ -74,17 +73,31 @@ start_app() {
      export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $DEPS_FILE $LIBDIR)
      export ROOTDIR="$ROOT_DIR"
      export EMU="beam"
-     export PROGNAME="erl"
+     export PROGNAME="erlexec"
      export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
-     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS $NOSHELL -config $SYS_CONFIG -boot $BOOT_FILE # -s $REL_NAME start 
+     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $SYS_CONFIG -boot $BOOT_FILE
    fi
 }
 
-get_pid() {
-  if [ $DAEMON = true ] ; then
-    PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
-    echo $PID > $PIDFILE
+start_app() {
+  mkdir -p $PIPE_DIR
+  mkdir -p $LOG_DIR
+  $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
+  get_pid
+}
+
+attach_app() {
+  if [ $STARTED = true ] ; then
+    exec $BINDIR/to_erl $PIPE_DIR
+  else
+    echo "$NAME is not started"
   fi
+}
+
+get_pid() {
+  sleep 1
+  PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+  echo $PID > $PIDFILE
 }
 
 stop_app() {
@@ -99,13 +112,15 @@ stop_app() {
 while [ $# -ne 0 ] ; do
   case $1 in
     console) 
-      NOSHELL="" ; DAEMON=false ; ACTION="console" ;;
+      run_app ;;
     start)
-      ACTION="start" ;;
+      start_app ;;
+    attach)
+      attach_app ;;
     stop)
-      ACTION="stop" ;;
+      stop_app ;;
     status)
-      ACTION="status" ;;
+      print_status ;;
     -h|--help)
       help ; exit 0 ;;
     *)
@@ -113,17 +128,4 @@ while [ $# -ne 0 ] ; do
   esac
   shift
 done
-
-case $ACTION in
-  stop)
-    stop_app ;;
-  start)
-    start_app ; get_pid ;;
-  console)
-    start_app ;;
-  status)
-    print_status ;;
-  *)
-    help ;;
-esac
 
