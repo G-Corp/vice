@@ -9,7 +9,8 @@
          make_release/3,
          make_bin/1,
          include_erts/1,
-         make_boot_script/2
+         make_boot_script/2,
+         make_relup/2
         ]).
 
 make_root(State) ->
@@ -69,8 +70,8 @@ make_release(State, AllApps, BootApps) ->
                                  ?HALT("Can't copy ~s: ~p", [BootExe, Reason])
                              end
                          end),
-      _ = make_release_file(State, RelDir, AllApps, ".deps"),
-      _ = make_release_file(State, RelDir, BootApps, ".rel");
+      _ = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".deps"),
+      _ = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel");
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
@@ -90,7 +91,7 @@ make_boot_script(State, BootApps) ->
   Paths = [RelDir|AppsPaths],
   ?INFO("* Create boot script", []),
   case systools:make_script(
-         eutils:to_list(Relname), 
+         eutils:to_list(Relname) ++ "-" ++ RelVsn, 
          [{path, Paths},
           {outdir, RelDir},
           silent]) of
@@ -175,7 +176,79 @@ include_erts(State) ->
                       filename:join([Outdir, "bin", "start_clean.boot"]))
   end.
 
+make_relup(State, AllApps) ->
+  case lists:any(fun(#{app := sasl}) -> true;
+                         (_) -> false
+                      end, AllApps) of
+    true ->
+      {relname, RelName} = xrel_config:get(State, relname),
+      {relvsn, RelVsn} = xrel_config:get(State, relvsn),
+      {outdir, Outdir} = xrel_config:get(State, outdir),
+      VsnApp = eutils:to_string(RelName) ++ "-" ++ RelVsn,
+      AppDir = filename:join([Outdir, "lib", VsnApp, "ebin", "*.appup"]),
+      case filelib:wildcard(AppDir) of
+        [AppupFile] -> 
+          case file:consult(AppupFile) of
+            {ok, [{Vsn, UpFrom, DownTo}]} ->
+              ?INFO("* Use appup ~s", [AppupFile]),
+              {UpFrom2, Versions1} = get_apps_and_versions(RelName, UpFrom),
+              {DownTo2, Versions2} = get_apps_and_versions(RelName, DownTo),
+              Versions3 = lists:umerge(lists:sort([Vsn|Versions1]), lists:sort(Versions2)),
+              case lists:foldl(fun(CurrentApp, {Missing, Exist}) ->
+                                   Path = filename:join([Outdir, "lib", CurrentApp, "ebin"]),
+                                   case filelib:is_dir(Path) of
+                                     true ->
+                                       {Missing, [Path|Exist]};
+                                     false ->
+                                       {[CurrentApp|Missing], Exist}
+                                   end
+                               end, {[], []}, 
+                               [VsnApp,
+                                lists:umerge(lists:sort(UpFrom2), 
+                                             lists:sort(DownTo2))]) of
+                {[], AppsPath} ->
+                  AppsPath2 = lists:foldl(fun(Version, AppsPath3) ->
+                                              [filename:join([Outdir, "releases", Version])|AppsPath3]
+                                          end, AppsPath, Versions3),
+                  ?DEBUG("systools:make_relup(~p, ~p, ~p, [{path, ~p}])", 
+                         [VsnApp, 
+                          UpFrom2, 
+                          DownTo2, 
+                          AppsPath2]),
+                  case systools:make_relup(
+                    VsnApp, 
+                    UpFrom2, 
+                    DownTo2, 
+                    [{path, AppsPath2},
+                     {outdir, filename:join([Outdir, "releases", RelVsn])},
+                     warnings_as_errors]) of
+                    {error, _, Error} ->
+                      ?HALT("!!! Create relup faild: ~p", [Error]);
+                    error ->
+                      ?HALT("!!! Create relup faild", []);
+                    _ ->
+                      ok
+                  end;
+                {Missing, _} ->
+                  ?DEBUG("* Can't create relup, missing apps ~s", [string:join(Missing, ", ")])
+              end;
+            _ ->
+              ?DEBUG("* Invalid appup file (~s)", [AppupFile])
+          end;
+        _ ->
+          ?DEBUG("* Can't find appup", [])
+      end;
+    false ->
+      ?DEBUG("* SASL not present, can't create relup file", [])
+  end.
+
 % Private
+
+get_apps_and_versions(App, From) ->
+  lists:foldl(fun({Vsn, _}, {Apps, Versions}) ->
+                  {[eutils:to_string(App) ++ "-" ++ Vsn|Apps],
+                   [Vsn|Versions]}
+              end, {[], []}, From).
 
 find_all_deps(State, Apps) ->
   {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
@@ -223,7 +296,7 @@ resolv_app(State, Path, Name) ->
         ) of
     [] -> notfound;
     [AppFile|_] -> 
-      ?INFO("== found ~s", [AppFile]),
+      ?INFO("= Found ~s", [AppFile]),
       AppPathFile = efile:expand_path(AppFile),
       case file:consult(AppPathFile) of
         {ok, [{application, Name, Config}]} ->

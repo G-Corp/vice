@@ -26,6 +26,7 @@ do(State) ->
   _ = xrel_release:make_release(State, AllApps, BootApps),
   _ = xrel_release:make_boot_script(State, BootApps),
   _ = xrel_release:make_bin(State),
+  _ = xrel_release:make_relup(State, AllApps),
   _ = xrel_release:include_erts(State),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.
