@@ -18,7 +18,7 @@ Download [xrel](https://github.com/emedia-project/xrel/wiki/xrel), make it execu
 * `lib_dirs` : List of directory to search apps (default: none) / TODO
 * `providers` : Add providers (default: none)
 * `boot` : List of apps in boot script (default: all)
-* `disable_appup` : Enable/disable appup (default: true) / TODO
+* `disable_relup` : Enable/disable relup (default: true)
 
 ## Providers
 
