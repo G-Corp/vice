@@ -177,7 +177,7 @@ include_erts(State) ->
   end.
 
 make_relup(State, AllApps) ->
-  case xrel_config:get(State, disable_relup) of
+  case xrel_config:get(State, disable_relup, true) of
     {disable_relup, true} ->
       ?DEBUG("* relup disabled", []);
     _ ->
