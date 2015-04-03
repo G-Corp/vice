@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:             {{ relname }}
+# Required-Start:       $local_fs $remote_fs $network $time
+# Required-Stop:        $local_fs $remote_fs $network $time
+# Should-Start:         
+# Should-Stop:          
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    {{ package_shortdesc }}
+### END INIT INFO
+
+/usr/bin/sudo -u {{ install_user }} -i /usr/lib/{{ relname }}/bin/{{ app }} $@

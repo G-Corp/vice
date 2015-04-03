@@ -119,6 +119,8 @@ while [ $# -ne 0 ] ; do
       attach_app ;;
     stop)
       stop_app ;;
+    restart)
+      stop_app ; sleep 2 ; start_app ;;
     status)
       print_status ;;
     -h|--help)

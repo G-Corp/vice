@@ -1,0 +1,4 @@
+bin/ /usr/lib/{{ relname }}
+{% if erts_version %}erts-{{ erts_version }}/ /usr/lib/{{ relname }}{% endif %}
+lib/ /usr/lib/{{ relname }}
+releases/ /usr/lib/{{ relname }}

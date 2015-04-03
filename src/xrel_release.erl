@@ -71,7 +71,13 @@ make_release(State, AllApps, BootApps) ->
                              end
                          end),
       _ = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".deps"),
-      _ = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel");
+      RelFile = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel"),
+      ?INFO("* Create RELEASES file", []),
+      case release_handler:create_RELEASES(Outdir, RelDir, RelFile, []) of
+        ok -> ok;
+        {error, Reason1} ->
+          ?HALT("!!! Failed to create RELEASES: ~p", [Reason1])
+      end;
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
@@ -442,7 +448,7 @@ make_release_file(State, RelDir, Apps, Ext) ->
   case rel_dtl:render(Params) of
     {ok, Data} ->
       case file:write_file(Dest, Data) of
-        ok -> ok;
+        ok -> Dest;
         {error, Reason1} ->
           ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
       end;
