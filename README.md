@@ -30,6 +30,18 @@ Download [xrel](https://github.com/emedia-project/xrel/wiki/xrel), make it execu
   * `password` :: `env | string()` : Password (optional).
   * `repository` :: `string()` : Repository (mandatory).
   * `checksum` :: `string()` : Checksum when you want to deploy with checksum (optional).
+* `xrel_provider_deb` : Create a Debian package (you need to install `debuild` from `devscripts`). This provider use the following parameters :
+  * `author_name`
+  * `author_email`
+  * `install_user`
+  * `install_user_desc`
+  * `package_url`
+  * `package_git`
+  * `package_shortdesc`
+  * `package_desc`
+  * `package_depends`
+  * `license_type`
+  * `copyright`
 
 ## Contributing
 
