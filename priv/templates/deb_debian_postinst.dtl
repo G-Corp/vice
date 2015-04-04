@@ -9,27 +9,29 @@ set -e
 
 do_setup()
 {
-    chown {{ install_user }}:{{ install_user }} -R /var/lib/{{ relname }}
-    mkdir -p /var/log/{{ relname }}
-    chown {{ install_user }}:{{ install_user }} /var/log/{{ relname }}
-    if [ ! -L "/usr/lib/{{ relname }}/log" ]; then
-        cd /usr/lib/{{ relname }} && ln -s /var/log/{{ relname }} ./log
-    fi
+  chown {{ install_user }}:{{ install_user }} /usr/lib/{{ relname }}/bin
+  mkdir -p /var/lib/{{ relname }}
+  chown {{ install_user }}:{{ install_user }} -R /var/lib/{{ relname }}
+  mkdir -p /var/log/{{ relname }}
+  chown {{ install_user }}:{{ install_user }} /var/log/{{ relname }}
+  if [ ! -L "/usr/lib/{{ relname }}/log" ]; then
+    cd /usr/lib/{{ relname }} && ln -s /var/log/{{ relname }} ./log
+  fi
 }
 
 case "$1" in
-    configure|reconfigure)
-	adduser --quiet --system --shell /bin/bash --group --home /var/lib/{{ install_user }} {{ install_user }}
+  configure|reconfigure)
+    adduser --quiet --system --shell /bin/bash --group --home /var/lib/{{ install_user }} {{ install_user }}
     do_setup "$@"
     ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
+  abort-upgrade|abort-remove|abort-deconfigure)
 
     ;;
 
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 0
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 0
     ;;
 esac
 

@@ -1,5 +1,5 @@
 {% autoescape false %}
-Source: {{ relname }}
+Source: {{ pkgname }}
 Section: net
 Priority: optional
 Maintainer: {{ author_name }} <{{ author_email }}>
@@ -8,7 +8,7 @@ Standards-Version: 3.9.2
 {% if package_url %}Homepage: {{ package_url }}{% endif %}
 {% if package_git %}Vcs-Git: {{ package_git }}{% endif %}
 
-Package: {{ relname }}
+Package: {{ pkgname }}
 Architecture: amd64
 Suggests: erlang-base
 Depends: bash (>= 4.3), adduser (>= 3.113){% if package_depends %}, {{ package_depends }}{% endif %}

@@ -1,4 +1,4 @@
-{{ relname }} ({{ relvsn }}-1) unstable; urgency=low
+{{ pkgname }} ({{ relvsn }}-1) unstable; urgency=low
 
   * Create release {{ relvsn }}
 

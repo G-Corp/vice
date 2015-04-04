@@ -11,4 +11,4 @@
 # Short-Description:    {{ package_shortdesc }}
 ### END INIT INFO
 
-/usr/bin/sudo -u {{ install_user }} -i /usr/lib/{{ relname }}/bin/{{ app }} $@
+/usr/bin/sudo -u {{ install_user }} -i /usr/lib/{{ relname }}/bin/{{ relname }} $@

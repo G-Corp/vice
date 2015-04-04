@@ -47,7 +47,9 @@ do(State) ->
             ],
   {deb, DebData} = xrel_config:get(State, deb, []),
   DebData1 = DebData ++ 
-    [{relname, RelName}, {relvsn, RelVsn}] ++ 
+    [{pkgname, RelName}, 
+     {relname, RelName},
+     {relvsn, RelVsn}] ++ 
     case {IncludeErts, Erts} of
       {true, Erts} when Erts =/= undefined -> [{erts_version, Erts}];
       _ -> []
@@ -61,7 +63,8 @@ do(State) ->
                                               ok = file:write_file(File, iolist_to_binary(Content))
                                           end, FileMap),
                             ?INFO("* Build package.", []),
-                            _Output = os:cmd("debuild --no-tgz-check -i -us -uc -b");
+                            Output = os:cmd("debuild --no-tgz-check -i -us -uc -b"),
+                            ?INFO("~s", [unicode:characters_to_binary(Output)]);
                           {error, Reason} ->
                             ?HALT("!!! Failed ro create ~s: ~p", [filename:join([Outdir, "debian"]), Reason])
                         end
