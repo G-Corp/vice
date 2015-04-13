@@ -114,7 +114,7 @@ execute() {
   FUNCTION=$1 ; shift
   ARGS="["
   SEP=""
-  for arg in $@ ; do
+  for arg in "$@" ; do
     ARGS=$(echo "$ARGS$SEP\"$arg\"")
     SEP=", "
   done
@@ -151,7 +151,7 @@ while [ $# -ne 0 ] ; do
     status)
       print_status ;;
     exec)
-      shift ; execute $@ ; exit 0 ;;
+      shift ; execute "$@" ; exit 0 ;;
     -h|--help)
       help ; exit 0 ;;
     *)

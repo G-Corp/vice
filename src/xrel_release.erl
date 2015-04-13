@@ -179,7 +179,11 @@ include_erts(State) ->
       ?INFO("* Install start_clean.boot", []), 
       Prefix = code:root_dir(),
       ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]), 
-                      filename:join([Outdir, "bin", "start_clean.boot"]))
+                      filename:join([Outdir, "bin", "start_clean.boot"])),
+      ?INFO("* Install start.boot", []), 
+      Prefix = code:root_dir(),
+      ok = efile:copy(filename:join([Prefix, "bin", "start.boot"]), 
+                      filename:join([Outdir, "bin", "start.boot"]))
   end.
 
 make_relup(State, AllApps) ->
