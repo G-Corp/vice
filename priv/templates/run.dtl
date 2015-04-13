@@ -110,7 +110,13 @@ stop_app() {
 }
 
 execute() {
+  if [ $# = 0 ] ; then
+    help "Missing module" ; exit 0
+  fi  
   MODULE=$1 ; shift
+  if [ $# = 0 ] ; then
+    help "Missing function" ; exit 0
+  fi  
   FUNCTION=$1 ; shift
   ARGS="["
   SEP=""
