@@ -126,10 +126,7 @@ execute() {
       -sname $(echo $NODE_NAME"_seed") \
       -eval "[_, Host] = string:tokens(atom_to_list(node()), \"@\"), 
              Node = list_to_atom(\"$NODE_NAME@\" ++ Host), 
-             case rpc:call(Node, $MODULE, $FUNCTION, [$ARGS]) of
-               ok -> ok;
-               E -> io:format(\"~p\", [E])
-             end" \
+             io:format(\"~p~n\", [rpc:call(Node, $MODULE, $FUNCTION, $ARGS)])" \
       -s init stop
   else
     echo "$NAME is not started"
