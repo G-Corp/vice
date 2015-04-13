@@ -63,8 +63,8 @@ do(State) ->
                                               ok = file:write_file(File, iolist_to_binary(Content))
                                           end, FileMap),
                             ?INFO("* Build package.", []),
-                            Output = os:cmd("debuild --no-tgz-check -i -us -uc -b"),
-                            ?INFO("~s", [unicode:characters_to_binary(Output)]);
+                            _Output = os:cmd("debuild --no-tgz-check -i -us -uc -b");
+                            % ?INFO("~s", [unicode:characters_to_binary(Output)]);
                           {error, Reason} ->
                             ?HALT("!!! Failed ro create ~s: ~p", [filename:join([Outdir, "debian"]), Reason])
                         end
