@@ -38,6 +38,12 @@ PID=""
 if [ -f $PIDFILE ] ; then 
   STARTED=true
   PID=`cat $PIDFILE | head -1`
+  PSPID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+  if [ "$PID" != "$PSPID" ] ; then
+    rm -f $PIDFILE
+    STARTED=false
+    PID=""
+  fi
 fi
 
 help() {
