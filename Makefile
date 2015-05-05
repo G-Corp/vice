@@ -21,6 +21,8 @@ clean:
 
 realclean: clean
 	@$(REBAR) delete-deps
+	@rm -rf deps
+	@rm -rf ebin
 
 test: compile
 	@$(REBAR) skip_deps=true eunit
