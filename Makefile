@@ -45,8 +45,5 @@ else
 	cp xrel xrel.wiki/xrel
 	cd xrel.wiki; git commit -am "New release $(VERSION)"; git push origin master
 	rm -rf xrel.wiki
-	git commit -am "Release version $(VERSION)"
-	git tag $(VERSION)
-	git push origin master --tags
 endif
 
