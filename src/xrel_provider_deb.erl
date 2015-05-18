@@ -8,7 +8,7 @@
 init(State) ->
   xrel_config:add_provider(
     State,
-    {?PROVIDER, 
+    {?PROVIDER,
      #{
        module => ?MODULE,
        depends => [release],
@@ -22,16 +22,16 @@ do(State) ->
   {output_dir, Outdir} = xrel_config:get(State, output_dir),
   {relname, RelName} = xrel_config:get(State, relname),
   {relvsn, RelVsn} = xrel_config:get(State, relvsn),
-  {include_erts, IncludeErts} = xrel_config:get(State, include_erts),
+  {include_erts, IncludeErts} = xrel_config:get(State, include_erts, true),
   R = filename:join([Outdir, RelName, "releases", RelVsn, "RELEASES"]),
   Erts = case file:consult(R) of
-           {ok, [[{release, 
-                   _, 
-                   _, 
-                   ErtsVersion, 
-                   _, 
+           {ok, [[{release,
+                   _,
+                   _,
+                   ErtsVersion,
+                   _,
                    permanent}]]} -> ErtsVersion;
-           _ -> 
+           _ ->
              undefined
          end,
   FileMap = [
@@ -46,10 +46,10 @@ do(State) ->
              {"debian/" ++ eutils:to_string(RelName) ++ ".install", deb_debian_install_dtl}
             ],
   {deb, DebData} = xrel_config:get(State, deb, []),
-  DebData1 = DebData ++ 
-    [{pkgname, RelName}, 
+  DebData1 = DebData ++
+    [{pkgname, RelName},
      {relname, RelName},
-     {relvsn, RelVsn}] ++ 
+     {relvsn, RelVsn}] ++
     case {IncludeErts, Erts} of
       {true, Erts} when Erts =/= undefined -> [{erts_version, Erts}];
       _ -> []
