@@ -1,6 +1,6 @@
 # jorel
 
-eXtanded Release assembler for Erlang/OTP Releases
+Jorel is Just anOther RELease assembler for Erlang/OTP Releases
 
 ## Install
 
