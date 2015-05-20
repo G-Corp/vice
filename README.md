@@ -42,6 +42,7 @@ Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it ex
   * `package_depends`
   * `license_type`
   * `copyright`
+* `jorel_provider_git_tag` : Create a git tag
 
 ## Contributing
 
