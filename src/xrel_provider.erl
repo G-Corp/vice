@@ -27,7 +27,7 @@ run_deps(State, Provider) ->
       lists:foldl(fun(Deps, S) ->
                       run(S, Deps)
                   end, State, ProviderDeps);
-    _ -> 
+    _ ->
       ?HALT("!!! Missing configuration for provider ~p", [Provider])
   end.
 

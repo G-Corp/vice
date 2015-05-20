@@ -13,7 +13,7 @@ to_state(Options) ->
   State = case lists:keyfind(config, 1, Options) of
             {config, ConfigFile} ->
               case filelib:is_file(ConfigFile) of
-                true -> 
+                true ->
                   elists:merge_keylists(
                     1, read_config(ConfigFile), Options);
                 false ->
@@ -64,7 +64,7 @@ get(State, binfile) ->
 
 get(State, Key) ->
   case lists:keyfind(Key, 1, State) of
-    false -> 
+    false ->
       ?HALT("Missing configuration value for ~s", [Key]);
     T -> T
   end.
@@ -76,10 +76,10 @@ get(State, Key, Default) ->
   end.
 
 % Private
-  
+
 read_config(File) ->
   case file:consult(File) of
-    {ok, Config} -> 
+    {ok, Config} ->
       Config;
     {error, Reason} ->
       ?HALT("Error while reading ~s: ~p", [File, Reason])

@@ -57,7 +57,7 @@ make_release(State, AllApps, BootApps) ->
   {relvsn, Vsn} = xrel_config:get(State, relvsn),
   RelDir = filename:join([Outdir, "releases", Vsn]),
   ?INFO("* Create ~s", [RelDir]),
-  case efile:make_dir(RelDir) of 
+  case efile:make_dir(RelDir) of
     ok ->
       _ = make_rel_file(State, RelDir, "vm.args", vm_args),
       _ = make_rel_file(State, RelDir, "sys.config", sys_config),
@@ -97,11 +97,11 @@ make_boot_script(State, BootApps) ->
   Paths = [RelDir|AppsPaths],
   ?INFO("* Create boot script", []),
   case systools:make_script(
-         eutils:to_list(Relname) ++ "-" ++ RelVsn, 
+         eutils:to_list(Relname) ++ "-" ++ RelVsn,
          [{path, Paths},
           {outdir, RelDir},
           silent]) of
-    error -> 
+    error ->
       ?HALT("!!! Can't generate boot script", []);
     {error, _, Error} ->
       ?HALT("!!! Error while generating boot script : ~p", [Error]);
@@ -109,7 +109,7 @@ make_boot_script(State, BootApps) ->
       ok;
     {ok, _, Warnings} ->
       ?DEBUG("! Generate boot script : ~p", [Warnings]);
-    _ -> 
+    _ ->
       ok
   end.
 
@@ -127,10 +127,10 @@ make_bin(State) ->
   case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, erlang:system_info(version)}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
-        ok -> 
+        ok ->
           ?INFO("* Generate ~s", [BinFileWithVsn]),
           Bins = case file:copy(BinFile, BinFileWithVsn) of
-            {ok, _} -> 
+            {ok, _} ->
               [BinFile, BinFileWithVsn];
             {error, Reason2} ->
               ?ERROR("Error while creating ~s: ~p", [BinFileWithVsn, Reason2]),
@@ -164,25 +164,25 @@ include_erts(State) ->
       ?INFO("* Add ets ~s from ~s", [erlang:system_info(version), Path]),
       {outdir, Outdir} = xrel_config:get(State, outdir),
       efile:copy(
-        filename:join(Path, "erts-" ++ erlang:system_info(version)), 
+        filename:join(Path, "erts-" ++ erlang:system_info(version)),
         Outdir,
         [recursive]),
       ErtsBinDir = filename:join([Outdir, "erts-" ++ erlang:system_info(version), "bin"]),
       ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
-      subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir, 
+      subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir,
                         [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
                          {"EMU", "beam"}],
                         [preserve]),
-      %%! Workaround for pre OTP 17.0: start.src does 
+      %%! Workaround for pre OTP 17.0: start.src does
       %%! not have correct permissions, so the above 'preserve' option did not help
       ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
-      ?INFO("* Install start_clean.boot", []), 
+      ?INFO("* Install start_clean.boot", []),
       Prefix = code:root_dir(),
-      ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]), 
+      ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]),
                       filename:join([Outdir, "bin", "start_clean.boot"])),
-      ?INFO("* Install start.boot", []), 
+      ?INFO("* Install start.boot", []),
       Prefix = code:root_dir(),
-      ok = efile:copy(filename:join([Prefix, "bin", "start.boot"]), 
+      ok = efile:copy(filename:join([Prefix, "bin", "start.boot"]),
                       filename:join([Outdir, "bin", "start.boot"]))
   end.
 
@@ -201,7 +201,7 @@ make_relup(State, AllApps) ->
           VsnApp = eutils:to_string(RelName) ++ "-" ++ RelVsn,
           AppDir = filename:join([Outdir, "lib", VsnApp, "ebin", "*.appup"]),
           case filelib:wildcard(AppDir) of
-            [AppupFile] -> 
+            [AppupFile] ->
               case file:consult(AppupFile) of
                 {ok, [{Vsn, UpFrom, DownTo}]} ->
                   ?INFO("* Use appup ~s", [AppupFile]),
@@ -216,9 +216,9 @@ make_relup(State, AllApps) ->
                                          false ->
                                            {[CurrentApp|Missing], Exist}
                                        end
-                                   end, {[], []}, 
+                                   end, {[], []},
                                    [VsnApp,
-                                    lists:umerge(lists:sort(UpFrom2), 
+                                    lists:umerge(lists:sort(UpFrom2),
                                                  lists:sort(DownTo2))]) of
                     {[], AppsPath} ->
                       AppsPath2 = lists:foldl(fun(Version, AppsPath3) ->
@@ -226,9 +226,9 @@ make_relup(State, AllApps) ->
                                               end, AppsPath, Versions3),
                       ?INFO("* Generate relup file", []),
                       case systools:make_relup(
-                             VsnApp, 
-                             UpFrom2, 
-                             DownTo2, 
+                             VsnApp,
+                             UpFrom2,
+                             DownTo2,
                              [{path, AppsPath2},
                               {outdir, filename:join([Outdir, "releases", RelVsn])},
                               warnings_as_errors]) of
@@ -313,7 +313,7 @@ find_all_deps(State, Apps) ->
          Exclude
         ) of
     [] -> Apps;
-    DepsApps -> 
+    DepsApps ->
       lists:foldl(fun(Path, Acc) ->
                       App = filename:basename(Path, ".app"),
                       case elists:include(Acc, App) of
@@ -326,7 +326,7 @@ find_all_deps(State, Apps) ->
 resolv_apps(_, [], _, Apps) -> Apps;
 resolv_apps(State, [App|Rest], Done, AllApps) ->
   {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
-                             notfound -> 
+                             notfound ->
                                case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
                                  notfound ->
                                    ?HALT("!!! Can't find application ~s", [App]);
@@ -351,7 +351,7 @@ resolv_app(State, Path, Name) ->
          Exclude
         ) of
     [] -> notfound;
-    [AppFile|_] -> 
+    [AppFile|_] ->
       ?INFO("= Found ~s", [AppFile]),
       AppPathFile = efile:expand_path(AppFile),
       case file:consult(AppPathFile) of
@@ -367,7 +367,7 @@ resolv_app(State, Path, Name) ->
                                  end
                              end, [], [applications, included_applications]),
           {Name, Vsn, app_path(Name, Vsn, AppPathFile), Deps};
-        E -> 
+        E ->
           ?HALT("!!! Invalid ~p.app file ~s: ~p", [Name, AppPathFile, E])
       end
   end.
@@ -383,7 +383,7 @@ app_path(App, Vsn, Path) ->
         N ->
           string:substr(Dirname, 1, N + length(eutils:to_list(App)))
       end;
-    N -> 
+    N ->
       string:substr(Dirname, 1, N + length(AppName))
   end.
 
@@ -406,7 +406,7 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
               ok
           end,
       case file:rename(CopyDest, FinalDest) of
-        ok -> 
+        ok ->
           ?INFO("* Move ~s to ~s", [CopyDest, FinalDest]);
         {error, Reason1} ->
           ?HALT("!!! Can't rename ~s: ~p", [CopyDest, Reason1])
@@ -490,7 +490,7 @@ read_txt_file(File) ->
 write_file(FName, Conts) ->
   Enc = file:native_name_encoding(),
   {ok, Fd} = file:open(FName, [write]),
-  file:write(Fd, unicode:characters_to_binary(Conts,Enc,Enc)),
+  file:write(Fd, unicode:characters_to_binary(Conts, Enc, Enc)),
   file:close(Fd).
 
 subst(Str, Vars) ->

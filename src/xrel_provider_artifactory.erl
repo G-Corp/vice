@@ -12,12 +12,12 @@ init(State) ->
   Archive = elists:keyfind(deploy, 1, Data, zip),
   xrel_config:add_provider(
     State,
-    {?PROVIDER, 
+    {?PROVIDER,
      #{
       module => ?MODULE,
         depends => [Archive],
-        desc => "Create an archive (" ++ 
-                eutils:to_string(Archive) ++ 
+        desc => "Create an archive (" ++
+                eutils:to_string(Archive) ++
                 ") and deploy it to artifactory"
        }
     }
@@ -55,7 +55,7 @@ do(State) ->
                       end;
                P -> P
              end,
-  AuthHeader = if 
+  AuthHeader = if
                  Username =:= undefined orelse Password =:= undefined -> [];
                  true -> [{"Authorization", "Basic " ++ base64:encode_to_string(Username ++ ":" ++ Password)}]
                end,

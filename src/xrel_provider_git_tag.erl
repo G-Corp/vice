@@ -8,7 +8,7 @@
 init(State) ->
   xrel_config:add_provider(
     State,
-    {?PROVIDER, 
+    {?PROVIDER,
      #{
        module => ?MODULE,
        depends => [],
@@ -83,12 +83,12 @@ create_rebar_release(Version) ->
                           {CurV, AvailV} = lists:foldl(
                                              fun({BType, BVersion}, {CurVersion, Acc}) ->
                                                  {CurVersion, maps:put(BVersion, eutils:to_atom(BType), Acc)}
-                                             end, 
+                                             end,
                                              if
-                                               is_tuple(Branch) -> 
+                                               is_tuple(Branch) ->
                                                  {BType, BVersion} = Branch,
                                                  {BVersion, maps:put(BVersion, eutils:to_atom(BType), #{})};
-                                               true -> 
+                                               true ->
                                                  {Branch, maps:put(Branch, branch, #{})}
                                              end,
                                              remote_tags(GitURL)),
@@ -112,7 +112,7 @@ create_app_release() ->
                                               [] -> AppRelVersion;
                                               V1 -> V1
                                             end,
-                               if 
+                               if
                                  RelVersion =:= AppVersion ->
                                    Acc;
                                  true ->
@@ -165,7 +165,7 @@ deps_version(Name, Version, AvailableVersions) ->
 
 last_tag() ->
   lists:foldl(fun(V, Result) ->
-                  if 
+                  if
                     Result =:= "" -> V;
                     true ->
                       Compare = vsn:compare(Result, V),
@@ -228,5 +228,5 @@ app_files() ->
                     _ ->
                       Acc
                   end
-              end, [], AppPaths). 
+              end, [], AppPaths).
 

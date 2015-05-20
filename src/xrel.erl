@@ -29,7 +29,7 @@ run(Options, Commands) ->
   State = xrel_config:to_state(Options),
   {providers, Providers} = xrel_config:get(State, providers, []),
   {State1, Providers1} = case elists:include(Providers, release) of
-                           true -> 
+                           true ->
                              {State, Providers};
                            false ->
                              {xrel_config:set(State, {providers, [xrel_provider_release|Providers]}),

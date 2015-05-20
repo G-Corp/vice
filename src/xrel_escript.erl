@@ -11,7 +11,7 @@ build(Source, Dest) ->
       case escript:create(Script,
                           [shebang,
                            {archive, [{Beam, Binary}], []}]) of
-        ok -> 
+        ok ->
           case file:change_mode(Script, 8#755) of
             ok -> Script;
             {error, Reason1} ->
@@ -24,4 +24,4 @@ build(Source, Dest) ->
       ?DEBUG("~p", [Warnings]),
       ?HALT("~p", [Errors])
   end.
-      
+

@@ -8,7 +8,7 @@
 init(State) ->
   xrel_config:add_provider(
     State,
-    {?PROVIDER, 
+    {?PROVIDER,
      #{
        module => ?MODULE,
        depends => [release],

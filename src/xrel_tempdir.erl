@@ -48,13 +48,13 @@ mktmp(Options, Fun) when is_list(Options), is_function(Fun, 1) ->
 -spec dir() -> string() | false.
 dir() ->
   case os:getenv("TMPDIR") of
-    false -> 
+    false ->
       case os:getenv("TEMP") of
-        false -> 
+        false ->
           case os:getenv("TMP") of
-            false -> 
+            false ->
               case write_tmp_dir("/tmp") of
-                false -> 
+                false ->
                   Cwd = case file:get_cwd() of
                           {ok, Dir} -> Dir;
                           _ -> "."

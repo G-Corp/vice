@@ -1,5 +1,6 @@
 REBAR   = ./rebar
-RELX    = ./xrel
+XREL    = ./xrel
+ELVIS   = ./elvis
 VERSION = $(shell ./tag)
 
 .PHONY: compile get-deps test
@@ -35,6 +36,9 @@ dev:
 
 escript: compile
 	@$(REBAR) skip_deps=true escriptize
+
+elvis: compile
+	@$(ELVIS) rock
 
 release: escript
 ifeq ($(VERSION),ERROR)
