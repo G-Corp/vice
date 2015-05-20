@@ -4,7 +4,7 @@
 %%
 %% Erlang module for managing temporary files
 %% @end
--module(xrel_tempdir).
+-module(jorel_tempdir).
 -include_lib("kernel/include/file.hrl").
 
 -export([

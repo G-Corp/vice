@@ -1,12 +1,12 @@
--module(xrel_provider_deb).
--behaviour(xrel_provider).
--include("../include/xrel.hrl").
+-module(jorel_provider_deb).
+-behaviour(jorel_provider).
+-include("../include/jorel.hrl").
 
 -export([init/1, do/1]).
 -define(PROVIDER, deb).
 
 init(State) ->
-  xrel_config:add_provider(
+  jorel_config:add_provider(
     State,
     {?PROVIDER,
      #{
@@ -19,10 +19,10 @@ init(State) ->
 
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
-  {output_dir, Outdir} = xrel_config:get(State, output_dir),
-  {relname, RelName} = xrel_config:get(State, relname),
-  {relvsn, RelVsn} = xrel_config:get(State, relvsn),
-  {include_erts, IncludeErts} = xrel_config:get(State, include_erts, true),
+  {output_dir, Outdir} = jorel_config:get(State, output_dir),
+  {relname, RelName} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
+  {include_erts, IncludeErts} = jorel_config:get(State, include_erts, true),
   R = filename:join([Outdir, RelName, "releases", RelVsn, "RELEASES"]),
   Erts = case file:consult(R) of
            {ok, [[{release,
@@ -45,7 +45,7 @@ do(State) ->
              {"debian/" ++ eutils:to_string(RelName) ++ ".init", deb_debian_init_dtl},
              {"debian/" ++ eutils:to_string(RelName) ++ ".install", deb_debian_install_dtl}
             ],
-  {deb, DebData} = xrel_config:get(State, deb, []),
+  {deb, DebData} = jorel_config:get(State, deb, []),
   DebData1 = DebData ++
     [{pkgname, RelName},
      {relname, RelName},

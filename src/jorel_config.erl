@@ -1,5 +1,5 @@
--module(xrel_config).
--include("../include/xrel.hrl").
+-module(jorel_config).
+-include("../include/jorel.hrl").
 
 -export([
          to_state/1,

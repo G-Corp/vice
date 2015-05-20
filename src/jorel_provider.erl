@@ -1,5 +1,5 @@
--module(xrel_provider).
--include("../include/xrel.hrl").
+-module(jorel_provider).
+-include("../include/jorel.hrl").
 
 -export([
          run/2,
@@ -12,7 +12,7 @@
 -callback do(any()) -> any().
 
 run(State, Provider) ->
-  {providers_def, Providers} = xrel_config:get(State, providers_def),
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
   case lists:keyfind(Provider, 1, Providers) of
     {Provider, #{module := ProviderMod}} ->
       run_provider(State, Provider, ProviderMod);
@@ -21,7 +21,7 @@ run(State, Provider) ->
   end.
 
 run_deps(State, Provider) ->
-  {providers_def, Providers} = xrel_config:get(State, providers_def),
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
   case lists:keyfind(Provider, 1, Providers) of
     {Provider, #{depends := ProviderDeps}} ->
       lists:foldl(fun(Deps, S) ->
@@ -32,20 +32,20 @@ run_deps(State, Provider) ->
   end.
 
 run_provider(State, Provider, ProviderMod) ->
-  State1 = xrel_provider:run_deps(State, Provider),
-  case xrel_provider:has_run(State1, Provider) of
+  State1 = jorel_provider:run_deps(State, Provider),
+  case jorel_provider:has_run(State1, Provider) of
     true ->
       State1;
     false ->
       State2 = ProviderMod:do(State1),
-      xrel_provider:terminate(State2, Provider)
+      jorel_provider:terminate(State2, Provider)
   end.
 
 has_run(State, Provider) ->
-  {run, Run} = xrel_config:get(State, run, []),
+  {run, Run} = jorel_config:get(State, run, []),
   elists:include(Run, Provider).
 
 terminate(State, Provider) ->
-  {run, Run} = xrel_config:get(State, run, []),
-  xrel_config:set(State, {run, [Provider|Run]}).
+  {run, Run} = jorel_config:get(State, run, []),
+  jorel_config:set(State, {run, [Provider|Run]}).
 

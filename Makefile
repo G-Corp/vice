@@ -1,5 +1,5 @@
 REBAR   = ./rebar
-XREL    = ./xrel
+JOREL   = ./jorel
 ELVIS   = ./elvis
 VERSION = $(shell ./tag)
 
@@ -18,7 +18,7 @@ clean:
 	@$(REBAR) clean
 	@rm -f erl_crash.dump
 	@rm -f priv/templates/*.dtl.erl
-	@rm -f xrel
+	@rm -f jorel
 
 realclean: clean
 	@$(REBAR) delete-deps
@@ -45,9 +45,9 @@ ifeq ($(VERSION),ERROR)
 	@echo "**> Can't find version!"
 else
 	@echo "==> Release version $(VERSION)"
-	git clone git@github.com:emedia-project/xrel.wiki.git
-	cp xrel xrel.wiki/xrel
-	cd xrel.wiki; git commit -am "New release $(VERSION)"; git push origin master
-	rm -rf xrel.wiki
+	git clone git@github.com:emedia-project/jorel.wiki.git
+	cp jorel jorel.wiki/jorel
+	cd jorel.wiki; git commit -am "New release $(VERSION)"; git push origin master
+	rm -rf jorel.wiki
 endif
 

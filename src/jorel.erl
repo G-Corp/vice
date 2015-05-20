@@ -1,5 +1,5 @@
--module(xrel).
--include("../include/xrel.hrl").
+-module(jorel).
+-include("../include/jorel.hrl").
 
 -export([main/1]).
 
@@ -8,9 +8,9 @@ main(Args) ->
     {ok, {Options, Commands}} ->
       case lists:member(version, Options) of
         true ->
-          application:load(xrel),
-          {ok, Vsn} = application:get_key(xrel, vsn),
-          io:format("xrel ~s~n", [Vsn]);
+          application:load(jorel),
+          {ok, Vsn} = application:get_key(jorel, vsn),
+          io:format("jorel ~s~n", [Vsn]);
         false ->
           case lists:member(help, Options) of
             true ->
@@ -26,14 +26,14 @@ main(Args) ->
   end.
 
 run(Options, Commands) ->
-  State = xrel_config:to_state(Options),
-  {providers, Providers} = xrel_config:get(State, providers, []),
+  State = jorel_config:to_state(Options),
+  {providers, Providers} = jorel_config:get(State, providers, []),
   {State1, Providers1} = case elists:include(Providers, release) of
                            true ->
                              {State, Providers};
                            false ->
-                             {xrel_config:set(State, {providers, [xrel_provider_release|Providers]}),
-                              [xrel_provider_release, xrel_provider_providers|Providers]}
+                             {jorel_config:set(State, {providers, [jorel_provider_release|Providers]}),
+                              [jorel_provider_release, jorel_provider_providers|Providers]}
                          end,
   State2 = lists:foldl(fun(P, S) ->
                            P:init(S)
@@ -43,7 +43,7 @@ run(Options, Commands) ->
                 Commands1 -> Commands1
               end,
   _ = lists:foldl(fun(P, S) ->
-                      xrel_provider:run(S, P)
+                      jorel_provider:run(S, P)
                   end, State2, Commands2),
   ok.
 
@@ -51,13 +51,13 @@ opts() ->
   [
    {relname,      $n,        "relname",      undefined,               "Specify the name for the release that will be generated"},
    {relvsn,       $v,        "relvsn",       undefined,               "Specify the version for the release"},
-   {config,       $c,        "config",       {string, "xrel.config"}, "Path to the config file"},
+   {config,       $c,        "config",       {string, "jorel.config"}, "Path to the config file"},
    {help,         $h,        "help",         undefined,               "Display this help"},
    {version,      $V,        "version",      undefined,               "Display version"},
-   {output_dir,   $o,        "output-dir",   {string, "./_xrel"},     "Output directory"},
-   {exclude_dirs, $e,        "exclude-dirs", {list, ["_xrel"]},       "Exclude directories"},
+   {output_dir,   $o,        "output-dir",   {string, "./_jorel"},     "Output directory"},
+   {exclude_dirs, $e,        "exclude-dirs", {list, ["_jorel"]},       "Exclude directories"},
    {include_src,  undefined, "include-src",  undefined,               "Include source"}
   ].
 
 help() ->
-  getopt:usage(opts(), "xrel", "").
+  getopt:usage(opts(), "jorel", "").

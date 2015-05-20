@@ -1,5 +1,5 @@
--module(xrel_release).
--include("../include/xrel.hrl").
+-module(jorel_release).
+-include("../include/jorel.hrl").
 
 -export([
          make_root/1,
@@ -14,7 +14,7 @@
         ]).
 
 make_root(State) ->
-  {outdir, Outdir} = xrel_config:get(State, outdir),
+  {outdir, Outdir} = jorel_config:get(State, outdir),
   case efile:make_dir(Outdir) of
     ok ->
       ?INFO("* Create directory ~s", [Outdir]);
@@ -23,23 +23,23 @@ make_root(State) ->
   end.
 
 resolv_apps(State) ->
-  {release, {_, _}, Apps} = xrel_config:get(State, release),
-  Apps1 = case xrel_config:get(State, all_deps, false) of
+  {release, {_, _}, Apps} = jorel_config:get(State, release),
+  Apps1 = case jorel_config:get(State, all_deps, false) of
     {all_deps, true} -> find_all_deps(State, Apps);
     _ -> Apps
   end,
   resolv_apps(State, Apps1, [], []).
 
 resolv_boot(State, AllApps) ->
-  case xrel_config:get(State, boot, all) of
+  case jorel_config:get(State, boot, all) of
     {boot, all} -> AllApps;
     {boot, Apps} -> resolv_apps(State, Apps, [], [])
   end.
 
 make_lib(State, Apps) ->
-  {outdir, Outdir} = xrel_config:get(State, outdir),
+  {outdir, Outdir} = jorel_config:get(State, outdir),
   LibDir = filename:join(Outdir, "lib"),
-  Src = case xrel_config:get(State, include_src, false) of
+  Src = case jorel_config:get(State, include_src, false) of
           {include_src, true} -> ["src", "include"];
           {include_src, false} -> []
         end,
@@ -53,17 +53,17 @@ make_lib(State, Apps) ->
   end.
 
 make_release(State, AllApps, BootApps) ->
-  {outdir, Outdir} = xrel_config:get(State, outdir),
-  {relvsn, Vsn} = xrel_config:get(State, relvsn),
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  {relvsn, Vsn} = jorel_config:get(State, relvsn),
   RelDir = filename:join([Outdir, "releases", Vsn]),
   ?INFO("* Create ~s", [RelDir]),
   case efile:make_dir(RelDir) of
     ok ->
       _ = make_rel_file(State, RelDir, "vm.args", vm_args),
       _ = make_rel_file(State, RelDir, "sys.config", sys_config),
-      xrel_tempdir:mktmp(fun(TmpDir) ->
+      jorel_tempdir:mktmp(fun(TmpDir) ->
                              BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
-                             BootExe = xrel_escript:build(BootErl, filename:dirname(BootErl)),
+                             BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
                              case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
                                ok -> ok;
                                {error, Reason} ->
@@ -83,9 +83,9 @@ make_release(State, AllApps, BootApps) ->
   end.
 
 make_boot_script(State, BootApps) ->
-  {outdir, Outdir} = xrel_config:get(State, outdir),
-  {relname, Relname} = xrel_config:get(State, relname),
-  {relvsn, RelVsn} = xrel_config:get(State, relvsn),
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  {relname, Relname} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   AppsPaths = lists:foldl(
                 fun(#{app := App, vsn := Vsn}, Acc) ->
                     filelib:wildcard(
@@ -114,9 +114,9 @@ make_boot_script(State, BootApps) ->
   end.
 
 make_bin(State) ->
-  {binfile, BinFile} = xrel_config:get(State, binfile),
-  {relvsn, Vsn} = xrel_config:get(State, relvsn),
-  {relname, Name} = xrel_config:get(State, relname),
+  {binfile, BinFile} = jorel_config:get(State, binfile),
+  {relvsn, Vsn} = jorel_config:get(State, relvsn),
+  {relname, Name} = jorel_config:get(State, relname),
   BinFileWithVsn = BinFile ++ "-" ++ Vsn,
   ?INFO("* Generate ~s", [BinFile]),
   _ = case efile:make_dir(filename:dirname(BinFile)) of
@@ -151,7 +151,7 @@ make_bin(State) ->
   end.
 
 include_erts(State) ->
-  case case xrel_config:get(State, include_erts, true) of
+  case case jorel_config:get(State, include_erts, true) of
          {include_erts, false} -> false;
          {include_erts, true} -> code:root_dir();
          {include_erts, X} when is_list(X) -> filename:absname(X);
@@ -162,7 +162,7 @@ include_erts(State) ->
       ok;
     Path ->
       ?INFO("* Add ets ~s from ~s", [erlang:system_info(version), Path]),
-      {outdir, Outdir} = xrel_config:get(State, outdir),
+      {outdir, Outdir} = jorel_config:get(State, outdir),
       efile:copy(
         filename:join(Path, "erts-" ++ erlang:system_info(version)),
         Outdir,
@@ -187,7 +187,7 @@ include_erts(State) ->
   end.
 
 make_relup(State, AllApps) ->
-  case xrel_config:get(State, disable_relup, true) of
+  case jorel_config:get(State, disable_relup, true) of
     {disable_relup, true} ->
       ?DEBUG("* relup disabled", []);
     _ ->
@@ -195,9 +195,9 @@ make_relup(State, AllApps) ->
                     (_) -> false
                  end, AllApps) of
         true ->
-          {relname, RelName} = xrel_config:get(State, relname),
-          {relvsn, RelVsn} = xrel_config:get(State, relvsn),
-          {outdir, Outdir} = xrel_config:get(State, outdir),
+          {relname, RelName} = jorel_config:get(State, relname),
+          {relvsn, RelVsn} = jorel_config:get(State, relvsn),
+          {outdir, Outdir} = jorel_config:get(State, outdir),
           VsnApp = eutils:to_string(RelName) ++ "-" ++ RelVsn,
           AppDir = filename:join([Outdir, "lib", VsnApp, "ebin", "*.appup"]),
           case filelib:wildcard(AppDir) of
@@ -307,7 +307,7 @@ get_apps_and_versions(App, From) ->
               end, {[], []}, From).
 
 find_all_deps(State, Apps) ->
-  {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
+  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
   case efile:wildcard(
          filename:join(["**", "ebin", "*.app"]),
          Exclude
@@ -345,7 +345,7 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
     [#{app => App, vsn => Vsn, path => Path}| AllApps]).
 
 resolv_app(State, Path, Name) ->
-  {exclude_dirs, Exclude} = xrel_config:get(State, exclude_dirs),
+  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
   case efile:wildcard(
          filename:join(Path, eutils:to_list(Name) ++ ".app"),
          Exclude
@@ -416,10 +416,10 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
 make_rel_file(State, RelDir, File, Type) ->
   Dest = filename:join(RelDir, File),
   ?INFO("* Create ~s", [Dest]),
-  case xrel_config:get(State, Type, false) of
+  case jorel_config:get(State, Type, false) of
     {Type, false} ->
       Mod = eutils:to_atom(eutils:to_list(Type) ++ "_dtl"),
-      {relname, RelName} = xrel_config:get(State, relname),
+      {relname, RelName} = jorel_config:get(State, relname),
       case Mod:render([{relname, RelName}]) of
         {ok, Data} ->
           case file:write_file(Dest, Data) of
@@ -439,8 +439,8 @@ make_rel_file(State, RelDir, File, Type) ->
   end.
 
 make_release_file(State, RelDir, Apps, Ext) ->
-  {relname, Name} = xrel_config:get(State, relname),
-  {relvsn, Vsn} = xrel_config:get(State, relvsn),
+  {relname, Name} = jorel_config:get(State, relname),
+  {relvsn, Vsn} = jorel_config:get(State, relvsn),
   Params = [
             {relname, Name},
             {relvsn, Vsn},

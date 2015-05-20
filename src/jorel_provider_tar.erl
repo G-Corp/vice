@@ -1,12 +1,12 @@
--module(xrel_provider_tar).
--behaviour(xrel_provider).
--include("../include/xrel.hrl").
+-module(jorel_provider_tar).
+-behaviour(jorel_provider).
+-include("../include/jorel.hrl").
 
 -export([init/1, do/1]).
 -define(PROVIDER, tar).
 
 init(State) ->
-  xrel_config:add_provider(
+  jorel_config:add_provider(
     State,
     {?PROVIDER,
      #{
@@ -19,9 +19,9 @@ init(State) ->
 
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
-  {output_dir, Outdir} = xrel_config:get(State, output_dir),
-  {relname, RelName} = xrel_config:get(State, relname),
-  {relvsn, RelVsn} = xrel_config:get(State, relvsn),
+  {output_dir, Outdir} = jorel_config:get(State, output_dir),
+  {relname, RelName} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   TarFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
   eos:in(Outdir, fun() ->
                      ?INFO("Create ~s", [TarFile]),

@@ -1,12 +1,12 @@
--module(xrel_provider_providers).
--behaviour(xrel_provider).
--include("../include/xrel.hrl").
+-module(jorel_provider_providers).
+-behaviour(jorel_provider).
+-include("../include/jorel.hrl").
 
 -export([init/1, do/1]).
 -define(PROVIDER, providers).
 
 init(State) ->
-  xrel_config:add_provider(
+  jorel_config:add_provider(
     State,
     {?PROVIDER,
      #{
@@ -18,7 +18,7 @@ init(State) ->
    ).
 
 do(State) ->
-  {providers_def, Providers} = xrel_config:get(State, providers_def),
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
   lists:foreach(fun({Name, #{depends := Deps, desc := Desc}}) ->
                     case Deps of
                       [] ->

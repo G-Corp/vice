@@ -1,5 +1,5 @@
--module(xrel_escript).
--include("../include/xrel.hrl").
+-module(jorel_escript).
+-include("../include/jorel.hrl").
 
 -export([build/2]).
 

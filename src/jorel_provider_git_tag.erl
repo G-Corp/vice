@@ -1,12 +1,12 @@
--module(xrel_provider_git_tag).
--behaviour(xrel_provider).
--include("../include/xrel.hrl").
+-module(jorel_provider_git_tag).
+-behaviour(jorel_provider).
+-include("../include/jorel.hrl").
 
 -export([init/1, do/1]).
 -define(PROVIDER, 'git-tag').
 
 init(State) ->
-  xrel_config:add_provider(
+  jorel_config:add_provider(
     State,
     {?PROVIDER,
      #{
@@ -24,7 +24,7 @@ do(State) ->
     length(Uncommit) > 0 -> ?HALT("You have uncommit changes ~p, please commit first", [Uncommit]);
     true -> ok
   end,
-  {relvsn, RelVsn} = xrel_config:get(State, relvsn),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   {ok, #{v := Version}} = vsn:parse(RelVsn),
   LastTag = last_tag(),
   NextTag = case vsn:compare(Version, LastTag) of
@@ -38,13 +38,13 @@ do(State) ->
                  [] -> NextTag;
                  V -> V
                end,
-  _ = update_xrel(TagVersion),
+  _ = update_jorel(TagVersion),
   RebarFileForTag = create_rebar_release(TagVersion),
   ?REMARK("== Applications version...", []),
   AppFiles = create_app_release(),
   ok = file:rename("rebar.config", "rebar.config.save"),
   ok = file:rename(RebarFileForTag, "rebar.config"),
-  {ok, _} = git_add(["rebar.config", "xrel.config"|AppFiles]),
+  {ok, _} = git_add(["rebar.config", "jorel.config"|AppFiles]),
   {ok, _} = git_commit("Prepare version " ++ TagVersion),
   {ok, _} = git_tag(TagVersion),
   ok = file:rename("rebar.config.save", "rebar.config"),
@@ -56,23 +56,23 @@ do(State) ->
                  end,
   {ok, #{v := NextVersion2}} = vsn:parse(NextVersion1),
   NextVersion3 = NextVersion2 ++ "-pre",
-  _ = update_xrel(NextVersion3),
-  {ok, _} = git_add(["rebar.config", "xrel.config"|AppFiles2]),
+  _ = update_jorel(NextVersion3),
+  {ok, _} = git_add(["rebar.config", "jorel.config"|AppFiles2]),
   {ok, _} = git_commit("Bump version to " ++ NextVersion3),
   ?INFO("== All good, don't forget to `git push --tags`", []),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.
 
-update_xrel(Version) ->
-  {ok, Xrel} = erlconf:open(app, "xrel.config", [{save_on_close, true}]),
-  Data = erlconf:term(Xrel),
+update_jorel(Version) ->
+  {ok, Jorel} = erlconf:open(app, "jorel.config", [{save_on_close, true}]),
+  Data = erlconf:term(Jorel),
   _ = case lists:keyfind(release, 1, Data) of
         {release, {AppName, _AppVersion}, Apps} ->
-          {ok, _} = erlconf:term(Xrel, lists:keyreplace(release, 1, Data, {release, {AppName, Version}, Apps}));
+          {ok, _} = erlconf:term(Jorel, lists:keyreplace(release, 1, Data, {release, {AppName, Version}, Apps}));
         _ ->
-          ?HALT("!! Can't update version in xrel.config", [])
+          ?HALT("!! Can't update version in jorel.config", [])
       end,
-  close = erlconf:close(Xrel).
+  close = erlconf:close(Jorel).
 
 create_rebar_release(Version) ->
   {ok, Rebar} = erlconf:open(rebar, "rebar.config", [{save_on_close, false}]),
