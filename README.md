@@ -2,6 +2,8 @@
 
 Jorel is Just anOther RELease assembler for Erlang/OTP Releases
 
+![](Jor-El.jpeg)
+
 ## Install
 
 Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it executable and place it in your PATH.
