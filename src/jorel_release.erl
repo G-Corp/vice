@@ -325,24 +325,30 @@ find_all_deps(State, Apps) ->
 
 resolv_apps(_, [], _, Apps) -> Apps;
 resolv_apps(State, [App|Rest], Done, AllApps) ->
-  {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
-                             notfound ->
-                               case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
+  {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps),
+  case lists:member(App, IgnoreDeps) of
+    false ->
+      {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
                                  notfound ->
-                                   ?HALT("!!! Can't find application ~s", [App]);
+                                   case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
+                                     notfound ->
+                                       ?HALT("!!! Can't find application ~s", [App]);
+                                     R -> R
+                                   end;
                                  R -> R
-                               end;
-                             R -> R
-                           end,
-  Done1 = [App|Done],
-  Rest1 = elists:delete_if(fun(A) ->
-                               elists:include(Done1, A)
-                           end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
-  resolv_apps(
-    State,
-    Rest1,
-    Done1,
-    [#{app => App, vsn => Vsn, path => Path}| AllApps]).
+                               end,
+      Done1 = [App|Done],
+      Rest1 = elists:delete_if(fun(A) ->
+                                   elists:include(Done1, A)
+                               end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
+      resolv_apps(
+        State,
+        Rest1,
+        Done1,
+        [#{app => App, vsn => Vsn, path => Path}| AllApps]);
+    true ->
+      resolv_apps(State, Rest, Done, AllApps)
+  end.
 
 resolv_app(State, Path, Name) ->
   {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),

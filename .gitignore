@@ -15,3 +15,5 @@ ext
 _jorel
 _rel
 jorel
+.erlang.mk
+jorel.d

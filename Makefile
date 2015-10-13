@@ -1,45 +1,19 @@
-REBAR   = ./rebar
-JOREL   = ./jorel
-ELVIS   = ./elvis
+PROJECT = jorel
+
+DEPS = sh erlconf vsn color eutils getopt erlydtl
+dep_sh = git https://github.com/gleber/sh.git master
+dep_erlconf = git https://github.com/emedia-project/erlconf.git master
+dep_vsn = git https://github.com/emedia-project/vsn.git master
+dep_color = git https://github.com/julianduque/erlang-color.git master
+dep_eutils = git https://github.com/emedia-project/eutils.git master
+dep_getopt = git https://github.com/jcomellas/getopt.git master
+dep_erlydtl = git https://github.com/erlydtl/erlydtl.git master
+
+include erlang.mk
+
+ESCRIPT_SYS_CONFIG = "config/jorel.config"
+
 VERSION = $(shell ./tag)
-
-.PHONY: compile get-deps test
-
-all: escript
-
-compile: get-deps
-	@$(REBAR) compile
-
-get-deps:
-	@$(REBAR) get-deps
-	@$(REBAR) check-deps
-
-clean:
-	@$(REBAR) clean
-	@rm -f erl_crash.dump
-	@rm -f priv/templates/*.dtl.erl
-	@rm -f jorel
-
-realclean: clean
-	@$(REBAR) delete-deps
-	@rm -rf deps
-	@rm -rf ebin
-
-test: compile
-	@$(REBAR) skip_deps=true eunit
-
-doc:
-	$(REBAR) skip_deps=true doc
-
-dev:
-	@erl -pa ebin include deps/*/ebin deps/*/include
-
-escript: compile
-	@$(REBAR) skip_deps=true escriptize
-
-elvis: compile
-	@$(ELVIS) rock
-
 release: escript
 ifeq ($(VERSION),ERROR)
 	@echo "**> Can't find version!"
@@ -50,4 +24,7 @@ else
 	cd jorel.wiki; git commit -am "New release $(VERSION)"; git push origin master
 	rm -rf jorel.wiki
 endif
+
+dev:
+	@erl -pa ebin include deps/*/ebin deps/*/include
 
