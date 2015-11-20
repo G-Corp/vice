@@ -325,14 +325,28 @@ find_all_deps(State, Apps) ->
 
 resolv_apps(_, [], _, Apps) -> Apps;
 resolv_apps(State, [App|Rest], Done, AllApps) ->
-  {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps),
+  {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps, []),
   case lists:member(App, IgnoreDeps) of
     false ->
       {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
                                  notfound ->
                                    case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
                                      notfound ->
-                                       ?HALT("!!! Can't find application ~s", [App]);
+                                       case jorel_elixir:exist() of
+                                         true ->
+                                           case jorel_elixir:path() of
+                                             {ok, ElixirPath} ->
+                                               case resolv_app(State, filename:join([ElixirPath, "**"]), App) of
+                                                 notfound ->
+                                                   ?HALT("!!! Can't find application ~s", [App]);
+                                                 R -> R
+                                               end;
+                                             _ ->
+                                               ?HALT("!!! Can't find application ~s", [App])
+                                           end;
+                                         false -> 
+                                           ?HALT("!!! Can't find application ~s", [App])
+                                       end;
                                      R -> R
                                    end;
                                  R -> R

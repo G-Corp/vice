@@ -1,6 +1,12 @@
 PROJECT = jorel
 
-DEPS = sh erlconf vsn color eutils getopt erlydtl
+DEPS = sh \
+			 erlconf \
+			 vsn \
+			 color \
+			 eutils \
+			 getopt \
+			 erlydtl
 dep_sh = git https://github.com/gleber/sh.git master
 dep_erlconf = git https://github.com/emedia-project/erlconf.git master
 dep_vsn = git https://github.com/emedia-project/vsn.git master
@@ -19,12 +25,12 @@ ifeq ($(VERSION),ERROR)
 	@echo "**> Can't find version!"
 else
 	@echo "==> Release version $(VERSION)"
-	git clone git@github.com:emedia-project/jorel.wiki.git
-	cp jorel jorel.wiki/jorel
-	cd jorel.wiki; git commit -am "New release $(VERSION)"; git push origin master
-	rm -rf jorel.wiki
+	git clone git@github.com:emedia-project/$(PROJECT).wiki.git
+	cp $(PROJECT) $(PROJECT).wiki/$(PROJECT)
+	cd $(PROJECT).wiki; git commit -am "New release $(VERSION)"; git push origin master
+	rm -rf $(PROJECT).wiki
 endif
 
-dev:
+dev: deps app
 	@erl -pa ebin include deps/*/ebin deps/*/include
 

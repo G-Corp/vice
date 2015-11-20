@@ -19,6 +19,7 @@ init(State) ->
 
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
+  ?INFO("= Elixir project: ~p", [jorel_elixir:exist()]),
   AllApps = jorel_release:resolv_apps(State),
   BootApps = jorel_release:resolv_boot(State, AllApps),
   _ = jorel_release:make_root(State),
