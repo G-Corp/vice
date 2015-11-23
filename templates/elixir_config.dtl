@@ -1,0 +1,44 @@
+#!/usr/bin/env elixir
+# Convert an Elixir config.exs to an erlang sys.config
+# 
+# Usage:  elixir_to_sys_config config.exs > sys.config
+#   First argument is the Elixir config.exs file
+#   Writes to stdout
+#   You probably want to set MIX_ENV accordingly
+#
+# 2015 by Dan Swain, dan.t.swain@gmail.com
+
+defmodule ConfigConverter do
+  def convert([path, output, env]) do
+    convert(path, File.exists?(path), output, String.to_atom(env))
+  end
+
+  def convert([path, output]) do
+    convert(path, File.exists?(path), output, :prod)
+  end
+
+  def convert(_) do
+    :error
+  end
+
+  defp convert(_, false, _, _) do
+    :error
+  end
+
+  defp convert(path, true, output, env) do
+    from = Path.absname(path) |> Path.expand
+    to = Path.absname(output) |> Path.expand
+    Path.dirname(from) |> File.cd!
+    Mix.State.start_link()
+    Mix.env(env)
+    config = Mix.Config.read!(Path.basename(from))
+    config = :io_lib.format('~p.~n', [config]) |> List.to_string
+    case File.write(to, config, [:write]) do
+      :ok -> :ok
+      _ -> :error
+    end
+  end
+end
+
+IO.puts ConfigConverter.convert(System.argv)
+System.halt(0)

@@ -6,7 +6,9 @@ DEPS = sh \
 			 color \
 			 eutils \
 			 getopt \
-			 erlydtl
+			 erlydtl \
+			 tempfile
+
 dep_sh = git https://github.com/gleber/sh.git master
 dep_erlconf = git https://github.com/emedia-project/erlconf.git master
 dep_vsn = git https://github.com/emedia-project/vsn.git master
@@ -14,6 +16,7 @@ dep_color = git https://github.com/julianduque/erlang-color.git master
 dep_eutils = git https://github.com/emedia-project/eutils.git master
 dep_getopt = git https://github.com/jcomellas/getopt.git master
 dep_erlydtl = git https://github.com/erlydtl/erlydtl.git master
+dep_tempfile = git https://github.com/botsunit/tempfile.git master
 
 include erlang.mk
 

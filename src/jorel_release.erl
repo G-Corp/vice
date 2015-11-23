@@ -60,14 +60,42 @@ make_release(State, AllApps, BootApps) ->
   case efile:make_dir(RelDir) of
     ok ->
       _ = make_rel_file(State, RelDir, "vm.args", vm_args),
-      _ = make_rel_file(State, RelDir, "sys.config", sys_config),
+      _ = case jorel_elixir:exist() of
+            true ->
+              Dest = filename:join(RelDir, "sys.config"),
+              case jorel_config:get(State, sys_config, false) of
+                {sys_config, false} ->
+                  {relname, RelName} = jorel_config:get(State, relname),
+                  case sys_config_dtl:render([{relname, RelName}]) of
+                    {ok, Data} ->
+                      case file:write_file(Dest, Data) of
+                        ok -> Dest;
+                        {error, Reason1} ->
+                          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
+                      end;
+                    {error, Reason} ->
+                      ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
+                  end;
+                {sys_config, Src} ->
+                  {mix_env, MixEnv} = jorel_config:get(State, mix_env, prod),
+                  ?INFO("* Create ~s from ~s (env ~s)", [Dest, Src, MixEnv]),
+                  case jorel_elixir:config_to_sys_config(Src, Dest, MixEnv) of
+                    ok -> 
+                      ok;
+                    error ->
+                      ?HALT("!!! Can't create ~s from ~s", [Dest, Src])
+                  end
+              end;
+            false ->
+              make_rel_file(State, RelDir, "sys.config", sys_config)
+          end,
       jorel_tempdir:mktmp(fun(TmpDir) ->
                              BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
                              BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
                              case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
                                ok -> ok;
-                               {error, Reason} ->
-                                 ?HALT("Can't copy ~s: ~p", [BootExe, Reason])
+                               {error, Reason2} ->
+                                 ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
                              end
                          end),
       _ = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".deps"),
@@ -75,8 +103,8 @@ make_release(State, AllApps, BootApps) ->
       ?INFO("* Create RELEASES file", []),
       case release_handler:create_RELEASES(Outdir, RelDir, RelFile, []) of
         ok -> ok;
-        {error, Reason1} ->
-          ?HALT("!!! Failed to create RELEASES: ~p", [Reason1])
+        {error, Reason3} ->
+          ?HALT("!!! Failed to create RELEASES: ~p", [Reason3])
       end;
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
