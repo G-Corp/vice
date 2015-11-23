@@ -6,7 +6,7 @@
          config_to_sys_config/3]).
 
 exist() ->
-  (iex() =/= false) and filelib:is_file("mix.exs").
+  (iex() =/= false) and (elixir() =/= false) and filelib:is_file("mix.exs").
 
 version() ->
   case iex() of

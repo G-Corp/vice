@@ -77,7 +77,7 @@ make_release(State, AllApps, BootApps) ->
                       ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
                   end;
                 {sys_config, Src} ->
-                  {mix_env, MixEnv} = jorel_config:get(State, mix_env, prod),
+                  {env, MixEnv} = jorel_config:get(State, env, prod),
                   ?INFO("* Create ~s from ~s (env ~s)", [Dest, Src, MixEnv]),
                   case jorel_elixir:config_to_sys_config(Src, Dest, MixEnv) of
                     ok -> 
@@ -360,7 +360,7 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
   {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps, []),
   case lists:member(App, IgnoreDeps) of
     false ->
-      {App, Vsn, Path, Deps} = case resolv_app(State, filename:join("**", "ebin"), App) of
+      {App, Vsn, Path, Deps} = case resolv_local(State, App) of
                                  notfound ->
                                    case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
                                      notfound ->
@@ -370,14 +370,14 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
                                              {ok, ElixirPath} ->
                                                case resolv_app(State, filename:join([ElixirPath, "**"]), App) of
                                                  notfound ->
-                                                   ?HALT("!!! Can't find application ~s", [App]);
+                                                   ?HALT("!!! (3) Can't find application ~s", [App]);
                                                  R -> R
                                                end;
                                              _ ->
-                                               ?HALT("!!! Can't find application ~s", [App])
+                                               ?HALT("!!! (2) Can't find application ~s", [App])
                                            end;
                                          false -> 
-                                           ?HALT("!!! Can't find application ~s", [App])
+                                           ?HALT("!!! (1) Can't find application ~s", [App])
                                        end;
                                      R -> R
                                    end;
@@ -394,6 +394,15 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
         [#{app => App, vsn => Vsn, path => Path}| AllApps]);
     true ->
       resolv_apps(State, Rest, Done, AllApps)
+  end.
+
+resolv_local(State, App) ->
+  case jorel_elixir:exist() of
+    true ->
+      {env, MixEnv} = jorel_config:get(State, env, prod),
+      resolv_app(State, filename:join(["_build", eutils:to_string(MixEnv), "lib", "**", "ebin"]), App);
+    false ->
+      resolv_app(State, filename:join("**", "ebin"), App)
   end.
 
 resolv_app(State, Path, Name) ->

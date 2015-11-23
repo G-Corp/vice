@@ -21,6 +21,7 @@ Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it ex
 * `providers` : Add providers (default: none)
 * `boot` : List of apps in boot script (default: all)
 * `disable_relup` : Enable/disable relup (default: true)
+* `env` : Environment (default: prod)
 
 ## Providers
 
