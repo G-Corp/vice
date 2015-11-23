@@ -197,13 +197,17 @@ include_erts(State) ->
         [recursive]),
       ErtsBinDir = filename:join([Outdir, "erts-" ++ erlang:system_info(version), "bin"]),
       ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
+      %%! Workaround for pre OTP 17.0: start.src does
+      %%! not have correct permissions, so the above 'preserve' option did not help
+      %%! Workaround for Charlie who have a fucking monkey MB
+      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
+      ok = file:change_mode(filename:join(ErtsBinDir, "start.src"), 8#0755),
+      ok = file:change_mode(filename:join(ErtsBinDir, "erl"), 8#0755),
+      ok = file:change_mode(filename:join(ErtsBinDir, "erl.src"), 8#0755),
       subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir,
                         [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
                          {"EMU", "beam"}],
                         [preserve]),
-      %%! Workaround for pre OTP 17.0: start.src does
-      %%! not have correct permissions, so the above 'preserve' option did not help
-      ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
       ?INFO("* Install start_clean.boot", []),
       Prefix = code:root_dir(),
       ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]),
