@@ -60,4 +60,3 @@ gen_makefile(Makefile) ->
 key_to_str(project) -> "PROJECT";
 key_to_str(deps) -> "DEPS";
 key_to_str(X) -> eutils:to_string(X).
-
