@@ -50,12 +50,13 @@ parse_line(Line, Device, IsNextLine) ->
   end.
 
 gen_makefile(Makefile) ->
-  lists:foldl(fun
-                ({raw, Line}, Acc) ->
-                  Acc ++ Line;
-                ({Key, Values}, Acc) ->
-                  Acc ++ key_to_str(Key) ++ " = " ++ string:join(Values, " ") ++ "\n"
-              end, "", Makefile).
+  eutils:to_binary(
+    lists:foldl(fun
+                  ({raw, Line}, Acc) ->
+                    Acc ++ Line;
+                  ({Key, Values}, Acc) ->
+                    Acc ++ key_to_str(Key) ++ " = " ++ string:join(Values, " ") ++ "\n"
+                end, "", Makefile)).
 
 key_to_str(project) -> "PROJECT";
 key_to_str(deps) -> "DEPS";

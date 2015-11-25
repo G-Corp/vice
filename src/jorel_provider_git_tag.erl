@@ -113,24 +113,27 @@ update_jorel(Version) ->
 create_erlang_mk_release(Version, RebarDeps) ->
   MakefileForTag = "Makefile." ++ Version,
   Makefile = jorel_erlang_mk:parse_makefile("Makefile"),
-  lists:foldl(fun(Dep, TmpMakefile) ->
-                  DepKey = eutils:to_atom("dep_" ++ Dep),
-                  case lists:keyfind(DepKey, 1, TmpMakefile) of
-                    {DepKey, [Git, GitURL, Branch]} ->
-                      case lists:keyfind(eutils:to_atom(Dep), 1, RebarDeps) of
-                        {_, _, {git, _, {_, RebarVersion}}} ->
-                          lists:keyreplace(DepKey, 1, TmpMakefile, {DepKey, [Git, GitURL, RebarVersion]});
-                        _ ->
-                          AvailV = lists:foldl(fun({BType, BVersion}, Acc) ->
-                                                   maps:put(BVersion, eutils:to_atom(BType), Acc)
-                                               end, #{}, remote_tags(GitURL)),
-                          UseVersion = deps_version(Dep, Branch, AvailV),
-                          lists:keyreplace(DepKey, 1, TmpMakefile, {DepKey, [Git, GitURL, UseVersion]})
-                      end;
-                    _ ->
-                      TmpMakefile
-                  end
-              end, Makefile, elists:keyfind(deps, 1, Makefile, [])),
+  Makefile1 = lists:foldl(fun(Dep, TmpMakefile) ->
+                              DepKey = eutils:to_atom("dep_" ++ Dep),
+                              case lists:keyfind(DepKey, 1, TmpMakefile) of
+                                {DepKey, [Git, GitURL, Branch]} ->
+                                  case lists:keyfind(eutils:to_atom(Dep), 1, RebarDeps) of
+                                    {_, _, {git, _, {_, RebarVersion}}} ->
+                                      lists:keyreplace(DepKey, 1, TmpMakefile, 
+                                                       {DepKey, [Git, GitURL, RebarVersion]});
+                                    _ ->
+                                      AvailV = lists:foldl(fun({BType, BVersion}, Acc) ->
+                                                               maps:put(BVersion, eutils:to_atom(BType), Acc)
+                                                           end, #{}, remote_tags(GitURL)),
+                                      UseVersion = deps_version(Dep, Branch, AvailV),
+                                      lists:keyreplace(DepKey, 1, TmpMakefile, 
+                                                       {DepKey, [Git, GitURL, UseVersion]})
+                                  end;
+                                _ ->
+                                  TmpMakefile
+                              end
+                          end, Makefile, elists:keyfind(deps, 1, Makefile, [])),
+  file:write_file(MakefileForTag, jorel_erlang_mk:gen_makefile(Makefile1), [write]),
   MakefileForTag.
 
 create_rebar_release(Version) ->
