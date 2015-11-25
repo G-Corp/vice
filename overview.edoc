@@ -33,30 +33,26 @@
 <ul>
   <li><code>jorel_provider_tar</code> : Create a Tar archive</li>
   <li><code>jorel_provider_zip</code> : Create a Zip archive</li>
-  <li><code>jorel_provider_artifactory</code> : Deploy to artifactory. This provider use the following parameters :
-    <ul>
-      <li><code>url</code> :: <code>string()</code> : Artifactory URL (mandatory).</li>
-      <li><code>username</code> :: <code>env | string()</code> : Username (optional).</li>
-      <li><code>password</code> :: <code>env | string()</code> : Password (optional).</li>
-      <li><code>repository</code> :: <code>string()</code> : Repository (mandatory).</li>
-      <li><code>checksum</code> :: <code>string()</code> : Checksum when you want to deploy with checksum (optional).</li>
-    </ul>
-  </li>
-  <li><code>jorel_provider_deb</code> : Create a Debian package (you need to install <code>debuild</code> from <code>devscripts</code>). This provider use the following parameters :
-    <ul>
-      <li><code>author_name</code></li>
-      <li><code>author_email</code></li>
-      <li><code>install_user</code></li>
-      <li><code>install_user_desc</code></li>
-      <li><code>package_url</code></li>
-      <li><code>package_git</code></li>
-      <li><code>package_shortdesc</code></li>
-      <li><code>package_desc</code></li>
-      <li><code>package_depends</code></li>
-      <li><code>license_type</code></li>
-      <li><code>copyright</code></li>
-    </ul>
-  </li>
+  <li><code>jorel_provider_artifactory</code> : Deploy to artifactory. This provider use the following parameters : <ul>
+    <li><code>url</code> :: <code>string()</code> : Artifactory URL (mandatory).</li>
+    <li><code>username</code> :: <code>env | string()</code> : Username (optional).</li>
+    <li><code>password</code> :: <code>env | string()</code> : Password (optional).</li>
+    <li><code>repository</code> :: <code>string()</code> : Repository (mandatory).</li>
+    <li><code>checksum</code> :: <code>string()</code> : Checksum when you want to deploy with checksum (optional).</li>
+  </ul></li>
+  <li><code>jorel_provider_deb</code> : Create a Debian package (you need to install <code>debuild</code> from <code>devscripts</code>). This provider use the following parameters :<ul>
+    <li><code>author_name</code></li>
+    <li><code>author_email</code></li>
+    <li><code>install_user</code></li>
+    <li><code>install_user_desc</code></li>
+    <li><code>package_url</code></li>
+    <li><code>package_git</code></li>
+    <li><code>package_shortdesc</code></li>
+    <li><code>package_desc</code></li>
+    <li><code>package_depends</code></li>
+    <li><code>license_type</code></li>
+    <li><code>copyright</code></li>
+  </ul></li>
   <li><code>jorel_provider_git_tag</code> : Create a git tag</li>
 </ul>
 

@@ -35,7 +35,7 @@ Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it ex
 ## Providers ##
 * `jorel_provider_tar` : Create a Tar archive
 * `jorel_provider_zip` : Create a Zip archive
-* `jorel_provider_artifactory` : Deploy to artifactory. This provider use the following parameters :* `url` :: `string()` : Artifactory URL (mandatory).
+* `jorel_provider_artifactory` : Deploy to artifactory. This provider use the following parameters : * `url` :: `string()` : Artifactory URL (mandatory).
 * `username` :: `env | string()` : Username (optional).
 * `password` :: `env | string()` : Password (optional).
 * `repository` :: `string()` : Repository (mandatory).
