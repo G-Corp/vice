@@ -51,7 +51,7 @@ do(State) ->
                      ok = file:rename(RebarFileForTag, "rebar.config"),
                      {DepsVersions, ["rebar.confi"|FileInTag]};
                    false ->
-                     {undefined, FileInTag}
+                     {[], FileInTag}
                  end,
 
   FileInTag2 = case jorel_erlang_mk:exist() of
