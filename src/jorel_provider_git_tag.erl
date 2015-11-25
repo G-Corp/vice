@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_provider_git_tag).
 -behaviour(jorel_provider).
 -include("../include/jorel.hrl").
@@ -39,16 +40,51 @@ do(State) ->
                  V -> V
                end,
   _ = update_jorel(TagVersion),
-  RebarFileForTag = create_rebar_release(TagVersion),
   ?REMARK("== Applications version...", []),
   AppFiles = create_app_release(),
-  ok = file:rename("rebar.config", "rebar.config.save"),
-  ok = file:rename(RebarFileForTag, "rebar.config"),
-  {ok, _} = git_add(["rebar.config", "jorel.config"|AppFiles]),
+  FileInTag = ["jorel.config"|AppFiles],
+  {RebarDepsVersion, 
+   FileInTag1} = case filelib:is_file("rebar.config") of
+                   true ->
+                     {RebarFileForTag, DepsVersions} = create_rebar_release(TagVersion),
+                     ok = file:rename("rebar.config", "rebar.config.save"),
+                     ok = file:rename(RebarFileForTag, "rebar.config"),
+                     {DepsVersions, ["rebar.confi"|FileInTag]};
+                   false ->
+                     {undefined, [], FileInTag}
+                 end,
+
+  FileInTag2 = case jorel_erlang_mk:exist() of
+                 true ->
+                   MakefileForTag = create_erlang_mk_release(TagVersion, RebarDepsVersion),
+                   ok = file:rename("Makefile", "Makefile.save"),
+                   ok = file:rename(MakefileForTag, "Makefile"),
+                   ["Makefile"|FileInTag1];
+                 false ->
+                   FileInTag1
+               end,
+
+  {ok, _} = git_add(FileInTag2),
   {ok, _} = git_commit("Prepare version " ++ TagVersion),
   {ok, _} = git_tag(TagVersion),
-  ok = file:rename("rebar.config.save", "rebar.config"),
+
   AppFiles2 = create_app_next_release(AppFiles),
+  FileInTag3 = ["jorel.config"|AppFiles2],
+  FileInTag4 = case filelib:is_file("rebar.config") of
+                 true ->
+                   ok = file:rename("rebar.config.save", "rebar.config"),
+                   ["rebar.config"|FileInTag3];
+                 false ->
+                   FileInTag3
+               end,
+  FileInTag5 = case jorel_erlang_mk:exist() of
+                 true ->
+                   ok = file:rename("Makefile.save", "Makefile"),
+                   ["Makefile"|FileInTag4];
+                 false ->
+                   FileInTag4
+               end,
+
   {ok, NextVersion} = vsn:bump(patch, TagVersion),
   NextVersion1 = case ?ASK("Next version ? [~s]", [NextVersion], ": ") of
                    [] -> NextVersion;
@@ -57,7 +93,7 @@ do(State) ->
   {ok, #{v := NextVersion2}} = vsn:parse(NextVersion1),
   NextVersion3 = NextVersion2 ++ "-pre",
   _ = update_jorel(NextVersion3),
-  {ok, _} = git_add(["rebar.config", "jorel.config"|AppFiles2]),
+  {ok, _} = git_add(FileInTag5),
   {ok, _} = git_commit("Bump version to " ++ NextVersion3),
   ?INFO("== All good, don't forget to `git push --tags`", []),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
@@ -74,12 +110,36 @@ update_jorel(Version) ->
       end,
   close = erlconf:close(Jorel).
 
+create_erlang_mk_release(Version, RebarDeps) ->
+  MakefileForTag = "Makefile." ++ Version,
+  Makefile = jorel_erlang_mk:parse_makefile("Makefile"),
+  lists:foldl(fun(Dep, TmpMakefile) ->
+                  DepKey = eutils:to_atom("dep_" ++ Dep),
+                  case lists:keyfind(DepKey, 1, TmpMakefile) of
+                    {DepKey, [Git, GitURL, Branch]} ->
+                      case lists:keyfind(eutils:to_atom(Dep), 1, RebarDeps) of
+                        {_, _, {git, _, {_, RebarVersion}}} ->
+                          lists:keyreplace(DepKey, 1, TmpMakefile, {DepKey, [Git, GitURL, RebarVersion]});
+                        _ ->
+                          AvailV = lists:foldl(fun({BType, BVersion}, Acc) ->
+                                                   maps:put(BVersion, eutils:to_atom(BType), Acc)
+                                               end, #{}, remote_tags(GitURL)),
+                          UseVersion = deps_version(Dep, Branch, AvailV),
+                          lists:keyreplace(DepKey, 1, TmpMakefile, {DepKey, [Git, GitURL, UseVersion]})
+                      end;
+                    _ ->
+                      TmpMakefile
+                  end
+              end, Makefile, elists:keyfind(deps, 1, Makefile, [])),
+  MakefileForTag.
+
 create_rebar_release(Version) ->
   {ok, Rebar} = erlconf:open(rebar, "rebar.config", [{save_on_close, false}]),
   RebarData = erlconf:term(Rebar),
   {deps, Deps} = lists:keyfind(deps, 1, RebarData),
   ?REMARK("== Depencies version...", []),
-  Deps1 = lists:foldl(fun({Name, Vsn, {Git, GitURL, Branch}}, DepsAcc) ->
+  Deps1 = lists:foldl(fun
+                        ({Name, Vsn, {Git, GitURL, Branch}}, DepsAcc) ->
                           {CurV, AvailV} = lists:foldl(
                                              fun({BType, BVersion}, {CurVersion, Acc}) ->
                                                  {CurVersion, maps:put(BVersion, eutils:to_atom(BType), Acc)}
@@ -93,13 +153,15 @@ create_rebar_release(Version) ->
                                              end,
                                              remote_tags(GitURL)),
                           UseVersion = deps_version(Name, CurV, AvailV),
-                          [{Name, Vsn, {Git, GitURL, {maps:get(UseVersion, AvailV), UseVersion}}}|DepsAcc]
+                          [{Name, Vsn, {Git, GitURL, {maps:get(UseVersion, AvailV), UseVersion}}}|DepsAcc];
+                        (Other, DepsAcc) ->
+                          [Other, DepsAcc]
                       end, [], Deps),
   {ok, _} = erlconf:term(Rebar, lists:keyreplace(deps, 1, RebarData, {deps, Deps1})),
   RebarFileForTag = "rebar.config." ++ Version,
   ok = erlconf:save(Rebar, RebarFileForTag),
   close = erlconf:close(Rebar),
-  RebarFileForTag.
+  {RebarFileForTag, Deps1}.
 
 create_app_release() ->
   lists:foldl(fun(AppFile, Acc) ->
@@ -214,7 +276,7 @@ git_tag(Version) ->
   sh("git tag ~s", [Version], []).
 
 app_files() ->
-  AppPaths = filelib:wildcard("{src,apps,ebin}/**/*.{app,app.src}"),
+  AppPaths = filelib:wildcard("{src,apps,ebin,lib}/**/*.{app,app.src}"),
   AppFiles = lists:map(fun filename:basename/1, AppPaths),
   lists:foldl(fun(App, Acc) ->
                   case filename:extension(App) of

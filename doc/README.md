@@ -113,5 +113,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/emedia-project/jorel/blob/erlang-mk/doc/jorel.md" class="module">jorel</a></td></tr></table>
+<tr><td><a href="jorel.md" class="module">jorel</a></td></tr></table>
 

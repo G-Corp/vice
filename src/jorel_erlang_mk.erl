@@ -1,13 +1,15 @@
+% @hidden
 -module(jorel_erlang_mk).
 
 -export([exist/0,
-         parse_makefile/0]).
+         parse_makefile/1,
+         gen_makefile/1]).
 
 exist() ->
   filelib:is_file("erlang.mk") and filelib:is_file("Makefile").
 
-parse_makefile() ->
-  {ok, Device} = file:open("Makefile", [read]),
+parse_makefile(Makefile) ->
+  {ok, Device} = file:open(Makefile, [read]),
   read_makefile(Device, []).
 
 read_makefile(Device, Acc) ->
@@ -24,7 +26,7 @@ read_next_line(Device, Acc) ->
 
 parse_line(Line, Device, IsNextLine) ->
   case string:tokens(Line, "\r\n\t =") of
-    [] -> [];
+    [] -> [{raw, Line}];
     Data -> 
       [NL|NoNLData] = lists:reverse(Data),
       [Entry|Data1] = if
@@ -36,15 +38,26 @@ parse_line(Line, Device, IsNextLine) ->
         true ->
           case Entry of
             "PROJECT" -> 
-              [Name] = Data1,
-              [{project, Name}];
+              [{project, Data1}];
             "DEPS" -> 
               [{deps, Data1}];
             [$d, $e, $p, $_|_] = Dep ->
               [{list_to_atom(Dep), Data1}];
             _ -> 
-              []
+              [{raw, Line}]
           end
       end
   end.
+
+gen_makefile(Makefile) ->
+  lists:foldl(fun
+                ({raw, Line}, Acc) ->
+                  Acc ++ Line;
+                ({Key, Values}, Acc) ->
+                  Acc ++ key_to_str(Key) ++ " = " ++ string:join(Values, " ") ++ "\n"
+              end, "", Makefile).
+
+key_to_str(project) -> "PROJECT";
+key_to_str(deps) -> "DEPS";
+key_to_str(X) -> eutils:to_string(X).
 

@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_provider_providers).
 -behaviour(jorel_provider).
 -include("../include/jorel.hrl").

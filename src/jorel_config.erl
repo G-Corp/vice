@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_config).
 -include("../include/jorel.hrl").
 

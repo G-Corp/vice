@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_release).
 -include("../include/jorel.hrl").
 
@@ -89,15 +90,15 @@ make_release(State, AllApps, BootApps) ->
             false ->
               make_rel_file(State, RelDir, "sys.config", sys_config)
           end,
-      jorel_tempdir:mktmp(fun(TmpDir) ->
-                             BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
-                             BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
-                             case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
-                               ok -> ok;
-                               {error, Reason2} ->
-                                 ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
-                             end
-                         end),
+      tempdir:mktmp(fun(TmpDir) ->
+                        BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
+                        BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
+                        case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
+                          ok -> ok;
+                          {error, Reason2} ->
+                            ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
+                        end
+                    end),
       _ = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".deps"),
       RelFile = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel"),
       ?INFO("* Create RELEASES file", []),

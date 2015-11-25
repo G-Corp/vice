@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_elixir).
 
 -export([exist/0,

@@ -9,6 +9,8 @@ DEPS = sh \
 			 erlydtl \
 			 tempfile
 
+DOC_DEPS = edown
+
 dep_sh = git https://github.com/gleber/sh.git master
 dep_erlconf = git https://github.com/emedia-project/erlconf.git master
 dep_vsn = git https://github.com/emedia-project/vsn.git master
@@ -17,8 +19,17 @@ dep_eutils = git https://github.com/emedia-project/eutils.git master
 dep_getopt = git https://github.com/jcomellas/getopt.git master
 dep_erlydtl = git https://github.com/erlydtl/erlydtl.git master
 dep_tempfile = git https://github.com/botsunit/tempfile.git master
+dep_edown = git https://github.com/uwiger/edown.dit master
 
 include erlang.mk
+
+EDOC_OPTS = {doclet, edown_doclet} \
+						, {app_default, "http://www.erlang.org/doc/man"} \
+						, {source_path, ["src"]} \
+						, {overview, "overview.edoc"} \
+						, {stylesheet, ""} \
+						, {image, ""} \
+						, {top_level_readme, {"./README.md", "https://github.com/emedia-project/${PROJECT}"}}
 
 ESCRIPT_SYS_CONFIG = "config/jorel.config"
 

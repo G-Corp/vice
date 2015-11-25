@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_escript).
 -include("../include/jorel.hrl").
 

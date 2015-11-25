@@ -3,6 +3,7 @@
 
 -export([main/1]).
 
+% @hidden
 main(Args) ->
   case getopt:parse(opts(), Args) of
     {ok, {Options, Commands}} ->

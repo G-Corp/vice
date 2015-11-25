@@ -1,3 +1,4 @@
+% @hidden
 -module(jorel_cmd).
 -export([run/1, run/2, test/0]).
 

@@ -1,0 +1,87 @@
+@author Gregoire Lejeune <gregoire.lejeune@gmail.com>
+@author Gregoire Lejeune <greg@g-corp.io>
+@copyright 2015 Grégoire Lejeune, 2015 G-Corp
+@version 0.0.8
+@title Just anOther RELease assembler for Erlang/OTP Releases
+@doc
+
+<img src="Jor_El.jpeg" alt="Jorel"/>
+
+<h2>Install</h2>
+
+<p>Download <a href="https://github.com/emedia-project/jorel/wiki/jorel">jorel</a>, make it executable and place it in your PATH.</p>
+
+<h2>Configuration</h2>
+
+<ul>
+<li><code>output_dir</code> : Output directory (default: <code>_jorel</code>)</li>
+<li><code>exclude_dirs</code> : Path to exclude (default: <code>_jorel</code>)</li>
+<li><code>include_src</code> : Include sources in the release (default: false)</li>
+<li><code>sys_config</code> : Path to the configuration file (default: none)</li>
+<li><code>vm_args</code> : Path to the <code>vm.args</code> file to use (default: none)</li>
+<li><code>generate_start_script</code> : Generate start script (default: true)</li>
+<li><code>include_erts</code> : Include ERTS in the release (default: true)</li>
+<li><code>lib_dirs</code> : List of directory to search apps (default: none) / TODO</li>
+<li><code>providers</code> : Add providers (default: none)</li>
+<li><code>boot</code> : List of apps in boot script (default: all)</li>
+<li><code>disable_relup</code> : Enable/disable relup (default: true)</li>
+<li><code>env</code> : Environment (default: prod)</li>
+</ul>
+
+<h2>Providers</h2>
+
+<ul>
+<li><code>jorel_provider_tar</code> : Create a Tar archive</li>
+<li><code>jorel_provider_zip</code> : Create a Zip archive</li>
+<li><code>jorel_provider_artifactory</code> : Deploy to artifactory. This provider use the following parameters :
+  <ul>
+    <li><code>url</code> :: <code>string()</code> : Artifactory URL (mandatory).</li>
+    <li><code>username</code> :: <code>env | string()</code> : Username (optional).</li>
+    <li><code>password</code> :: <code>env | string()</code> : Password (optional).</li>
+    <li><code>repository</code> :: <code>string()</code> : Repository (mandatory).</li>
+    <li><code>checksum</code> :: <code>string()</code> : Checksum when you want to deploy with checksum (optional).</li>
+  </ul>
+</li>
+<li><code>jorel_provider_deb</code> : Create a Debian package (you need to install <code>debuild</code> from <code>devscripts</code>). This provider use the following parameters :
+  <ul>
+    <li><code>author_name</code></li>
+    <li><code>author_email</code></li>
+    <li><code>install_user</code></li>
+    <li><code>install_user_desc</code></li>
+    <li><code>package_url</code></li>
+    <li><code>package_git</code></li>
+    <li><code>package_shortdesc</code></li>
+    <li><code>package_desc</code></li>
+    <li><code>package_depends</code></li>
+    <li><code>license_type</code></li>
+    <li><code>copyright</code></li>
+  </ul>
+</li>
+<li><code>jorel_provider_git_tag</code> : Create a git tag</li>
+</ul>
+
+<h2>Contributing</h2>
+
+<ol style="list-style-type: decimal">
+<li>Fork it ( https://github.com/emedia-project/jorel/fork )</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
+
+<h2>Licence</h2>
+
+<p>Copyright (c) 2015, Gregoire Lejeune<br />
+All rights reserved.</p>
+
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+
+<ol>
+  <li><p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p></li>
+  <li><p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p></li>
+</ol>
+
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+
+@end
