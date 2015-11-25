@@ -8,7 +8,7 @@ __Version:__ 0.0.8
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`greg@g-corp.io`](mailto:greg@g-corp.io)).
 
-![Jorel](Jor_El.jpeg)
+![Jorel](https://raw.githubusercontent.com/emedia-project/jorel/erlang-mk/Jor-El.jpeg)
 
 
 ## Install ##
