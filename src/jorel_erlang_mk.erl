@@ -25,27 +25,36 @@ read_next_line(Device, Acc) ->
   end.
 
 parse_line(Line, Device, IsNextLine) ->
-  case string:tokens(Line, "\r\n\t =") of
+  case string:tokens(Line, "\r\n\t ") of
     [] -> [{raw, Line}];
     Data -> 
-      [NL|NoNLData] = lists:reverse(Data),
-      [Entry|Data1] = if
-                        NL == "\\" -> read_next_line(Device, lists:reverse(NoNLData));
-                        true -> Data
-                      end,
-      if
-        IsNextLine -> [Entry|Data1];
-        true ->
-          case Entry of
-            "PROJECT" -> 
-              [{project, Data1}];
-            "DEPS" -> 
-              [{deps, Data1}];
-            [$d, $e, $p, $_|_] = Dep ->
-              [{list_to_atom(Dep), Data1}];
-            _ -> 
-              [{raw, Line}]
-          end
+      case {Data, IsNextLine} of
+        {["PROJECT", "="|_], false} -> parse_line1(Data, Device, IsNextLine);
+        {["DEPS", "="|_], false} -> parse_line1(Data, Device, IsNextLine);
+        {[[$d, $e, $p, $_|_], "="|_], false} -> parse_line1(Data, Device, IsNextLine);
+        {_, true} -> parse_line1(Data, Device, IsNextLine);
+        {_, false} -> [{raw, Line}]
+      end
+  end.
+
+parse_line1(Data, Device, IsNextLine) ->
+  [NL|NoNLData] = lists:reverse(Data),
+  Entry = if
+            NL == "\\" -> read_next_line(Device, lists:reverse(NoNLData));
+            true -> Data
+          end,
+  if
+    IsNextLine -> Entry;
+    true ->
+      case Entry of
+        ["PROJECT", "="|Data1] -> 
+          [{project, Data1}];
+        ["DEPS", "="|Data1] -> 
+          [{deps, Data1}];
+        [[$d, $e, $p, $_|_] = Dep, "="|Data1] ->
+          [{list_to_atom(Dep), Data1}];
+        _ -> 
+          [{raw, string:join(Entry, " ")}]
       end
   end.
 
@@ -61,3 +70,4 @@ gen_makefile(Makefile) ->
 key_to_str(project) -> "PROJECT";
 key_to_str(deps) -> "DEPS";
 key_to_str(X) -> eutils:to_string(X).
+
