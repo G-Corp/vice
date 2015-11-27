@@ -273,7 +273,11 @@ git_add(Files) ->
   sh("git add ~s", [string:join(Files, " ")], []).
 
 git_commit(Comment) ->
-  sh("git commit -m \"~s\"", [Comment], []).
+  case sh("git status -s", []) of
+    {ok, D} when length(D) > 0 ->
+      sh("git commit -m \"~s\"", [Comment], []);
+    Other -> Other
+  end.
 
 git_tag(Version) ->
   sh("git tag ~s", [Version], []).
