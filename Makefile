@@ -19,9 +19,11 @@ dep_eutils = git https://github.com/emedia-project/eutils.git master
 dep_getopt = git https://github.com/jcomellas/getopt.git master
 dep_erlydtl = git https://github.com/erlydtl/erlydtl.git master
 dep_tempfile = git https://github.com/botsunit/tempfile.git master
-dep_edown = git https://github.com/uwiger/edown.dit master
+dep_edown = git https://github.com/uwiger/edown.git master
 
 include erlang.mk
+
+all:: escript
 
 EDOC_OPTS = {doclet, edown_doclet} \
 						, {app_default, "http://www.erlang.org/doc/man"} \
