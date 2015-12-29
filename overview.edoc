@@ -66,6 +66,21 @@
   <li>Create a new Pull Request</li>
 </ol>
 
+<h2>Using erlang.mk plugins</h2>
+
+To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to your <tt>Makefile</tt> :
+
+<pre>
+DEP_PLUGINS = jorel
+BUILD_DEPS = jorel
+ 
+dep_jorel = git https://github.com/emedia-project/jorel.git master
+</pre>
+
+Then you can run <tt>make jorel.release</tt> to create a release with Jorel. 
+
+See <tt>make help</tt> for more options.
+
 <h2>Licence</h2>
 
 <p>Copyright (c) 2015, Gregoire Lejeune<br />

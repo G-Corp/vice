@@ -64,6 +64,23 @@ Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it ex
 
 
 
+## Using erlang.mk plugins ##
+
+To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to your `Makefile` :
+
+```
+
+DEP_PLUGINS = jorel
+BUILD_DEPS = jorel
+dep_jorel = git https://github.com/emedia-project/jorel.git master
+
+```
+
+Then you can run `make jorel.release` to create a release with Jorel.
+
+See `make help` for more options.
+
+
 ## Licence ##
 
 Copyright (c) 2015, Gregoire Lejeune<br />
