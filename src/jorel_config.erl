@@ -16,7 +16,7 @@ to_state(Options) ->
               case filelib:is_file(ConfigFile) of
                 true ->
                   elists:merge_keylists(
-                    1, read_config(ConfigFile), Options);
+                    1, Options, read_config(ConfigFile));
                 false ->
                   ?HALT("File ~s not found", [ConfigFile])
               end;
