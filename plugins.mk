@@ -21,7 +21,7 @@ help::
 jorel.release: $(JOREL) $(JOREL_CONFIG)
 	$(verbose) make jorel.exec cmd=release
 
-jorel.exec: $(JOREL) $(JOREL_CONFIG)
+jorel.exec: app $(JOREL) $(JOREL_CONFIG)
 ifndef cmd
 	$(error Usage: $(MAKE) jorel.exec cmd=CMD)
 endif
