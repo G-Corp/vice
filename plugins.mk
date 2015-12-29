@@ -38,5 +38,5 @@ endif
 ifdef c
 	$(eval x := --config $c $x)
 endif
-	$(JOREL) $(cmd) $x
+	$(verbose) $(JOREL) $(cmd) $x
 
