@@ -27,37 +27,42 @@ main(Args) ->
   end.
 
 run(Options, Commands) ->
-  State = jorel_config:to_state(Options),
+  State = jorel_config:to_state(Options, Commands),
   {providers, Providers} = jorel_config:get(State, providers, []),
-  {State1, Providers1} = case elists:include(Providers, release) of
-                           true ->
-                             {State, Providers};
-                           false ->
-                             {jorel_config:set(State, {providers, [jorel_provider_release|Providers]}),
-                              [jorel_provider_release, jorel_provider_providers|Providers]}
-                         end,
-  State2 = lists:foldl(fun(P, S) ->
+  {State1, Providers1} = add_provider(State, Providers, jorel_provider_release),
+  {State2, Providers2} = add_provider(State1, Providers1, jorel_provider_providers),
+  {State3, Providers3} = add_provider(State2, Providers2, jorel_provider_config),
+  State4 = lists:foldl(fun(P, S) ->
                            P:init(S)
-                       end, State1, Providers1),
+                       end, State3, Providers3),
   Commands2 = case lists:map(fun eutils:to_atom/1, Commands) of
                 [] -> [release];
                 Commands1 -> Commands1
               end,
   _ = lists:foldl(fun(P, S) ->
                       jorel_provider:run(S, P)
-                  end, State2, Commands2),
+                  end, State4, Commands2),
   ok.
+
+add_provider(State, Providers, Provider) ->
+  case elists:include(Providers, Provider) of
+    true ->
+      {State, Providers};
+    false ->
+      {jorel_config:set(State, {providers, [Provider|Providers]}),
+       [Provider|Providers]}
+  end.
 
 opts() ->
   [
-   {relname,      $n,        "relname",      undefined,               "Specify the name for the release that will be generated"},
-   {relvsn,       $v,        "relvsn",       undefined,               "Specify the version for the release"},
+   {relname,      $n,        "relname",      string,                   "Specify the name for the release that will be generated"},
+   {relvsn,       $v,        "relvsn",       string,                   "Specify the version for the release"},
    {config,       $c,        "config",       {string, "jorel.config"}, "Path to the config file"},
-   {help,         $h,        "help",         undefined,               "Display this help"},
-   {version,      $V,        "version",      undefined,               "Display version"},
+   {help,         $h,        "help",         undefined,                "Display this help"},
+   {version,      $V,        "version",      undefined,                "Display version"},
    {output_dir,   $o,        "output-dir",   {string, "./_jorel"},     "Output directory"},
    {exclude_dirs, $e,        "exclude-dirs", {list, ["_jorel"]},       "Exclude directories"},
-   {include_src,  undefined, "include-src",  undefined,               "Include source"}
+   {include_src,  undefined, "include-src",  undefined,                "Include source"}
   ].
 
 help() ->

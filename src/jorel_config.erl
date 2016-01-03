@@ -3,14 +3,14 @@
 -include("../include/jorel.hrl").
 
 -export([
-         to_state/1,
+         to_state/2,
          add_provider/2,
          set/2,
          get/2,
          get/3
         ]).
 
-to_state(Options) ->
+to_state(Options, Commands) ->
   State = case lists:keyfind(config, 1, Options) of
             {config, ConfigFile} ->
               case filelib:is_file(ConfigFile) of
@@ -18,7 +18,15 @@ to_state(Options) ->
                   elists:merge_keylists(
                     1, Options, read_config(ConfigFile));
                 false ->
-                  ?HALT("File ~s not found", [ConfigFile])
+                  case elists:include(Commands, gen_config) orelse
+                       elists:include(Commands, "gen_config") orelse
+                       elists:include(Commands, providers) orelse
+                       elists:include(Commands, "providers") of
+                    true -> 
+                      Options;
+                    _ ->
+                      ?HALT("! Can't find ~s.", [ConfigFile])
+                  end
               end;
             _ ->
               ?HALT("Missing config file", [])
