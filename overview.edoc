@@ -1,6 +1,6 @@
 @author Gregoire Lejeune <gregoire.lejeune@gmail.com>
 @author Gregoire Lejeune <greg@g-corp.io>
-@copyright 2015 Grégoire Lejeune, 2015 G-Corp
+@copyright 2015 Grégoire Lejeune, 2015-2016 G-Corp
 @version 0.0.9
 @title Just anOther RELease assembler for Erlang/OTP Releases
 @doc
@@ -84,6 +84,7 @@ See <tt>make help</tt> for more options.
 <h2>Licence</h2>
 
 <p>Copyright (c) 2015, Gregoire Lejeune<br />
+Copyright (c) 2015-2016, G-Corp<br />
 All rights reserved.</p>
 
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>

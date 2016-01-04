@@ -2,7 +2,7 @@
 
 # Just anOther RELease assembler for Erlang/OTP Releases #
 
-Copyright (c) 2015 Grégoire Lejeune, 2015 G-Corp
+Copyright (c) 2015 Grégoire Lejeune, 2015-2016 G-Corp
 
 __Version:__ 0.0.9
 
@@ -84,6 +84,7 @@ See `make help` for more options.
 ## Licence ##
 
 Copyright (c) 2015, Gregoire Lejeune<br />
+Copyright (c) 2015-2016, G-Corp<br />
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
