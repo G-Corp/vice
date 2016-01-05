@@ -11,6 +11,8 @@ DEPS = sh \
 
 DOC_DEPS = edown
 
+LOCAL_DEPS = ssl inets
+
 dep_sh = git https://github.com/gleber/sh.git master
 dep_erlconf = git https://github.com/emedia-project/erlconf.git master
 dep_vsn = git https://github.com/emedia-project/vsn.git master

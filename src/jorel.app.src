@@ -3,4 +3,4 @@
   {vsn, "0.0.10-pre"},
   {modules, []},
   {registered, []},
-  {applications, [kernel, stdlib]}]}.
+  {applications, [kernel, stdlib, ssl, inets]}]}.

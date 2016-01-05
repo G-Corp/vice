@@ -3,6 +3,7 @@
 -include("../include/jorel.hrl").
 
 -export([
+         get_erts/1,
          make_root/1,
          resolv_apps/1,
          resolv_boot/2,
@@ -13,6 +14,46 @@
          make_boot_script/2,
          make_relup/2
         ]).
+
+get_erts(State) ->
+  case jorel_config:get(State, erts, local) of
+    {erts, local} -> code:root_dir();
+    {erts, "jorel://" ++ Path} -> get_erts_from_url(?JOREL_IN ++ Path ++ ".tgz");
+    {erts, URL} -> get_erts_from_url(URL)
+  end.
+
+get_erts_from_url(URL) ->
+  Path = filename:join([?JOREL_TMP, filename:basename(URL, ".tgz")]),
+  _ = case filelib:is_dir(Path) of
+        false ->
+          Archive = filename:join([?JOREL_TMP, filename:basename(URL)]),
+          ?INFO("= Download ERTS", []),
+          case efile:make_dir(?JOREL_TMP) of
+            ok ->
+              case httpc:request(get, {URL, []}, [{autoredirect, true}], []) of
+                {ok, {{_, 200, _}, _, Body}} ->
+                  case file:write_file(Archive, Body) of
+                    ok -> 
+                      case erl_tar:extract(Archive, [compressed, {cwd, ?JOREL_TMP}]) of
+                        ok ->
+                          _ = file:delete(Archive),
+                          ?INFO("= Download ERTS compete", []);
+                        _ ->
+                          ?HALT("!!! Faild to download ERTS", [])
+                      end;
+                    {error, Reason1} -> 
+                      ?HALT("!!! Faild to save ERTS: ~p", [Reason1])
+                  end;
+                {error, Reason2} ->
+                  ?HALT("!!! Faild to download ERTS: ~p", [Reason2])
+              end;
+            {error, Reason3} ->
+              ?HALT("!!! Can't create directory ~w: ~p", [?JOREL_TMP, Reason3])
+          end;
+        true ->
+          ok
+      end,
+  Path.
 
 make_root(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
@@ -182,7 +223,7 @@ make_bin(State) ->
 include_erts(State) ->
   case case jorel_config:get(State, include_erts, true) of
          {include_erts, false} -> false;
-         {include_erts, true} -> code:root_dir();
+         {include_erts, true} -> get_erts(State);
          {include_erts, X} when is_list(X) -> filename:absname(X);
          {include_erts, Y} ->
            ?HALT("!!! Invalid value for parameter include_erts: ~p", [Y])
@@ -190,7 +231,7 @@ include_erts(State) ->
     false ->
       ok;
     Path ->
-      ?INFO("* Add ets ~s from ~s", [erlang:system_info(version), Path]),
+      ?INFO("* Add ERTS ~s from ~s", [erlang:system_info(version), Path]),
       {outdir, Outdir} = jorel_config:get(State, outdir),
       efile:copy(
         filename:join(Path, "erts-" ++ erlang:system_info(version)),
@@ -210,12 +251,10 @@ include_erts(State) ->
                          {"EMU", "beam"}],
                         [preserve]),
       ?INFO("* Install start_clean.boot", []),
-      Prefix = code:root_dir(),
-      ok = efile:copy(filename:join([Prefix, "bin", "start_clean.boot"]),
+      ok = efile:copy(filename:join([Path, "bin", "start_clean.boot"]),
                       filename:join([Outdir, "bin", "start_clean.boot"])),
       ?INFO("* Install start.boot", []),
-      Prefix = code:root_dir(),
-      ok = efile:copy(filename:join([Prefix, "bin", "start.boot"]),
+      ok = efile:copy(filename:join([Path, "bin", "start.boot"]),
                       filename:join([Outdir, "bin", "start.boot"]))
   end.
 
@@ -363,7 +402,7 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
     false ->
       {App, Vsn, Path, Deps} = case resolv_local(State, App) of
                                  notfound ->
-                                   case resolv_app(State, filename:join([code:root_dir(), "lib", "**"]), App) of
+                                   case resolv_app(State, filename:join([get_erts(State), "lib", "**"]), App) of
                                      notfound ->
                                        case jorel_elixir:exist() of
                                          true ->

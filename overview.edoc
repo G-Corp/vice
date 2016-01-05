@@ -26,6 +26,7 @@
   <li><code>boot</code> : List of apps in boot script (default: all)</li>
   <li><code>disable_relup</code> : Enable/disable relup (default: true)</li>
   <li><code>env</code> : Environment (default: prod)</li>
+  <li><code>erts</code> : ERTS to use (default: local)</li>
 </ul>
 
 <h2>Providers</h2>
