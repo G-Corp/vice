@@ -23,37 +23,43 @@ get_erts(State) ->
   end.
 
 get_erts_from_url(URL) ->
-  Path = filename:join([?JOREL_TMP, filename:basename(URL, ".tgz")]),
-  _ = case filelib:is_dir(Path) of
-        false ->
-          Archive = filename:join([?JOREL_TMP, filename:basename(URL)]),
-          ?INFO("= Download ERTS", []),
-          case efile:make_dir(?JOREL_TMP) of
-            ok ->
-              case httpc:request(get, {URL, []}, [{autoredirect, true}], []) of
-                {ok, {{_, 200, _}, _, Body}} ->
-                  case file:write_file(Archive, Body) of
-                    ok -> 
-                      case erl_tar:extract(Archive, [compressed, {cwd, ?JOREL_TMP}]) of
-                        ok ->
-                          _ = file:delete(Archive),
-                          ?INFO("= Download ERTS compete", []);
-                        _ ->
-                          ?HALT("!!! Faild to download ERTS", [])
+  case http_uri:parse(URL) of
+    {ok, {http, _, _, _, P, _}} ->
+      Archive = filename:join([?JOREL_TMP|string:tokens(P, "/")]),
+      Path = filename:rootname(Archive, ".tgz"),
+      Install = filename:dirname(Archive),
+      _ = case filelib:is_dir(Path) of
+            false ->
+              ?INFO("= Download ERTS", []),
+              case efile:make_dir(Install) of
+                ok ->
+                  case httpc:request(get, {URL, []}, [{autoredirect, true}], []) of
+                    {ok, {{_, 200, _}, _, Body}} ->
+                      case file:write_file(Archive, Body) of
+                        ok -> 
+                          case erl_tar:extract(Archive, [compressed, {cwd, Install}]) of
+                            ok ->
+                              _ = file:delete(Archive),
+                              ?INFO("= Download ERTS compete", []),
+                              Path;
+                            _ ->
+                              ?HALT("!!! Faild to download ERTS", [])
+                          end;
+                        {error, Reason1} -> 
+                          ?HALT("!!! Faild to save ERTS: ~p", [Reason1])
                       end;
-                    {error, Reason1} -> 
-                      ?HALT("!!! Faild to save ERTS: ~p", [Reason1])
+                    {error, Reason2} ->
+                      ?HALT("!!! Faild to download ERTS: ~p", [Reason2])
                   end;
-                {error, Reason2} ->
-                  ?HALT("!!! Faild to download ERTS: ~p", [Reason2])
+                {error, Reason3} ->
+                  ?HALT("!!! Can't create directory ~w: ~p", [Install, Reason3])
               end;
-            {error, Reason3} ->
-              ?HALT("!!! Can't create directory ~w: ~p", [?JOREL_TMP, Reason3])
+            true ->
+              Path
           end;
-        true ->
-          ok
-      end,
-  Path.
+    _ ->
+      ?HALT("!!! Invalid URL for ERTS", [])
+  end.
 
 make_root(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
