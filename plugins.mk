@@ -18,7 +18,7 @@ help::
 		" * v=REL_VERSION" \
 		" * c=CONFIG_FILE"
 
-jorel.release: app $(JOREL) $(JOREL_CONFIG)
+jorel.release: 
 	$(verbose) make jorel.exec cmd=release
 
 jorel.exec: app $(JOREL) $(JOREL_CONFIG)
