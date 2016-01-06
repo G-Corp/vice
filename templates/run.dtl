@@ -38,7 +38,7 @@ PID=""
 if [ -f $PIDFILE ] ; then 
   STARTED=true
   PID=`cat $PIDFILE | head -1`
-  PSPID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+  PSPID=`ps aux | grep -v grep | grep $ROOT_DIR | grep beam | awk '{print $2}'`
   if [ "$PID" != "$PSPID" ] ; then
     rm -f $PIDFILE
     STARTED=false
@@ -102,7 +102,7 @@ attach_app() {
 
 get_pid() {
   sleep 1
-  PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+  PID=`ps aux | grep -v grep | grep $ROOT_DIR | grep beam | awk '{print $2}'`
   echo $PID > $PIDFILE
 }
 
