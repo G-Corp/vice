@@ -4,8 +4,6 @@ JOREL_CONFIG ?= $(CURDIR)/jorel.config
 JOREL ?= $(DEPS_DIR)/jorel/jorel
 export JOREL
 
-JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel
-
 help::
 	$(verbose) printf "%s\n" "" \
 		"Jorel targets:" \
@@ -48,4 +46,6 @@ ifdef c
 	$(eval x := --config $c $x)
 endif
 	$(verbose) $(JOREL) $(cmd) $x
+
+$(JOREL): deps
 
