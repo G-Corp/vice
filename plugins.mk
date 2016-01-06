@@ -1,6 +1,6 @@
 # Configuration
 
-JOREL_CONFIG ?= $(CURDIR)/jorel.config
+JOREL_CONFIG ?= jorel.config
 JOREL ?= $(DEPS_DIR)/jorel/jorel
 export JOREL
 

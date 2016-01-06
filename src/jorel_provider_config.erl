@@ -36,6 +36,19 @@ do(State) ->
                     noname
                 end
             end,
+  ExApp = case jorel_elixir:exist() of
+            true ->
+              [eutils:to_atom(
+                 string:strip(
+                   jorel_cmd:run(
+                     jorel_elixir:iex() ++ " --erl \"+A0\" -e " ++
+                     "'Application.ensure_all_started(:mix); " ++
+                     "Code.eval_file(\"mix.exs\"); " ++
+                     "IO.puts(Mix.Project.config[:app]); " ++ 
+                     "System.halt()' | tail -1"), right, 10))];
+            false ->
+              []
+          end,
   RelVsn = case lists:keyfind(relvsn, 1, State) of
              {relvsn, V} -> V;
              _ -> "1.0.0"
@@ -47,7 +60,7 @@ do(State) ->
   BootApps = lists:foldl(fun(App, Acc) ->
                              [eutils:to_atom(filename:basename(App, ".app"))|Acc]
                          end, [sasl], 
-                         filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app")),
+                         ExApp ++ filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app")),
   AllApps = lists:foldl(fun(App, Acc) ->
                              [eutils:to_atom(filename:basename(App, ".app"))|Acc]
                          end, [sasl], 

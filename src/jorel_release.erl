@@ -446,7 +446,12 @@ resolv_local(State, App) ->
   case jorel_elixir:exist() of
     true ->
       {env, MixEnv} = jorel_config:get(State, env, prod),
-      resolv_app(State, filename:join(["_build", eutils:to_string(MixEnv), "lib", "**", "ebin"]), App);
+      case resolv_app(State, filename:join(["_build", eutils:to_string(MixEnv), "lib", "**", "ebin"]), App) of
+        notfound ->
+          resolv_app(State, filename:join("**", "ebin"), App);
+        Else ->
+          Else
+      end;
     false ->
       resolv_app(State, filename:join("**", "ebin"), App)
   end.

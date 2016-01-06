@@ -1,10 +1,14 @@
 % @hidden
 -module(jorel_elixir).
 
--export([exist/0,
+-export([
+         exist/0,
          path/0,
          version/0,
-         config_to_sys_config/3]).
+         config_to_sys_config/3,
+         iex/0,
+         elixir/0
+        ]).
 
 exist() ->
   (iex() =/= false) and (elixir() =/= false) and filelib:is_file("mix.exs").
