@@ -13,7 +13,6 @@ NAME="$(basename $0)"
 REL_DIR="$ROOT_DIR/releases/$REL_VSN"
 LIBDIR="$ROOT_DIR/lib"
 
-PIDFILE="$SCRIPT_DIR/.$NAME.pid"
 PIPE_DIR="$SCRIPT_DIR/.erlang.$NAME.pipe"
 LOG_DIR="$ROOT_DIR/log"
 SYS_CONFIG="$REL_DIR/sys.config"
@@ -33,18 +32,70 @@ else
   export BINDIR="$ERTS_DIR/bin"
 fi
 
-STARTED=false
-PID=""
-if [ -f $PIDFILE ] ; then 
-  STARTED=true
-  PID=`cat $PIDFILE | head -1`
-  PSPID=`ps aux | grep -v grep | grep $ROOT_DIR | grep beam | awk '{print $2}'`
-  if [ "$PID" != "$PSPID" ] ; then
-    rm -f $PIDFILE
-    STARTED=false
-    PID=""
-  fi
+# Extract the target node name from node.args
+NODE_NAME_ARG=$(egrep '^-s?name' "$VM_ARGS")
+if [ -z "$NODE_NAME_ARG" ]; then
+  echo "vm.args needs to have either -name or -sname parameter."
+  exit 1
 fi
+
+# Extract the name type and name from the NODE_NAME_ARG for REMSH
+NODE_NAME_TYPE="$(echo "$NODE_NAME_ARG" | awk '{print $1}')"
+NODE_NAME="$(echo "$NODE_NAME_ARG" | awk '{print $2}')"
+
+# Extract the target cookie
+NODE_COOKIE_ARG="$(grep '^-setcookie' "$VM_ARGS")"
+if [ -z "$NODE_COOKIE_ARG" ]; then
+  echo "vm.args needs to have a -setcookie parameter."
+  exit 1
+fi
+
+# Extract cookie name from NODE_COOKIE_ARG
+NODE_COOKIE="$(echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
+
+jorel_nodetool() {
+  command="$1"; shift
+
+  "$BINDIR/escript" "$ROOT_DIR/bin/nodetool" "$NODE_NAME_TYPE" "$NODE_NAME" \
+    -setcookie "$NODE_COOKIE" "$command" $@
+}
+
+get_pid() {
+  if output="$(jorel_nodetool rpcterms os getpid)"
+  then
+    echo "$output" | sed -e 's/"//g'
+    return 0
+  else
+    echo "$output"
+    return 1
+  fi
+}
+
+if ! jorel_nodetool "ping" > /dev/null ; then
+  STARTED=false
+  PID=""
+else
+  STARTED=true
+  PID=$(get_pid)
+fi
+
+print_status() {
+  if ! jorel_nodetool "ping" > /dev/null ; then
+    echo "$NAME is not running"
+  else
+    echo "$NAME is running (PID $PID)"
+  fi
+}
+
+print_info() {
+  print_status
+
+  echo "vm.args        : $VM_ARGS"
+  echo "sys.config     : $SYS_CONFIG"
+  echo "node name type : $NODE_NAME_TYPE"
+  echo "node name      : $NODE_NAME"
+  echo "node cookie    : $NODE_COOKIE"
+}
 
 help() {
   MESSAGE=$1
@@ -57,39 +108,33 @@ help() {
   echo "  -h --help        : Display this message"
 }
 
-print_status() {
-  case $STARTED in
-    true)
-      echo "$NAME is running (PID $PID)" ;;
-    *)
-      echo "$NAME is not running" ;;
-  esac
-}
-
 run_app() {
   if [ $STARTED = true ] ; then
-     echo "$NAME is already running (PID $PID)"
-   else
-     EXTRA_ARGS=""
-     if [ -f $VM_ARGS ] ; then
-       EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
-       EXTRA_ARGS=$(eval echo $EXTRA)
-     fi
-     LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $DEPS_FILE $LIBDIR)
-     export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $DEPS_FILE $LIBDIR)
-     export ROOTDIR="$ROOT_DIR"
-     export EMU="beam"
-     export PROGNAME="erlexec"
-     export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
-     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $SYS_CONFIG -boot $BOOT_FILE
-   fi
+    echo "$NAME is already running (PID $PID)"
+  else
+    EXTRA_ARGS=""
+    if [ -f $VM_ARGS ] ; then
+      EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+      EXTRA_ARGS=$(eval echo $EXTRA)
+    fi
+    LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $DEPS_FILE $LIBDIR)
+    export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $DEPS_FILE $LIBDIR)
+    export ROOTDIR="$ROOT_DIR"
+    export EMU="beam"
+    export PROGNAME="erlexec"
+    export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
+    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $SYS_CONFIG -boot $BOOT_FILE
+  fi
 }
 
 start_app() {
-  mkdir -p $PIPE_DIR
-  mkdir -p $LOG_DIR
-  $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
-  get_pid
+  if [ $STARTED = true ] ; then
+    echo "$NAME is already running (PID $PID)"
+  else
+    mkdir -p $PIPE_DIR
+    mkdir -p $LOG_DIR
+    $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
+  fi
 }
 
 attach_app() {
@@ -100,16 +145,14 @@ attach_app() {
   fi
 }
 
-get_pid() {
-  sleep 1
-  PID=`ps aux | grep -v grep | grep $ROOT_DIR | grep beam | awk '{print $2}'`
-  echo $PID > $PIDFILE
-}
-
 stop_app() {
   if [ $STARTED = true ] ; then
-    kill -9 $PID 2>/dev/null
-    rm -f $PIDFILE
+    if ! jorel_nodetool "stop"; then
+      exit 1
+    fi
+    while $(kill -s 0 "$PID" 2>/dev/null); do
+      sleep 1
+    done
   else
     echo "$NAME is not started"
   fi
@@ -124,24 +167,14 @@ execute() {
     help "Missing function" ; exit 0
   fi  
   FUNCTION=$1 ; shift
-  ARGS="["
-  SEP=""
-  for arg in "$@" ; do
-    ARGS=$(echo "$ARGS$SEP\"$arg\"")
-    SEP=", "
-  done
-  ARGS=$(echo "$ARGS]")
-  NODE_NAME=$(cat $VM_ARGS | grep -E -w '\-sname|\-name' | grep -E -v '^\s*#' | sed -e 's/#.*//' | sed 's/\(-sname\|-name\) *\([^ \t]*\)[ \t]*/\2/')
-  if [ $STARTED = true ] ; then
-    $BINDIR/erl -pa $ROOT_DIR/lib/*/ebin \
-      -noshell \
-      -sname $(echo $NODE_NAME"_seed") \
-      -eval "[_, Host] = string:tokens(atom_to_list(node()), \"@\"), 
-             Node = list_to_atom(\"$NODE_NAME@\" ++ Host), 
-             io:format(\"~p~n\", [rpc:call(Node, $MODULE, $FUNCTION, $ARGS)])" \
-      -s init stop
+  echo $@
+  if output="$(jorel_nodetool rpcterms $MODULE $FUNCTION $@)"
+  then
+    echo "$output" | sed -e 's/"//g'
+    return 0
   else
-    echo "$NAME is not started"
+    echo "$output"
+    return 1
   fi
 }
 
@@ -156,9 +189,31 @@ while [ $# -ne 0 ] ; do
     stop)
       stop_app ;;
     restart)
-      stop_app ; sleep 2 ; start_app ;;
+      if ! jorel_nodetool "restart"; then
+        exit 1
+      fi
+      ;;
+    reboot)
+      if ! jorel_nodetool "reboot"; then
+        exit 1
+      fi
+      ;;
     status)
       print_status ;;
+    info)
+      print_info ;;
+    pid)
+      if [ "$PID" = "" ] ; then
+        exit 1
+      else
+        echo $PID
+      fi
+      ;;
+    ping)
+      if ! jorel_nodetool "ping"; then
+        exit 1
+      fi
+      ;;
     exec)
       shift ; execute "$@" ; exit 0 ;;
     -h|--help)
@@ -168,4 +223,6 @@ while [ $# -ne 0 ] ; do
   esac
   shift
 done
+
+exit 0
 

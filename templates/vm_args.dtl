@@ -2,10 +2,10 @@
 ## If you want to use a custom file, use the vm_args option
 
 ## Name of the node
-## -name {{ relname }}@127.0.0.1
+-name {{ relname }}@127.0.0.1
 
 ## Cookie for distributed erlang
-## -setcookie {{ relname }}
+-setcookie {{ relname }}
 
 ## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
 ## (Disabled by default..use with caution!)

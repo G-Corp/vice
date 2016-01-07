@@ -29,6 +29,7 @@ do(State) ->
   _ = jorel_release:make_release(State, AllApps, BootApps),
   _ = jorel_release:make_boot_script(State, BootApps),
   _ = jorel_release:make_bin(State),
+  _ = jorel_release:make_upgrade_scripts(State),
   _ = jorel_release:make_relup(State, AllApps),
   _ = jorel_release:include_erts(State),
   ?INFO("== Provider ~p complete", [?PROVIDER]),

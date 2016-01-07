@@ -10,6 +10,7 @@
          make_lib/2,
          make_release/3,
          make_bin/1,
+         make_upgrade_scripts/1,
          include_erts/1,
          make_boot_script/2,
          make_relup/2
@@ -226,6 +227,40 @@ make_bin(State) ->
       ?HALT("!!! Error while creating ~s: ~p", [BinFile, Reason1])
   end.
 
+make_upgrade_scripts(State) ->
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  NodetoolDest = filename:join([Outdir, "bin", "nodetool"]),
+  UpgradeEscriptDest = filename:join([Outdir, "bin", "upgrade.escript"]),
+  case jorel_config:get(State, disable_relup) of
+    {disable_relup, true} ->
+      ?INFO("* relup disabled, don't install upgrade scripts", []);
+    {disable_relup, false} ->
+      ?INFO("* Install upgrade scripts", []),
+      ?INFO("* Generate ~s", [NodetoolDest]),
+      case nodetool_dtl:render() of
+        {ok, NodetoolData} ->
+          case file:write_file(NodetoolDest, NodetoolData) of
+            ok -> 
+              ?INFO("* Generate ~s", [UpgradeEscriptDest]),
+              case upgrade_escript_dtl:render() of
+                {ok, UpgradeData} ->
+                  case file:write_file(UpgradeEscriptDest, UpgradeData) of
+                    ok -> 
+                      ok;
+                    {error, Reason4} ->
+                      ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
+                  end;
+                {error, Reason3} ->
+                  ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason3])
+              end;
+            {error, Reason2} ->
+              ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason2])
+          end;
+        {error, Reason1} ->
+          ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason1])
+      end
+  end.
+
 include_erts(State) ->
   case case jorel_config:get(State, include_erts, true) of
          {include_erts, false} -> false;
@@ -267,7 +302,7 @@ include_erts(State) ->
 make_relup(State, AllApps) ->
   case jorel_config:get(State, disable_relup, true) of
     {disable_relup, true} ->
-      ?DEBUG("* relup disabled", []);
+      ?INFO("* relup disabled, don't create appup file", []);
     _ ->
       case lists:any(fun(#{app := sasl}) -> true;
                     (_) -> false
