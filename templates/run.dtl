@@ -97,17 +97,6 @@ print_info() {
   echo "node cookie    : $NODE_COOKIE"
 }
 
-help() {
-  MESSAGE=$1
-  if [ "x$MESSAGE" != "x" ] ; then
-    echo $MESSAGE
-  fi
-  echo "Usage : $NAME [options] {start|attach|stop|console|status}" 
-  echo ""
-  echo "Options :"
-  echo "  -h --help        : Display this message"
-}
-
 run_app() {
   if [ $STARTED = true ] ; then
     echo "$NAME is already running (PID $PID)"
@@ -128,13 +117,9 @@ run_app() {
 }
 
 start_app() {
-  if [ $STARTED = true ] ; then
-    echo "$NAME is already running (PID $PID)"
-  else
-    mkdir -p $PIPE_DIR
-    mkdir -p $LOG_DIR
-    $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
-  fi
+  mkdir -p $PIPE_DIR
+  mkdir -p $LOG_DIR
+  $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
 }
 
 attach_app() {
@@ -147,7 +132,7 @@ attach_app() {
 
 stop_app() {
   if [ $STARTED = true ] ; then
-    if ! jorel_nodetool "stop"; then
+    if ! jorel_nodetool "stop" >/dev/null ; then
       exit 1
     fi
     while $(kill -s 0 "$PID" 2>/dev/null); do
@@ -178,6 +163,17 @@ execute() {
   fi
 }
 
+help() {
+  MESSAGE=$1
+  if [ "x$MESSAGE" != "x" ] ; then
+    echo $MESSAGE
+  fi
+  echo "Usage : $NAME [options] {start|stop|restart|restart-hard|reboot|console|attach|status|info|pid|ping|exec|upgrade|downgrade|install|unpack}"
+  echo ""
+  echo "Options :"
+  echo "  -h --help        : Display this message"
+}
+
 while [ $# -ne 0 ] ; do
   case $1 in
     console) 
@@ -189,12 +185,14 @@ while [ $# -ne 0 ] ; do
     stop)
       stop_app ;;
     restart)
-      if ! jorel_nodetool "restart"; then
+      if ! jorel_nodetool "restart" >/dev/null; then
         exit 1
       fi
       ;;
+    restart-hard)
+      stop_app ; sleep 2 ; start_app ;;
     reboot)
-      if ! jorel_nodetool "reboot"; then
+      if ! jorel_nodetool "reboot" >/dev/null; then
         exit 1
       fi
       ;;
@@ -216,6 +214,36 @@ while [ $# -ne 0 ] ; do
       ;;
     exec)
       shift ; execute "$@" ; exit 0 ;;
+    upgrade|downgrade|install)
+      if [ -z "$2" ]; then
+        echo "Missing package argument"
+        echo "Usage: $NAME $1 {package base name}"
+        echo "NOTE {package base name} MUST NOT include the .tar.gz suffix"
+        exit 1
+      fi
+      # Make sure a node IS running
+      if ! relx_nodetool "ping" > /dev/null; then
+        echo "$NAME is not running!"
+        exit 1
+      fi
+      exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
+        "install" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
+      ;;
+    unpack)
+      if [ -z "$2" ]; then
+        echo "Missing package argument"
+        echo "Usage: $NAME $1 {package base name}"
+        echo "NOTE {package base name} MUST NOT include the .tar.gz suffix"
+        exit 1
+      fi
+      # Make sure a node IS running
+      if ! relx_nodetool "ping" > /dev/null; then
+        echo "Node is not running!"
+        exit 1
+      fi
+      exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
+        "unpack" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
+      ;;
     -h|--help)
       help ; exit 0 ;;
     *)
