@@ -6,6 +6,8 @@
 %%
 %% -------------------------------------------------------------------
 
+-define(TIMEOUT, 60000).
+
 main(Args) ->
     ok = start_epmd(),
     %% Extract the args
@@ -26,14 +28,17 @@ main(Args) ->
             %% a "pong"
             io:format("pong\n");
         ["stop"] ->
-            io:format("~p\n", [rpc:call(TargetNode, init, stop, [], 60000)]);
+            io:format("~p\n", [rpc:call(TargetNode, init, stop, [], ?TIMEOUT)]);
         ["restart"] ->
-            io:format("~p\n", [rpc:call(TargetNode, init, restart, [], 60000)]);
+            io:format("~p\n", [rpc:call(TargetNode, init, restart, [], ?TIMEOUT)]);
         ["reboot"] ->
-            io:format("~p\n", [rpc:call(TargetNode, init, reboot, [], 60000)]);
+            io:format("~p\n", [rpc:call(TargetNode, init, reboot, [], ?TIMEOUT)]);
+        ["version"] ->
+            [Version|_] = [V || {_, V, _, S} <- rpc:call(TargetNode, release_handler, which_releases, [], ?TIMEOUT), S =:= permanent],
+            io:format("~s\n", [Version]);
         ["rpc", Module, Function | RpcArgs] ->
             case rpc:call(TargetNode, list_to_atom(Module), list_to_atom(Function),
-                          [RpcArgs], 60000) of
+                          [RpcArgs], ?TIMEOUT) of
                 ok ->
                     ok;
                 {badrpc, Reason} ->
@@ -44,7 +49,7 @@ main(Args) ->
             end;
         ["rpcterms", Module, Function | ArgsAsString] ->
             case rpc:call(TargetNode, list_to_atom(Module), list_to_atom(Function),
-                          consult(lists:flatten(ArgsAsString)), 60000) of
+                          consult(lists:flatten(ArgsAsString)), ?TIMEOUT) of
                 {badrpc, Reason} ->
                     io:format("RPC to ~p failed: ~p\n", [TargetNode, Reason]),
                     halt(1);

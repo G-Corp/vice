@@ -88,13 +88,15 @@ print_status() {
 }
 
 print_info() {
-  print_status
-
   echo "vm.args        : $VM_ARGS"
   echo "sys.config     : $SYS_CONFIG"
   echo "node name type : $NODE_NAME_TYPE"
   echo "node name      : $NODE_NAME"
   echo "node cookie    : $NODE_COOKIE"
+  if [ $STARTED = true ] ; then
+    echo "PID            : $PID"
+    echo "Version        : $(jorel_nodetool version)"
+  fi
 }
 
 run_app() {
