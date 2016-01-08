@@ -217,8 +217,7 @@ while [ $# -ne 0 ] ; do
     upgrade|downgrade|install)
       if [ -z "$2" ]; then
         echo "Missing package argument"
-        echo "Usage: $NAME $1 {package base name}"
-        echo "NOTE {package base name} MUST NOT include the .tar.gz suffix"
+        echo "Usage: $NAME $1 {version}"
         exit 1
       fi
       # Make sure a node IS running
@@ -232,8 +231,7 @@ while [ $# -ne 0 ] ; do
     unpack)
       if [ -z "$2" ]; then
         echo "Missing package argument"
-        echo "Usage: $NAME $1 {package base name}"
-        echo "NOTE {package base name} MUST NOT include the .tar.gz suffix"
+        echo "Usage: $NAME $1 {version}"
         exit 1
       fi
       # Make sure a node IS running
