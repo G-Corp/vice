@@ -222,7 +222,7 @@ while [ $# -ne 0 ] ; do
         exit 1
       fi
       # Make sure a node IS running
-      if ! relx_nodetool "ping" > /dev/null; then
+      if ! jorel_nodetool "ping" > /dev/null; then
         echo "$NAME is not running!"
         exit 1
       fi
@@ -237,7 +237,7 @@ while [ $# -ne 0 ] ; do
         exit 1
       fi
       # Make sure a node IS running
-      if ! relx_nodetool "ping" > /dev/null; then
+      if ! jorel_nodetool "ping" > /dev/null; then
         echo "Node is not running!"
         exit 1
       fi
