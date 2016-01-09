@@ -5,7 +5,7 @@
 @title Just anOther RELease assembler for Erlang/OTP Releases
 @doc
 
-<img src="https://raw.githubusercontent.com/emedia-project/jorel/erlang-mk/Jor-El.jpeg" alt="Jorel"/>
+<img src="https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg" alt="Jorel"/>
 
 <h2>Install</h2>
 
@@ -73,7 +73,19 @@ To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to yo
 
 <pre>
 DEP_PLUGINS = jorel
-BUILD_DEPS = jorel
+REL_DEPS = jorel
+ 
+dep_jorel = git https://github.com/emedia-project/jorel.git master
+</pre>
+
+This will download and use the last binary released of Jorel.
+
+If you prefer to compile Jorel, add the following lines to your <tt>Makefile</tt> :
+
+<pre>
+DEP_PLUGINS = jorel
+REL_DEPS = jorel
+JOREL_BUILD = true
  
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 </pre>

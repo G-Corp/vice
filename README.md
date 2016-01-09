@@ -8,7 +8,7 @@ __Version:__ 0.1.1
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`greg@g-corp.io`](mailto:greg@g-corp.io)).
 
-![Jorel](https://raw.githubusercontent.com/emedia-project/jorel/erlang-mk/Jor-El.jpeg)
+![Jorel](https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg)
 
 
 ## Install ##
@@ -72,7 +72,20 @@ To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to yo
 ```
 
 DEP_PLUGINS = jorel
-BUILD_DEPS = jorel
+REL_DEPS = jorel
+dep_jorel = git https://github.com/emedia-project/jorel.git master
+
+```
+
+This will download and use the last binary released of Jorel.
+
+If you prefer to compile Jorel, add the following lines to your `Makefile` :
+
+```
+
+DEP_PLUGINS = jorel
+REL_DEPS = jorel
+JOREL_BUILD = true
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 
 ```
@@ -102,5 +115,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/emedia-project/jorel/blob/master/doc/jorel.md" class="module">jorel</a></td></tr></table>
+<tr><td><a href="https://github.com/emedia-project/jorel/blob/plugin/doc/jorel.md" class="module">jorel</a></td></tr></table>
 

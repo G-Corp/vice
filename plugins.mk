@@ -1,7 +1,19 @@
 # Configuration
 
 JOREL_CONFIG ?= jorel.config
+JOREL_BUILD ?= false
+
+JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel
+
+ifeq ($(JOREL_BUILD),true)
 JOREL ?= $(DEPS_DIR)/jorel/jorel
+ifneq ($(findstring jorel,$(BUILD_DEPS)),jorel)
+BUILD_DEPS += jorel
+endif
+else
+JOREL ?= $(CURDIR)/jorel
+endif
+
 export JOREL
 
 help::
@@ -47,5 +59,11 @@ ifdef c
 endif
 	$(verbose) $(JOREL) $(cmd) $x
 
+ifeq ($(JOREL_BUILD),true)
 $(JOREL): deps
+else
+$(JOREL):
+	$(gen_verbose) $(call core_http_get,$(JOREL),$(JOREL_URL))
+	$(verbose) chmod +x $(JOREL)
+endif
 
