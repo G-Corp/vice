@@ -11,7 +11,7 @@ ifneq ($(findstring jorel,$(BUILD_DEPS)),jorel)
 BUILD_DEPS += jorel
 endif
 else
-JOREL ?= $(CURDIR)/jorel
+JOREL ?= $(CURDIR)/.jorel/jorel
 endif
 
 export JOREL
@@ -63,6 +63,7 @@ ifeq ($(JOREL_BUILD),true)
 $(JOREL): deps
 else
 $(JOREL):
+	$(verbose) mkdir -p $(CURDIR)/.jorel
 	$(gen_verbose) $(call core_http_get,$(JOREL),$(JOREL_URL))
 	$(verbose) chmod +x $(JOREL)
 endif
