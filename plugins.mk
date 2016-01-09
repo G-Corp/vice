@@ -66,5 +66,8 @@ $(JOREL):
 	$(verbose) mkdir -p $(CURDIR)/.jorel
 	$(gen_verbose) $(call core_http_get,$(JOREL),$(JOREL_URL))
 	$(verbose) chmod +x $(JOREL)
+
+distclean::
+	$(verbose) rm -rf $(CURDIR)/.jorel
 endif
 
