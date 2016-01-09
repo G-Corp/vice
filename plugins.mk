@@ -7,9 +7,6 @@ JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel
 
 ifeq ($(JOREL_BUILD),true)
 JOREL ?= $(DEPS_DIR)/jorel/jorel
-ifneq ($(findstring jorel,$(BUILD_DEPS)),jorel)
-BUILD_DEPS += jorel
-endif
 else
 JOREL ?= $(CURDIR)/.jorel/jorel
 endif
@@ -40,7 +37,7 @@ else
 jorel.exec: $(JOREL_CONFIG) jorel.run
 endif
 
-jorel.run: app $(JOREL)
+jorel.run: app $(JOREL) 
 ifndef cmd
 	$(error Usage: $(MAKE) jorel.exec cmd=CMD)
 endif
@@ -60,7 +57,7 @@ endif
 	$(verbose) $(JOREL) $(cmd) $x
 
 ifeq ($(JOREL_BUILD),true)
-$(JOREL): deps
+$(JOREL): rel-deps
 else
 $(JOREL):
 	$(verbose) mkdir -p $(CURDIR)/.jorel
