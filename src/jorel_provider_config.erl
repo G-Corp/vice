@@ -73,7 +73,7 @@ do(State) ->
               {boot, BootApps},
               {all_deps, false},
               {output_dir, "_jorel"},
-              {exclude_dirs, ["_jorel", "_relx", "_rel", "test"]},
+              {exclude_dirs, ?EXCLUDE},
               {include_src, false},
               {include_erts, true},
               {disable_relup, false},
