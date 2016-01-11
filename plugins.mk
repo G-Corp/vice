@@ -60,7 +60,7 @@ ifeq ($(JOREL_BUILD),true)
 $(JOREL): rel-deps
 else
 $(JOREL):
-	$(verbose) mkdir -p $(CURDIR)/.jorel
+	$(verbose) mkdir -p $(dir $(JOREL))
 	$(gen_verbose) $(call core_http_get,$(JOREL),$(JOREL_URL))
 	$(verbose) chmod +x $(JOREL)
 
