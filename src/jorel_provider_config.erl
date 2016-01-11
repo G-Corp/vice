@@ -75,7 +75,7 @@ do(State) ->
               {output_dir, "_jorel"},
               {exclude_dirs, ["_jorel", "_relx", "_rel", "test"]},
               {include_src, false},
-              {include_erts, false},
+              {include_erts, true},
               {disable_relup, false},
               {providers, [jorel_provider_tar, jorel_provider_zip, jorel_provider_deb, jorel_provider_git_tag]}
              ],
