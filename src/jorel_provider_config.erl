@@ -6,7 +6,7 @@
 -export([init/1, do/1]).
 
 -define(PROVIDER, gen_config).
--define(EXCLUDE, ["_jorel", "_relx", "_rel", "test"]).
+-define(EXCLUDE, ["**/_jorel/**", "**/_rel*/**", "**/test/**", "**/.*/**"]).
 
 init(State) ->
   jorel_config:add_provider(
