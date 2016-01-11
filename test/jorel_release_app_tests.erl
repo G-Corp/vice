@@ -8,8 +8,7 @@ jorel_release_jorel_sample_test_() ->
        efile:copy("test/test_apps/jorel_sample", ".tests", [recursive])
    end,
    fun(_) ->
-        %_ = efile:remove_recursive(".tests")
-        ok
+        _ = efile:remove_recursive(".tests")
    end,
    [
     {timeout, 200, fun() ->
