@@ -35,6 +35,8 @@ EDOC_OPTS = {doclet, edown_doclet} \
 						, {image, ""} \
 						, {top_level_readme, {"./README.md", "https://github.com/emedia-project/${PROJECT}"}}
 
+EUNIT_OPTS = verbose, {report, {eunit_surefire, [{dir, "test"}]}}
+
 ESCRIPT_SYS_CONFIG = "config/jorel.config"
 
 VERSION = $(shell ./tag)
@@ -50,5 +52,8 @@ else
 endif
 
 dev: deps app
-	@erl -pa ebin include deps/*/ebin deps/*/include
+	$(verbose) erl -pa ebin include deps/*/ebin deps/*/include
+
+distclean::
+	$(verbose) rm -rf .tests
 
