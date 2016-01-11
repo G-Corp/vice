@@ -65,6 +65,6 @@ $(JOREL):
 	$(verbose) chmod +x $(JOREL)
 
 distclean::
-	$(verbose) rm -rf $(CURDIR)/.jorel
+	$(verbose) rm -rf $(dir $(JOREL))
 endif
 
