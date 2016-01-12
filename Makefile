@@ -23,6 +23,8 @@ dep_erlydtl = git https://github.com/erlydtl/erlydtl.git master
 dep_tempfile = git https://github.com/botsunit/tempfile.git master
 dep_edown = git https://github.com/uwiger/edown.git master
 
+tests:: escript
+
 include erlang.mk
 
 all:: escript
