@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Grégoire Lejeune, 2015-2016 G-Corp
 
-__Version:__ 0.1.1
+__Version:__ 0.2.0
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`greg@g-corp.io`](mailto:greg@g-corp.io)).
 
