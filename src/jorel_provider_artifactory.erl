@@ -7,8 +7,14 @@
 -define(PROVIDER, artifactory).
 
 init(State) ->
-  ok = application:start(inets),
-  {ok, _} = application:ensure_all_started(ssl),
+  case application:ensure_all_started(inets) of
+    {ok, _} -> ok;
+    _ -> ?HALT("Can't start inets", [])
+  end,
+  case application:ensure_all_started(ssl) of
+    {ok, _} -> ok;
+    _ -> ?HALT("Can't start ssl", [])
+  end,
   {artifactory, Data} = jorel_config:get(State, artifactory, []),
   Archive = buclists:keyfind(deploy, 1, Data, zip),
   jorel_config:add_provider(

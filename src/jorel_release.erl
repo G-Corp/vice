@@ -24,6 +24,14 @@ get_erts(State) ->
   end.
 
 get_erts_from_url(URL) ->
+  case application:ensure_all_started(inets) of
+    {ok, _} -> ok;
+    _ -> ?HALT("Can't start inets", [])
+  end,
+  case application:ensure_all_started(ssl) of
+    {ok, _} -> ok;
+    _ -> ?HALT("Can't start ssl", [])
+  end,
   case http_uri:parse(URL) of
     {ok, {http, _, _, _, P, _}} ->
       Archive = filename:join([?JOREL_TMP|string:tokens(P, "/")]),
