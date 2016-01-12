@@ -1,13 +1,6 @@
 PROJECT = jorel
 
-DEPS = sh \
-			 erlconf \
-			 vsn \
-			 color \
-			 bucs \
-			 getopt \
-			 erlydtl \
-			 tempfile
+DEPS = sh erlconf vsn color bucs getopt erlydtl tempfile
 
 DOC_DEPS = edown
 
