@@ -22,6 +22,7 @@ init(State) ->
 
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
+  ?INFO("= Elixir project: ~p", [jorel_elixir:exist()]),
   RelName = case lists:keyfind(relname, 1, State) of
               {relname, R} -> 
                 bucs:to_atom(R);
@@ -38,7 +39,8 @@ do(State) ->
             end,
   ExApp = case jorel_elixir:exist() of
             true ->
-              [bucs:to_atom(
+              [elixir, 
+               bucs:to_atom(
                  string:strip(
                    jorel_cmd:run(
                      jorel_elixir:iex() ++ " --erl \"+A0\" -e " ++
@@ -57,17 +59,19 @@ do(State) ->
             {config, C} -> C;
             _ -> "jorel.config"
           end,
-  BootApps = lists:foldl(fun(App, Acc) ->
-                             [bucs:to_atom(filename:basename(App, ".app"))|Acc]
-                         end, [sasl], 
-                         ExApp ++ filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app")),
-  AllApps = lists:foldl(fun(App, Acc) ->
-                             [bucs:to_atom(filename:basename(App, ".app"))|Acc]
-                         end, [sasl], 
-                        bucfile:wildcard("**/ebin/*.app", ?EXCLUDE, [expand_path])),
+  BootApps = lists:usort(
+               lists:foldl(fun(App, Acc) ->
+                               [bucs:to_atom(filename:basename(App, ".app"))|Acc]
+                           end, [sasl], 
+                           ExApp ++ filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app"))),
+  AllApps = lists:usort(
+              lists:foldl(fun(App, Acc) ->
+                              [bucs:to_atom(filename:basename(App, ".app"))|Acc]
+                          end, [sasl], 
+                          ExApp ++ bucfile:wildcard("**/ebin/*.app", ?EXCLUDE, [expand_path]))),
   case erlconf:open('jorel.config', Output, [{save_on_close, false}]) of
     {ok, _} ->
-      ?INFO("== Create file ~s", [Output]),
+      ?INFO("* Create file ~s", [Output]),
       Term = [
               {release, {RelName, RelVsn}, AllApps},
               {boot, BootApps},

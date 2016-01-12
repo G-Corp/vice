@@ -17,10 +17,18 @@
         ]).
 
 get_erts(State) ->
-  case jorel_config:get(State, erts, local) of
-    {erts, local} -> code:root_dir();
-    {erts, "jorel://" ++ Path} -> get_erts_from_url(?JOREL_IN ++ Path ++ ".tgz");
-    {erts, URL} -> get_erts_from_url(URL)
+  case jorel_config:get(State, erts_info, false) of
+    {erts_info, {_, _, _} = ERTSInfo} ->
+      ERTSInfo;
+    {erts_info, _} ->
+      case jorel_config:get(State, include_erts, true) of
+        {include_erts, true} -> {ok, erlang:system_info(version), code:root_dir()};
+        {include_erts, false} -> {false, erlang:system_info(version), code:root_dir()};
+        {include_erts, "jorel://" ++ Path} -> get_erts_from_url(?JOREL_IN ++ Path ++ ".tgz");
+        {include_erts, URL = "http://" ++ _} -> get_erts_from_url(URL);
+        {include_erts, URL = "https://" ++ _} -> get_erts_from_url(URL);
+        {include_erts, Path} -> find_erts_info(Path)
+      end
   end.
 
 get_erts_from_url(URL) ->
@@ -50,7 +58,7 @@ get_erts_from_url(URL) ->
                             ok ->
                               _ = file:delete(Archive),
                               ?INFO("= Download ERTS compete", []),
-                              Path;
+                              find_erts_info(Path);
                             _ ->
                               ?HALT("!!! Faild to download ERTS", [])
                           end;
@@ -64,10 +72,29 @@ get_erts_from_url(URL) ->
                   ?HALT("!!! Can't create directory ~w: ~p", [Install, Reason3])
               end;
             true ->
-              Path
+              find_erts_info(Path)
           end;
     _ ->
       ?HALT("!!! Invalid URL for ERTS", [])
+  end.
+
+find_erts_info(Path) ->
+  case filelib:is_dir(Path) of
+    true ->
+      case filelib:wildcard(filename:join([Path, "erts-*"])) of
+        [ERTS|_] -> 
+          case re:run(ERTS, "^.*-(.*)$", [{capture, all_but_first, list}]) of
+            {match,[Version]} -> 
+              ?INFO("= Will use ERTS ~s from ~s", [Version, Path]),
+              {ok, Version, Path};
+            _ ->
+              ?HALT("!!! Can't retrieve ERTS informations from ~p", [Path])
+          end;
+        _ -> 
+          ?HALT("!!! No ERTS found at ~s", [Path])
+      end;
+    false ->
+      ?HALT("!!! Can't find ERTS at ~s", [Path])
   end.
 
 make_root(State) ->
@@ -202,6 +229,7 @@ make_bin(State) ->
   {binfile, BinFile} = jorel_config:get(State, binfile),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   {relname, Name} = jorel_config:get(State, relname),
+  {_, ERTSVersion, _} = get_erts(State),
   BinFileWithVsn = BinFile ++ "-" ++ Vsn,
   ?INFO("* Generate ~s", [BinFile]),
   _ = case bucfile:make_dir(filename:dirname(BinFile)) of
@@ -209,7 +237,7 @@ make_bin(State) ->
         {error, Reason} ->
           ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
       end,
-  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, erlang:system_info(version)}]) of
+  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok ->
@@ -270,23 +298,15 @@ make_upgrade_scripts(State) ->
   end.
 
 include_erts(State) ->
-  case case jorel_config:get(State, include_erts, true) of
-         {include_erts, false} -> false;
-         {include_erts, true} -> get_erts(State);
-         {include_erts, X} when is_list(X) -> filename:absname(X);
-         {include_erts, Y} ->
-           ?HALT("!!! Invalid value for parameter include_erts: ~p", [Y])
-       end of
-    false ->
-      ok;
-    Path ->
-      ?INFO("* Add ERTS ~s from ~s", [erlang:system_info(version), Path]),
+  case get_erts(State) of
+    {ok, ERTSVersion, Path} ->
+      ?INFO("* Add ERTS ~s from ~s", [ERTSVersion, Path]),
       {outdir, Outdir} = jorel_config:get(State, outdir),
       bucfile:copy(
-        filename:join(Path, "erts-" ++ erlang:system_info(version)),
+        filename:join(Path, "erts-" ++ ERTSVersion),
         Outdir,
         [recursive]),
-      ErtsBinDir = filename:join([Outdir, "erts-" ++ erlang:system_info(version), "bin"]),
+      ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
       ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
       %%! Workaround for pre OTP 17.0: start.src does
       %%! not have correct permissions, so the above 'preserve' option did not help
@@ -304,7 +324,9 @@ include_erts(State) ->
                         filename:join([Outdir, "bin", "start_clean.boot"])),
       ?INFO("* Install start.boot", []),
       ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
-                        filename:join([Outdir, "bin", "start.boot"]))
+                        filename:join([Outdir, "bin", "start.boot"]));
+    _ ->
+      ok
   end.
 
 make_relup(State, AllApps) ->
@@ -447,12 +469,13 @@ find_all_deps(State, Apps) ->
 
 resolv_apps(_, [], _, Apps) -> Apps;
 resolv_apps(State, [App|Rest], Done, AllApps) ->
+  {_, _, ERTSPath} = get_erts(State),
   {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps, []),
   case lists:member(App, IgnoreDeps) of
     false ->
       {App, Vsn, Path, Deps} = case resolv_local(State, App) of
                                  notfound ->
-                                   case resolv_app(State, filename:join([get_erts(State), "lib", "**"]), App) of
+                                   case resolv_app(State, filename:join([ERTSPath, "lib", "**"]), App) of
                                      notfound ->
                                        case jorel_elixir:exist() of
                                          true ->
@@ -596,12 +619,13 @@ make_rel_file(State, RelDir, File, Type) ->
   end.
 
 make_release_file(State, RelDir, Apps, Ext) ->
+  {_, ERTSVersion, _} = get_erts(State),
   {relname, Name} = jorel_config:get(State, relname),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   Params = [
             {relname, Name},
             {relvsn, Vsn},
-            {ertsvsn, erlang:system_info(version)},
+            {ertsvsn, ERTSVersion},
             {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
   Dest = filename:join(RelDir, bucs:to_list(Name) ++ Ext),
