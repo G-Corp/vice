@@ -16,7 +16,7 @@
 
 ERLANG_MK_FILENAME := $(realpath $(lastword $(MAKEFILE_LIST)))
 
-ERLANG_MK_VERSION = 2.0.0-pre.2-60-g1e6fc7b
+ERLANG_MK_VERSION = 2.0.0-pre.2-72-g86ddfb5
 
 # Core configuration.
 
@@ -418,6 +418,14 @@ pkg_boss_db_homepage = https://github.com/ErlyORM/boss_db
 pkg_boss_db_fetch = git
 pkg_boss_db_repo = https://github.com/ErlyORM/boss_db
 pkg_boss_db_commit = master
+
+PACKAGES += brod
+pkg_brod_name = brod
+pkg_brod_description = Kafka client in Erlang
+pkg_brod_homepage = https://github.com/klarna/brod
+pkg_brod_fetch = git
+pkg_brod_repo = https://github.com/klarna/brod.git
+pkg_brod_commit = master
 
 PACKAGES += bson
 pkg_bson_name = bson
@@ -3539,6 +3547,14 @@ pkg_stripe_fetch = git
 pkg_stripe_repo = https://github.com/mattsta/stripe-erlang
 pkg_stripe_commit = v1
 
+PACKAGES += supervisor3
+pkg_supervisor3_name = supervisor3
+pkg_supervisor3_description = OTP supervisor with additional strategies
+pkg_supervisor3_homepage = https://github.com/klarna/supervisor3
+pkg_supervisor3_fetch = git
+pkg_supervisor3_repo = https://github.com/klarna/supervisor3.git
+pkg_supervisor3_commit = master
+
 PACKAGES += surrogate
 pkg_surrogate_name = surrogate
 pkg_surrogate_description = Proxy server written in erlang. Supports reverse proxy load balancing and forward proxy with http (including CONNECT), socks4, socks5, and transparent proxy modes.
@@ -5078,11 +5094,14 @@ $(if $(filter-out -Werror,$1),\
 		$(shell echo $1 | cut -b 2-)))
 endef
 
+define compat_erlc_opts_to_list
+	[$(call comma_list,$(foreach o,$(call compat_prepare_erlc_opts,$1),$(call compat_convert_erlc_opts,$o)))]
+endef
+
 define compat_rebar_config
 {deps, [$(call comma_list,$(foreach d,$(DEPS),\
 	{$(call dep_name,$d),".*",{git,"$(call dep_repo,$d)","$(call dep_commit,$d)"}}))]}.
-{erl_opts, [$(call comma_list,$(foreach o,$(call compat_prepare_erlc_opts,$(ERLC_OPTS)),\
-	$(call compat_convert_erlc_opts,$o)))]}.
+{erl_opts, $(call compat_erlc_opts_to_list,$(ERLC_OPTS))}.
 endef
 
 $(eval _compat_rebar_config = $$(compat_rebar_config))
@@ -5101,12 +5120,12 @@ MAN_SECTIONS ?= 3 7
 
 docs:: asciidoc
 
-asciidoc: distclean-asciidoc doc-deps asciidoc-guide asciidoc-manual
+asciidoc: asciidoc-guide asciidoc-manual
 
 ifeq ($(wildcard doc/src/guide/book.asciidoc),)
 asciidoc-guide:
 else
-asciidoc-guide:
+asciidoc-guide: distclean-asciidoc doc-deps
 	a2x -v -f pdf doc/src/guide/book.asciidoc && mv doc/src/guide/book.pdf doc/guide.pdf
 	a2x -v -f chunked doc/src/guide/book.asciidoc && mv doc/src/guide/book.chunked/ doc/html/
 endif
@@ -5114,7 +5133,7 @@ endif
 ifeq ($(wildcard doc/src/manual/*.asciidoc),)
 asciidoc-manual:
 else
-asciidoc-manual:
+asciidoc-manual: distclean-asciidoc doc-deps
 	for f in doc/src/manual/*.asciidoc ; do \
 		a2x -v -f manpage $$f ; \
 	done
@@ -5129,7 +5148,7 @@ install-docs:: install-asciidoc
 install-asciidoc: asciidoc-manual
 	for s in $(MAN_SECTIONS); do \
 		mkdir -p $(MAN_INSTALL_PATH)/man$$s/ ; \
-		install -g 0 -o 0 -m 0644 doc/man$$s/*.gz $(MAN_INSTALL_PATH)/man$$s/ ; \
+		install -g `id -u` -o `id -g` -m 0644 doc/man$$s/*.gz $(MAN_INSTALL_PATH)/man$$s/ ; \
 	done
 endif
 
@@ -6032,13 +6051,15 @@ EDOC_OPTS ?=
 
 # Core targets.
 
-docs:: distclean-edoc edoc
+ifneq ($(wildcard doc/overview.edoc),)
+docs:: edoc
+endif
 
 distclean:: distclean-edoc
 
 # Plugin-specific targets.
 
-edoc: doc-deps
+edoc: distclean-edoc doc-deps
 	$(gen_verbose) $(ERL) -eval 'edoc:application($(PROJECT), ".", [$(EDOC_OPTS)]), halt().'
 
 distclean-edoc:
