@@ -8,4 +8,4 @@
                                                  string:strip(io:get_line(Prompt1), both, 10)
                                              end, [Fmt, Args, Prompt])).
 -define(JOREL_IN, "http://jorel.in/erts/").
--define(JOREL_TMP, efile:expand_path(filename:join(["~", ".jorel"]))).
+-define(JOREL_TMP, bucfile:expand_path(filename:join(["~", ".jorel"]))).
