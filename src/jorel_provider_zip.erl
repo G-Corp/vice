@@ -23,10 +23,10 @@ do(State) ->
   {output_dir, Outdir} = jorel_config:get(State, output_dir),
   {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
-  ZipFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".zip",
-  eos:in(Outdir, fun() ->
+  ZipFile = bucs:to_list(RelName) ++ "-" ++ RelVsn ++ ".zip",
+  bucos:in(Outdir, fun() ->
                      ?INFO("Create ~s", [ZipFile]),
-                     zip:create(ZipFile, [eutils:to_list(RelName)])
+                     zip:create(ZipFile, [bucs:to_list(RelName)])
                  end),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.

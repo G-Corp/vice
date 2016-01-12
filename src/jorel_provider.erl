@@ -44,7 +44,7 @@ run_provider(State, Provider, ProviderMod) ->
 
 has_run(State, Provider) ->
   {run, Run} = jorel_config:get(State, run, []),
-  elists:include(Run, Provider).
+  lists:member(Provider, Run).
 
 terminate(State, Provider) ->
   {run, Run} = jorel_config:get(State, run, []),

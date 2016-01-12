@@ -51,8 +51,8 @@ config_to_sys_config(Config, SysConfig, Env) ->
           TmpFile = tempfile:name("jorel", [{ext, "ex"}]),
           case file:write_file(TmpFile, Data, [write, binary]) of
             ok -> 
-              Cmd = string:join([ELIXIR, TmpFile, Config, SysConfig, eutils:to_list(Env)], " "),
-              eutils:to_atom(
+              Cmd = string:join([ELIXIR, TmpFile, Config, SysConfig, bucs:to_list(Env)], " "),
+              bucs:to_atom(
                 string:strip(
                   jorel_cmd:run(lists:flatten(Cmd)),
                   right,

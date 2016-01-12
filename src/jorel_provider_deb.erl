@@ -43,8 +43,8 @@ do(State) ->
              {"debian/postinst", deb_debian_postinst_dtl},
              {"debian/postrm", deb_debian_postrm_dtl},
              {"debian/rules", deb_debian_rules_dtl},
-             {"debian/" ++ eutils:to_string(RelName) ++ ".init", deb_debian_init_dtl},
-             {"debian/" ++ eutils:to_string(RelName) ++ ".install", deb_debian_install_dtl}
+             {"debian/" ++ bucs:to_string(RelName) ++ ".init", deb_debian_init_dtl},
+             {"debian/" ++ bucs:to_string(RelName) ++ ".install", deb_debian_install_dtl}
             ],
   {deb, DebData} = jorel_config:get(State, deb, []),
   DebData1 = DebData ++
@@ -55,8 +55,8 @@ do(State) ->
       {true, Erts} when Erts =/= undefined -> [{erts_version, Erts}];
       _ -> []
     end,
-  eos:in(filename:join([Outdir, RelName]), fun() ->
-                        case efile:make_dir("debian") of
+  bucos:in(filename:join([Outdir, RelName]), fun() ->
+                        case bucfile:make_dir("debian") of
                           ok ->
                             lists:foreach(fun({File, Template}) ->
                                               ?INFO("* Create file ~s", [File]),

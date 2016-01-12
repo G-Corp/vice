@@ -10,7 +10,7 @@ init(State) ->
   ok = application:start(inets),
   {ok, _} = application:ensure_all_started(ssl),
   {artifactory, Data} = jorel_config:get(State, artifactory, []),
-  Archive = elists:keyfind(deploy, 1, Data, zip),
+  Archive = buclists:keyfind(deploy, 1, Data, zip),
   jorel_config:add_provider(
     State,
     {?PROVIDER,
@@ -18,7 +18,7 @@ init(State) ->
       module => ?MODULE,
         depends => [Archive],
         desc => "Create an archive (" ++
-                eutils:to_string(Archive) ++
+                bucs:to_string(Archive) ++
                 ") and deploy it to artifactory"
        }
     }
@@ -29,18 +29,18 @@ do(State) ->
   {output_dir, Outdir} = jorel_config:get(State, output_dir),
   {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
-  ZipFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
+  ZipFile = bucs:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
   ZipFull = filename:join(Outdir, ZipFile),
   {artifactory, Data} = jorel_config:get(State, artifactory, []),
-  URL = case elists:keyfind(url, 1, Data, os:getenv("ARTIFACTORY_URL")) of
+  URL = case buclists:keyfind(url, 1, Data, os:getenv("ARTIFACTORY_URL")) of
           false -> ?HALT("Missing artifactory url", []);
           U -> U
         end,
-  Repository = case elists:keyfind(repository, 1, Data, os:getenv("ARTIFACTORY_REPOSITORY")) of
+  Repository = case buclists:keyfind(repository, 1, Data, os:getenv("ARTIFACTORY_REPOSITORY")) of
                  false -> ?HALT("Missing artifactory repository", []);
                  R -> R
                end,
-  Username = case elists:keyfind(username, 1, Data, undefined) of
+  Username = case buclists:keyfind(username, 1, Data, undefined) of
                undefined -> undefined;
                env -> case os:getenv("ARTIFACTORY_USERNAME") of
                         false -> ?HALT("ARTIFACTORY_USERNAME not set", []);
@@ -48,7 +48,7 @@ do(State) ->
                       end;
                L -> L
              end,
-  Password = case elists:keyfind(password, 1, Data, undefined) of
+  Password = case buclists:keyfind(password, 1, Data, undefined) of
                undefined -> undefined;
                env -> case os:getenv("ARTIFACTORY_PASSWORD") of
                         false -> ?HALT("ARTIFACTORY_PASSWORD not set", []);
@@ -60,12 +60,12 @@ do(State) ->
                  Username =:= undefined orelse Password =:= undefined -> [];
                  true -> [{"Authorization", "Basic " ++ base64:encode_to_string(Username ++ ":" ++ Password)}]
                end,
-  URL1 = URL ++ "/" ++ Repository ++ "/" ++ eutils:to_list(RelName) ++ "/" ++ RelVsn ++ "/" ++ ZipFile,
+  URL1 = URL ++ "/" ++ Repository ++ "/" ++ bucs:to_list(RelName) ++ "/" ++ RelVsn ++ "/" ++ ZipFile,
   Body = case file:read_file(ZipFull) of
            {ok, B} -> B;
            _ -> ?HALT("Can't read tgz file", [])
          end,
-  Header = case elists:keyfind(checksum, 1, Data) of
+  Header = case buclists:keyfind(checksum, 1, Data) of
              false -> [{"X-Checksum-Sha1", hexstring(crypto:hash(sha, Body))}|AuthHeader];
              Checksum -> [{"X-Checksum-Deploy", "true"}, {"X-Checksum-Sha1", Checksum}|AuthHeader]
            end,

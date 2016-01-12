@@ -35,7 +35,7 @@ run(Options, Commands) ->
   State4 = lists:foldl(fun(P, S) ->
                            P:init(S)
                        end, State3, Providers3),
-  Commands2 = case lists:map(fun eutils:to_atom/1, Commands) of
+  Commands2 = case lists:map(fun bucs:to_atom/1, Commands) of
                 [] -> [release];
                 Commands1 -> Commands1
               end,
@@ -45,7 +45,7 @@ run(Options, Commands) ->
   ok.
 
 add_provider(State, Providers, Provider) ->
-  case elists:include(Providers, Provider) of
+  case lists:member(Provider, Providers) of
     true ->
       {State, Providers};
     false ->
@@ -61,7 +61,7 @@ opts() ->
    {help,         $h,        "help",         undefined,                "Display this help"},
    {version,      $V,        "version",      undefined,                "Display version"},
    {output_dir,   $o,        "output-dir",   {string, "./_jorel"},     "Output directory"},
-   {exclude_dirs, $e,        "exclude-dirs", {list, ["_jorel"]},       "Exclude directories"},
+   {exclude_dirs, $e,        "exclude-dirs", list,                     "Exclude directories"},
    {include_src,  undefined, "include-src",  undefined,                "Include source"}
   ].
 

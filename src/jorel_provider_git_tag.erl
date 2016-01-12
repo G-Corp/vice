@@ -114,16 +114,16 @@ create_erlang_mk_release(Version, RebarDeps) ->
   MakefileForTag = "Makefile." ++ Version,
   Makefile = jorel_erlang_mk:parse_makefile("Makefile"),
   Makefile1 = lists:foldl(fun(Dep, TmpMakefile) ->
-                              DepKey = eutils:to_atom("dep_" ++ Dep),
+                              DepKey = bucs:to_atom("dep_" ++ Dep),
                               case lists:keyfind(DepKey, 1, TmpMakefile) of
                                 {DepKey, [Git, GitURL, Branch]} ->
-                                  case lists:keyfind(eutils:to_atom(Dep), 1, RebarDeps) of
+                                  case lists:keyfind(bucs:to_atom(Dep), 1, RebarDeps) of
                                     {_, _, {git, _, {_, RebarVersion}}} ->
                                       lists:keyreplace(DepKey, 1, TmpMakefile, 
                                                        {DepKey, [Git, GitURL, RebarVersion]});
                                     _ ->
                                       AvailV = lists:foldl(fun({BType, BVersion}, Acc) ->
-                                                               maps:put(BVersion, eutils:to_atom(BType), Acc)
+                                                               maps:put(BVersion, bucs:to_atom(BType), Acc)
                                                            end, #{}, remote_tags(GitURL)),
                                       UseVersion = deps_version(Dep, Branch, AvailV),
                                       lists:keyreplace(DepKey, 1, TmpMakefile, 
@@ -132,7 +132,7 @@ create_erlang_mk_release(Version, RebarDeps) ->
                                 _ ->
                                   TmpMakefile
                               end
-                          end, Makefile, elists:keyfind(deps, 1, Makefile, [])),
+                          end, Makefile, buclists:keyfind(deps, 1, Makefile, [])),
   file:write_file(MakefileForTag, jorel_erlang_mk:gen_makefile(Makefile1), [write]),
   MakefileForTag.
 
@@ -145,12 +145,12 @@ create_rebar_release(Version) ->
                         ({Name, Vsn, {Git, GitURL, Branch}}, DepsAcc) ->
                           {CurV, AvailV} = lists:foldl(
                                              fun({BType, BVersion}, {CurVersion, Acc}) ->
-                                                 {CurVersion, maps:put(BVersion, eutils:to_atom(BType), Acc)}
+                                                 {CurVersion, maps:put(BVersion, bucs:to_atom(BType), Acc)}
                                              end,
                                              if
                                                is_tuple(Branch) ->
                                                  {BType, BVersion} = Branch,
-                                                 {BVersion, maps:put(BVersion, eutils:to_atom(BType), #{})};
+                                                 {BVersion, maps:put(BVersion, bucs:to_atom(BType), #{})};
                                                true ->
                                                  {Branch, maps:put(Branch, branch, #{})}
                                              end,
@@ -219,7 +219,7 @@ deps_version(Name, Version, AvailableVersions) ->
       case ?ASK("Version for dependency ~s ? [~s]", [Name, Version], ": ") of
         [] -> Version;
         V ->
-          case elists:include(Versions, V) of
+          case lists:member(V, Versions) of
             true -> V;
             false ->
               ?ERROR("!! Invalid version ~p for ~s. Use ~p", [V, Name, Versions]),
@@ -288,7 +288,7 @@ app_files() ->
   lists:foldl(fun(App, Acc) ->
                   case filename:extension(App) of
                     ".app" ->
-                      case elists:include(AppFiles, filename:basename(App) ++ ".src") of
+                      case lists:member(filename:basename(App) ++ ".src", AppFiles) of
                         true -> Acc;
                         false -> [App|Acc]
                       end;

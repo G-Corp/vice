@@ -83,7 +83,7 @@ parse_line1(Data, Device, IsNextLine) ->
   end.
 
 gen_makefile(Makefile) ->
-  eutils:to_binary(
+  bucs:to_binary(
     lists:foldl(fun
                   ({raw, Line}, Acc) ->
                     Acc ++ Line;
@@ -101,5 +101,5 @@ key_to_str(test_deps) -> "TEST_DEPS";
 key_to_str(doc_deps) -> "DOC_DEPS";
 key_to_str(rel_deps) -> "REL_DEPS";
 key_to_str(shell_deps) -> "SHELL_DEPS";
-key_to_str(X) -> eutils:to_string(X).
+key_to_str(X) -> bucs:to_string(X).
 

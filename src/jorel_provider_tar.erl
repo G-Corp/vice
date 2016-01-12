@@ -23,10 +23,10 @@ do(State) ->
   {output_dir, Outdir} = jorel_config:get(State, output_dir),
   {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
-  TarFile = eutils:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
-  eos:in(Outdir, fun() ->
+  TarFile = bucs:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
+  bucos:in(Outdir, fun() ->
                      ?INFO("Create ~s", [TarFile]),
-                     erl_tar:create(TarFile, [eutils:to_list(RelName)], [compressed])
+                     erl_tar:create(TarFile, [bucs:to_list(RelName)], [compressed])
                  end),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.

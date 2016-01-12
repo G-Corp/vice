@@ -15,13 +15,13 @@ to_state(Options, Commands) ->
             {config, ConfigFile} ->
               case filelib:is_file(ConfigFile) of
                 true ->
-                  elists:merge_keylists(
+                  buclists:merge_keylists(
                     1, Options, read_config(ConfigFile));
                 false ->
-                  case elists:include(Commands, gen_config) orelse
-                       elists:include(Commands, "gen_config") orelse
-                       elists:include(Commands, providers) orelse
-                       elists:include(Commands, "providers") of
+                  case lists:member(gen_config, Commands) orelse
+                       lists:member("gen_config", Commands) orelse
+                       lists:member(providers, Commands) orelse
+                       lists:member("providers", Commands) of
                     true -> 
                       Options;
                     _ ->

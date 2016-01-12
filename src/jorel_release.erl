@@ -32,7 +32,7 @@ get_erts_from_url(URL) ->
       _ = case filelib:is_dir(Path) of
             false ->
               ?INFO("= Download ERTS", []),
-              case efile:make_dir(Install) of
+              case bucfile:make_dir(Install) of
                 ok ->
                   case httpc:request(get, {URL, []}, [{autoredirect, true}], []) of
                     {ok, {{_, 200, _}, _, Body}} ->
@@ -64,7 +64,7 @@ get_erts_from_url(URL) ->
 
 make_root(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
-  case efile:make_dir(Outdir) of
+  case bucfile:make_dir(Outdir) of
     ok ->
       ?INFO("* Create directory ~s", [Outdir]);
     {error, Reason} ->
@@ -74,9 +74,9 @@ make_root(State) ->
 resolv_apps(State) ->
   {release, {_, _}, Apps} = jorel_config:get(State, release),
   Apps1 = case jorel_config:get(State, all_deps, false) of
-    {all_deps, true} -> find_all_deps(State, Apps);
-    _ -> Apps
-  end,
+            {all_deps, true} -> find_all_deps(State, Apps);
+            _ -> Apps
+          end,
   resolv_apps(State, Apps1, [], []).
 
 resolv_boot(State, AllApps) ->
@@ -92,7 +92,7 @@ make_lib(State, Apps) ->
           {include_src, true} -> ["src", "include"];
           {include_src, false} -> []
         end,
-  case efile:make_dir(LibDir) of
+  case bucfile:make_dir(LibDir) of
     ok ->
       lists:foreach(fun(#{app := App, vsn := Vsn, path := Path}) ->
                         copy_deps(App, Vsn, Path, LibDir, Src)
@@ -106,7 +106,7 @@ make_release(State, AllApps, BootApps) ->
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   RelDir = filename:join([Outdir, "releases", Vsn]),
   ?INFO("* Create ~s", [RelDir]),
-  case efile:make_dir(RelDir) of
+  case bucfile:make_dir(RelDir) of
     ok ->
       _ = make_rel_file(State, RelDir, "vm.args", vm_args),
       _ = case jorel_elixir:exist() of
@@ -141,7 +141,7 @@ make_release(State, AllApps, BootApps) ->
       tempdir:mktmp(fun(TmpDir) ->
                         BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
                         BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
-                        case efile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
+                        case bucfile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
                           ok -> ok;
                           {error, Reason2} ->
                             ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
@@ -167,14 +167,14 @@ make_boot_script(State, BootApps) ->
                 fun(#{app := App, vsn := Vsn}, Acc) ->
                     filelib:wildcard(
                       filename:join(
-                        [Outdir, "lib", eutils:to_list(App) ++ "-" ++ Vsn, "**", "ebin"]
+                        [Outdir, "lib", bucs:to_list(App) ++ "-" ++ Vsn, "**", "ebin"]
                        )) ++ Acc
                 end, [], BootApps),
   RelDir = filename:join([Outdir, "releases", RelVsn]),
   Paths = [RelDir|AppsPaths],
   ?INFO("* Create boot script", []),
   case systools:make_script(
-         eutils:to_list(Relname) ++ "-" ++ RelVsn,
+         bucs:to_list(Relname) ++ "-" ++ RelVsn,
          [{path, Paths},
           {outdir, RelDir},
           silent]) of
@@ -196,23 +196,23 @@ make_bin(State) ->
   {relname, Name} = jorel_config:get(State, relname),
   BinFileWithVsn = BinFile ++ "-" ++ Vsn,
   ?INFO("* Generate ~s", [BinFile]),
-  _ = case efile:make_dir(filename:dirname(BinFile)) of
-    ok -> ok;
-    {error, Reason} ->
-      ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
-  end,
+  _ = case bucfile:make_dir(filename:dirname(BinFile)) of
+        ok -> ok;
+        {error, Reason} ->
+          ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
+      end,
   case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, erlang:system_info(version)}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok ->
           ?INFO("* Generate ~s", [BinFileWithVsn]),
           Bins = case file:copy(BinFile, BinFileWithVsn) of
-            {ok, _} ->
-              [BinFile, BinFileWithVsn];
-            {error, Reason2} ->
-              ?ERROR("Error while creating ~s: ~p", [BinFileWithVsn, Reason2]),
-              [BinFile]
-          end,
+                   {ok, _} ->
+                     [BinFile, BinFileWithVsn];
+                   {error, Reason2} ->
+                     ?ERROR("Error while creating ~s: ~p", [BinFileWithVsn, Reason2]),
+                     [BinFile]
+                 end,
           lists:foreach(fun(Bin) ->
                             case file:change_mode(Bin, 8#777) of
                               ok -> ok;
@@ -274,7 +274,7 @@ include_erts(State) ->
     Path ->
       ?INFO("* Add ERTS ~s from ~s", [erlang:system_info(version), Path]),
       {outdir, Outdir} = jorel_config:get(State, outdir),
-      efile:copy(
+      bucfile:copy(
         filename:join(Path, "erts-" ++ erlang:system_info(version)),
         Outdir,
         [recursive]),
@@ -292,11 +292,11 @@ include_erts(State) ->
                          {"EMU", "beam"}],
                         [preserve]),
       ?INFO("* Install start_clean.boot", []),
-      ok = efile:copy(filename:join([Path, "bin", "start_clean.boot"]),
-                      filename:join([Outdir, "bin", "start_clean.boot"])),
+      ok = bucfile:copy(filename:join([Path, "bin", "start_clean.boot"]),
+                        filename:join([Outdir, "bin", "start_clean.boot"])),
       ?INFO("* Install start.boot", []),
-      ok = efile:copy(filename:join([Path, "bin", "start.boot"]),
-                      filename:join([Outdir, "bin", "start.boot"]))
+      ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
+                        filename:join([Outdir, "bin", "start.boot"]))
   end.
 
 make_relup(State, AllApps) ->
@@ -305,13 +305,13 @@ make_relup(State, AllApps) ->
       ?INFO("* relup disabled, don't create appup file", []);
     _ ->
       case lists:any(fun(#{app := sasl}) -> true;
-                    (_) -> false
-                 end, AllApps) of
+                        (_) -> false
+                     end, AllApps) of
         true ->
           {relname, RelName} = jorel_config:get(State, relname),
           {relvsn, RelVsn} = jorel_config:get(State, relvsn),
           {outdir, Outdir} = jorel_config:get(State, outdir),
-          VsnApp = eutils:to_string(RelName) ++ "-" ++ RelVsn,
+          VsnApp = bucs:to_string(RelName) ++ "-" ++ RelVsn,
           AppDir = filename:join([Outdir, "lib", VsnApp, "ebin", "*.appup"]),
           case filelib:wildcard(AppDir) of
             [AppupFile] ->
@@ -357,11 +357,11 @@ make_relup(State, AllApps) ->
                               lists:foreach(
                                 fun(#{app := AppName,
                                       vsn := AppVsn}) ->
-                                    LN = eutils:to_string(AppName) ++ "-" ++ AppVsn,
+                                    LN = bucs:to_string(AppName) ++ "-" ++ AppVsn,
                                     IF = filename:join([Outdir, "lib", LN]),
                                     OF = filename:join(["lib", LN]),
                                     lists:foreach(fun(F) ->
-                                                      case erl_tar:add(TD, F, filename:join([OF, efile:relative_from(F, IF)]), []) of
+                                                      case erl_tar:add(TD, F, filename:join([OF, bucfile:relative_from(F, IF)]), []) of
                                                         {error, {F, R}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F, R]);
                                                         _ -> ok
                                                       end
@@ -369,7 +369,7 @@ make_relup(State, AllApps) ->
                                 end, AllApps),
                               RI = filename:join([Outdir, "releases", RelVsn]),
                               lists:foreach(fun(F) ->
-                                                case erl_tar:add(TD, F, efile:relative_from(F, Outdir), []) of
+                                                case erl_tar:add(TD, F, bucfile:relative_from(F, Outdir), []) of
                                                   {error, {F, R}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F, R]);
                                                   _ -> ok
                                                 end
@@ -415,23 +415,24 @@ make_relup(State, AllApps) ->
 
 get_apps_and_versions(App, From) ->
   lists:foldl(fun({Vsn, _}, {Apps, Versions}) ->
-                  {[eutils:to_string(App) ++ "-" ++ Vsn|Apps],
+                  {[bucs:to_string(App) ++ "-" ++ Vsn|Apps],
                    [Vsn|Versions]}
               end, {[], []}, From).
 
 find_all_deps(State, Apps) ->
   {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
-  case efile:wildcard(
+  case bucfile:wildcard(
          filename:join(["**", "ebin", "*.app"]),
-         Exclude
+         Exclude,
+         [expand_path]
         ) of
     [] -> Apps;
     DepsApps ->
       lists:foldl(fun(Path, Acc) ->
                       App = filename:basename(Path, ".app"),
-                      case elists:include(Acc, App) of
+                      case lists:member(App, Acc) of
                         true -> Acc;
-                        false -> [eutils:to_atom(App)|Acc]
+                        false -> [bucs:to_atom(App)|Acc]
                       end
                   end, Apps, DepsApps)
   end.
@@ -465,9 +466,9 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
                                  R -> R
                                end,
       Done1 = [App|Done],
-      Rest1 = elists:delete_if(fun(A) ->
-                                   elists:include(Done1, A)
-                               end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
+      Rest1 = buclists:delete_if(fun(A) ->
+                                     lists:member(A, Done1)
+                                 end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
       resolv_apps(
         State,
         Rest1,
@@ -481,7 +482,7 @@ resolv_local(State, App) ->
   case jorel_elixir:exist() of
     true ->
       {env, MixEnv} = jorel_config:get(State, env, prod),
-      case resolv_app(State, filename:join(["_build", eutils:to_string(MixEnv), "lib", "**", "ebin"]), App) of
+      case resolv_app(State, filename:join(["_build", bucs:to_string(MixEnv), "lib", "**", "ebin"]), App) of
         notfound ->
           resolv_app(State, filename:join("**", "ebin"), App);
         Else ->
@@ -493,14 +494,15 @@ resolv_local(State, App) ->
 
 resolv_app(State, Path, Name) ->
   {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
-  case efile:wildcard(
-         filename:join(Path, eutils:to_list(Name) ++ ".app"),
-         Exclude
+  case bucfile:wildcard(
+         filename:join(Path, bucs:to_list(Name) ++ ".app"),
+         Exclude,
+         [expand_path]
         ) of
     [] -> notfound;
     [AppFile|_] ->
       ?INFO("= Found ~s", [AppFile]),
-      AppPathFile = efile:expand_path(AppFile),
+      AppPathFile = bucfile:expand_path(AppFile),
       case file:consult(AppPathFile) of
         {ok, [{application, Name, Config}]} ->
           Vsn = case lists:keyfind(vsn, 1, Config) of
@@ -521,14 +523,14 @@ resolv_app(State, Path, Name) ->
 
 app_path(App, Vsn, Path) ->
   Dirname = filename:dirname(Path),
-  AppName = eutils:to_list(App) ++ "-" ++ Vsn,
+  AppName = bucs:to_list(App) ++ "-" ++ Vsn,
   case string:rstr(Dirname, AppName) of
     0 ->
-      case string:rstr(Dirname, eutils:to_list(App)) of
+      case string:rstr(Dirname, bucs:to_list(App)) of
         0 ->
           ?HALT("!!! Can't find root path for ~s", [App]);
         N ->
-          string:substr(Dirname, 1, N + length(eutils:to_list(App)))
+          string:substr(Dirname, 1, N + length(bucs:to_list(App)))
       end;
     N ->
       string:substr(Dirname, 1, N + length(AppName))
@@ -536,15 +538,15 @@ app_path(App, Vsn, Path) ->
 
 copy_deps(App, Vsn, Path, Dest, Extra) ->
   ?INFO("* Copy ~s version ~s (~s)", [App, Vsn, Path]),
-  efile:copy(Path, Dest, [recursive, {only, ["ebin", "priv"] ++ Extra}]),
-  FinalDest = filename:join(Dest, eutils:to_list(App) ++ "-" ++ Vsn),
+  bucfile:copy(Path, Dest, [recursive, {only, ["ebin", "priv"] ++ Extra}]),
+  FinalDest = filename:join(Dest, bucs:to_list(App) ++ "-" ++ Vsn),
   CopyDest = filename:join(Dest, filename:basename(Path)),
   if
     FinalDest =:= CopyDest -> ok;
     true ->
       _ = case filelib:is_dir(FinalDest) of
             true ->
-              case efile:remove_recursive(FinalDest) of
+              case bucfile:remove_recursive(FinalDest) of
                 ok -> ok;
                 {error, Reason} ->
                   ?HALT("!!! Can't remove ~s: ~p", [FinalDest, Reason])
@@ -565,7 +567,7 @@ make_rel_file(State, RelDir, File, Type) ->
   ?INFO("* Create ~s", [Dest]),
   case jorel_config:get(State, Type, false) of
     {Type, false} ->
-      Mod = eutils:to_atom(eutils:to_list(Type) ++ "_dtl"),
+      Mod = bucs:to_atom(bucs:to_list(Type) ++ "_dtl"),
       {relname, RelName} = jorel_config:get(State, relname),
       case Mod:render([{relname, RelName}]) of
         {ok, Data} ->
@@ -594,7 +596,7 @@ make_release_file(State, RelDir, Apps, Ext) ->
             {ertsvsn, erlang:system_info(version)},
             {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
-  Dest = filename:join(RelDir, eutils:to_list(Name) ++ Ext),
+  Dest = filename:join(RelDir, bucs:to_list(Name) ++ Ext),
   ?INFO("* Create ~s", [Dest]),
   case rel_dtl:render(Params) of
     {ok, Data} ->

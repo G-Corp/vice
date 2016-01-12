@@ -6,7 +6,7 @@
 -export([init/1, do/1]).
 
 -define(PROVIDER, gen_config).
--define(EXCLUDE, ["**/_jorel/**", "**/_rel*/**", "**/test/**", "**/.*/**"]).
+-define(EXCLUDE, ["**/_jorel/**", "**/_rel*/**", "**/test/**"]).
 
 init(State) ->
   jorel_config:add_provider(
@@ -24,13 +24,13 @@ do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
   RelName = case lists:keyfind(relname, 1, State) of
               {relname, R} -> 
-                eutils:to_atom(R);
+                bucs:to_atom(R);
               _ -> 
                 case file:get_cwd() of
                   {ok, D} -> 
                     case filename:basename(D) of
                       [] -> noname;
-                      X -> eutils:to_atom(X)
+                      X -> bucs:to_atom(X)
                     end;
                   _ -> 
                     noname
@@ -38,7 +38,7 @@ do(State) ->
             end,
   ExApp = case jorel_elixir:exist() of
             true ->
-              [eutils:to_atom(
+              [bucs:to_atom(
                  string:strip(
                    jorel_cmd:run(
                      jorel_elixir:iex() ++ " --erl \"+A0\" -e " ++
@@ -58,13 +58,13 @@ do(State) ->
             _ -> "jorel.config"
           end,
   BootApps = lists:foldl(fun(App, Acc) ->
-                             [eutils:to_atom(filename:basename(App, ".app"))|Acc]
+                             [bucs:to_atom(filename:basename(App, ".app"))|Acc]
                          end, [sasl], 
                          ExApp ++ filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app")),
   AllApps = lists:foldl(fun(App, Acc) ->
-                             [eutils:to_atom(filename:basename(App, ".app"))|Acc]
+                             [bucs:to_atom(filename:basename(App, ".app"))|Acc]
                          end, [sasl], 
-                        efile:wildcard("**/ebin/*.app", ?EXCLUDE)),
+                        bucfile:wildcard("**/ebin/*.app", ?EXCLUDE, [expand_path])),
   case erlconf:open('jorel.config', Output, [{save_on_close, false}]) of
     {ok, _} ->
       ?INFO("== Create file ~s", [Output]),
