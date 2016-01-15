@@ -6,11 +6,13 @@
 -export([init/1, do/1]).
 
 -define(PROVIDER, dockerize).
--define(BUILD(Name), [
-                      {add, [".", "/tmp/" ++ Name]},
-                      {workdir, "/tmp/" ++ Name},
-                      {cmd, "make jorel.release"}
-                     ]).
+-define(BUILD(OutputDir, Name), [
+                                 {copy, [".", "/app/" ++ Name ++ "/"]},
+                                 {workdir, "/app/" ++ Name}
+                                ]).
+-define(BUILDCMD(OutputDir), [
+                              {cmd, "rm -rf " ++ OutputDir ++ " && make distclean && make jorel.release"}
+                             ]).
 
 init(State) ->
   jorel_config:add_provider(
@@ -65,60 +67,51 @@ build(State) ->
   {Build, State1}.
 
 build_in_docker(State, Conf, From, Maintainer) ->
-  Dockerfile = tempfile:name("Dockerfile.build.", [{ext, ""}]),
+  Dockerfile = "Dockerfile.build",
   {relname, RelName} = jorel_config:get(State, relname),
+  {output_dir, OutputDir} = jorel_config:get(State, output_dir),
   case file:open(Dockerfile, [write,binary]) of
     {ok, FD} ->
       ?INFO("* Create ~s", [Dockerfile]),
       DockerfileData = [From, Maintainer] ++
         buclists:keyfind(prebuild, 1, Conf, []) ++
-        ?BUILD(bucs:to_string(RelName)) ++
-        buclists:keyfind(postbuild, 1, Conf, []),
-      ?DEBUG("~p", [DockerfileData]),
+        ?BUILD(OutputDir, bucs:to_string(RelName)) ++
+        buclists:keyfind(postbuild, 1, Conf, []) ++
+        ?BUILDCMD(OutputDir),
       _ = dockerfile(FD, DockerfileData),
       _ = file:close(FD);
     {error, Reason} ->
       ?HALT("!!! Can't create ~s: ~p", [Dockerfile, Reason])
   end,
-  ?DEBUG("* docker build --file=~s -t erlang_dev .", [Dockerfile]),
+  ?INFO("* Prepare the build container (This can take a while... Go get yourself a cup of coffee.)", []),
+  _ = case sh:sh("docker build --file=~s -q -t erlang_dev .", [Dockerfile], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?HALT("!!! Build image faild", [])
+      end,
+  ?INFO("* Create the release", []),
   ?DEBUG("* docker run --name tmp_build erlang_dev", []),
-  ?DEBUG("* docker cp tmp_build:/tmp/pipo/jorel.tar .", []),
+  Release = "TODO",
+  ?INFO("* Copy ~s", [Release]),
+  ?DEBUG("* docker cp tmp_build:~s _docker", [filename:join(["/app", RelName, OutputDir])]),
+  ?INFO("* Remove build container", []),
   ?DEBUG("* docker rm tmp_build", []),
   ?DEBUG("* docker rmi erlang_dev", []),
   Build = "TODO",
   {Build, State}.
-
-% dockerize(State, Data) ->
-%   Dockerfile = tempfile:name("Dockerfile.", [{ext, ""}]),
-%   case file:open(Dockerfile, [write,binary]) of
-%     {ok, FD} ->
-%       ?INFO("* Create ~s", [Dockerfile]),
-%       _ = create_dockerfile(FD, State, Data),
-%       _ = file:close(FD);
-%     {error, Reason} ->
-%       ?HALT("!!! Can't create ~s: ~p", [Dockerfile, Reason])
-%   end,
-%   ?INFO("* Create container", []),
-%   Password = string:strip(io:get_line("Password: "), both, $\n),
-%   % ?DEBUG("* >> ~s <<", [Password]),
-%   ?DEBUG("* echo \"~s\" | sudo -S docker build --file=~s .", [Password, Dockerfile]),
-% 
-%   % TODO:
-%   ?INFO("* Delete ~s", [Dockerfile]),
-%   _ = file:delete(Dockerfile),
-%   State.
 
 dockerfile(_, []) -> ok;
 dockerfile(FD, [{label, Key, Value}|Data]) ->
   file:write(FD, io_lib:format("LABEL ~s=\"~s\"~n", [Key, Value])),
   dockerfile(FD, Data);
 dockerfile(FD, [{env, Key, Value}|Data]) ->
-  file:write(FD, io_lib:format("ENV ~s=~s~n", [Key, Value])),
+  file:write(FD, io_lib:format("ENV ~s=\"~s\"~n", [Key, Value])),
   dockerfile(FD, Data);
 dockerfile(FD, [{expose, Ports}|Data]) ->
   file:write(FD, io_lib:format("EXPOSE ~s~n", [string:join([bucs:to_string(E) || E <- Ports], " ")])),
   dockerfile(FD, Data);
-dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy ->
+dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy; Cmd == entrypoint ->
   file:write(FD, io_lib:format("~s [~s]~n", 
                                [string:to_upper(bucs:to_string(Cmd)),
                                 string:join(["\"" ++ bucs:to_string(P) ++ "\"" || P <- Paths], ", ")])),

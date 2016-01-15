@@ -19,3 +19,4 @@ jorel
 .tests
 jorel.d
 test/TEST-*.xml
+Dockerfile.*
