@@ -67,7 +67,7 @@ build_in_docker(State, Data) ->
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   Dockerfile = "Dockerfile.build." ++ bucs:to_string(RelName) ++ "." ++ RelVsn,
   Conf = buclists:keyfind(build, 1, Data, []),
-  FromImageName = case buclist:keyfind(from, 1, Conf, buclist:keyfind(from, 1, Data, undefined)) of
+  FromImageName = case buclists:keyfind(from, 1, Conf, buclists:keyfind(from, 1, Data, undefined)) of
                     undefined ->
                       ?HALT("!!! Missing from", []);
                     From1 ->
@@ -169,7 +169,7 @@ release_in_docker(State, Data, BuildPath) ->
   RemoveOrigin = buclists:keyfind(remove_origins, 1, Data, false),
   RemoveDockerfile = buclists:keyfind(remove_dockerfiles, 1, Data, false),
   BuildImageName = string:to_lower(bucs:to_string(RelName) ++ ":" ++ RelVsn),
-  FromImageName = case buclist:keyfind(from, 1, Conf, buclist:keyfind(from, 1, Data, undefined)) of
+  FromImageName = case buclists:keyfind(from, 1, Conf, buclists:keyfind(from, 1, Data, undefined)) of
                     undefined ->
                       ?HALT("!!! Missing from", []);
                     From1 ->
