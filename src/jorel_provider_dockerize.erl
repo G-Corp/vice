@@ -104,7 +104,7 @@ build_in_docker(State, Data) ->
         {error, _} ->
           ?HALT("!!! Build image faild", [])
       end,
-  ?INFO("* Create the release", []),
+  ?INFO("* Release application", []),
   _ = case sh:sh("docker run --name ~s ~s", [BuildContainerName, BuildImageName], [return_on_error]) of
         {ok, _} ->
           ok;
