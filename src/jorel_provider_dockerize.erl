@@ -10,9 +10,17 @@
                                  {copy, [".", "/app/" ++ Name ++ "/"]},
                                  {workdir, "/app/" ++ Name}
                                 ]).
--define(BUILDCMD(OutputDir), [
-                              {cmd, "rm -rf " ++ OutputDir ++ " && make distclean && make jorel.release"}
-                             ]).
+-define(BUILDCMD(), [
+                     {cmd, "make distclean && make jorel.release"}
+                    ]).
+-define(RELEASE(BuildPath, Name), [
+                    {copy, [BuildPath ++ "/.", "/app/"]},
+                    {workdir, "/app/" ++ Name}
+                   ]).
+-define(RELEASECMD(Name), [
+                       {cmd, "./bin/" ++ Name ++ " start"}
+                   ]).
+
 
 init(State) ->
   jorel_config:add_provider(
@@ -36,74 +44,60 @@ do(State) ->
 
 dockerize(State, Data) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
-  From = case lists:keyfind(from, 1, Data) of
-           false ->
-             ?HALT("!!! Missing from", []);
-           From1 ->
-             From1
-         end,
-  Maintainer = case lists:keyfind(maintainer, 1, Data) of
-                 false ->
-                   {maintainer, "Jorel"};
-                 Maintainer1 ->
-                   Maintainer1
-               end,
-  RemoveOrigin = case lists:keyfind(remove_origin, 1, Data) of
-                   {remove_origin, true} ->
-                     true;
-                   _ ->
-                     false
-                 end,
-  {Clean, Build, State1} = case lists:keyfind(build, 1, Data) of
-            {build, BuildConf} ->
-              build_in_docker(State, BuildConf, From, Maintainer, RemoveOrigin);
-            _ ->
-              build(State)
-          end,
-
-  ?INFO("* Dockerize ~s", [Build]),
-  ?DEBUG("* TODO", []),
-
+  {BuildPath, State1} = build_in_docker(State, Data),
+  State2 = release_in_docker(State1, Data, BuildPath),
+  CleanBuild = buclists:keyfind(clean_build, 1, Data, true),
   _ = if 
-    Clean ->
-      ?DEBUG("* TODO Clean ~s", [Build]);
+    CleanBuild ->
+      ?DEBUG("* Remove ~s", [BuildPath]),
+      case bucfile:remove_recursive(BuildPath) of
+        ok -> 
+          ok;
+        {error, Reason} ->
+          ?ERROR("! Faild to delete ~s: ~p", [BuildPath, Reason])
+      end;
     true ->
       ok
   end,
-
   ?INFO("== Provider ~p complete", [?PROVIDER]),
-  State1.
+  State2.
 
-build(State) ->
-  State1 = jorel_provider:run(State, release),
-  {outdir, Build} = jorel_config:get(State1, outdir),
-  {false, Build, State1}.
-
-build_in_docker(State, Conf, From, Maintainer, RemoveOrigin) ->
-  Dockerfile = "Dockerfile.build",
-  {from, FromImageName} = From,
+build_in_docker(State, Data) ->
+  {relname, RelName} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
+  Dockerfile = "Dockerfile.build." ++ bucs:to_string(RelName) ++ "." ++ RelVsn,
+  Conf = buclists:keyfind(build, 1, Data, []),
+  FromImageName = case buclist:keyfind(from, 1, Conf, buclist:keyfind(from, 1, Data, undefined)) of
+                    undefined ->
+                      ?HALT("!!! Missing from", []);
+                    From1 ->
+                      From1
+                  end,
+  Maintainer = case lists:keyfind(maintainer, 1, Data) of
+                 false -> {maintainer, "Jorel"};
+                 M -> M
+               end,
+  RemoveOrigin = buclists:keyfind(remove_origins, 1, Data, false),
+  RemoveDockerfile = buclists:keyfind(remove_dockerfiles, 1, Data, false),
   BuildImageName = string:to_lower("jbi_" ++ bucrandom:randstr(8)),
   BuildContainerName = string:to_lower("jbc_" ++ bucrandom:randstr(8)),
-  {output_dir, OutputDir} = jorel_config:get(State, output_dir),
-  BuildPath = string:to_lower(OutputDir ++ "_" ++ bucrandom:randstr(8)),
-  {relname, RelName} = jorel_config:get(State, relname),
+  BuildPath = buclists:keyfind(output_dir, 1, Data, "_jorel_docker"),
   {output_dir, OutputDir} = jorel_config:get(State, output_dir),
   DockerAppPath = filename:join(["/app", RelName, OutputDir]),
   case file:open(Dockerfile, [write,binary]) of
     {ok, FD} ->
       ?INFO("* Create ~s", [Dockerfile]),
-      DockerfileData = [From, Maintainer] ++
+      DockerfileData = [{from, FromImageName}, Maintainer] ++
         buclists:keyfind(prebuild, 1, Conf, []) ++
         ?BUILD(OutputDir, bucs:to_string(RelName)) ++
         buclists:keyfind(postbuild, 1, Conf, []) ++
-        ?BUILDCMD(OutputDir),
+        ?BUILDCMD(),
       _ = dockerfile(FD, DockerfileData),
       _ = file:close(FD);
     {error, Reason} ->
       ?HALT("!!! Can't create ~s: ~p", [Dockerfile, Reason])
   end,
-  ?INFO("* Prepare the build container (This can take a while... Go get yourself a cup of coffee.)", []),
-  ?DEBUG("docker build --file=~s -q -t ~s .", [Dockerfile, BuildImageName]),
+  ?INFO("* Create build image (This can take a while... Go get yourself a cup of coffee.)", []),
   _ = case sh:sh("docker build --file=~s -q -t ~s .", [Dockerfile, BuildImageName], [return_on_error]) of
         {ok, _} ->
           ok;
@@ -124,7 +118,7 @@ build_in_docker(State, Conf, From, Maintainer, RemoveOrigin) ->
         {error, _} ->
           ?HALT("!!! Build release faild", [])
       end,
-  ?INFO("* Remove container and image", []),
+  ?INFO("* Remove build container and image", []),
   _ = case sh:sh("docker rm ~s", [BuildContainerName], [return_on_error]) of
         {ok, _} ->
           ok;
@@ -139,6 +133,7 @@ build_in_docker(State, Conf, From, Maintainer, RemoveOrigin) ->
       end,
   if
     RemoveOrigin ->
+      ?INFO("* Remove origin image", []),
       _ = case sh:sh("docker rmi ~s", [FromImageName], [return_on_error]) of
             {ok, _} ->
               ok;
@@ -148,7 +143,84 @@ build_in_docker(State, Conf, From, Maintainer, RemoveOrigin) ->
     true ->
       ok
   end,
-  {true, BuildPath, State}.
+  if
+    RemoveDockerfile ->
+      ?INFO("* Remove ~s", [Dockerfile]),
+      case file:delete(Dockerfile) of
+        ok ->
+          ok;
+        {error, Reason1} ->
+          ?ERROR("! Can't delete file ~s: ~p", [Dockerfile, Reason1])
+      end;
+    true ->
+      ok
+  end,
+  {BuildPath, State}.
+
+release_in_docker(State, Data, BuildPath) ->
+  {relname, RelName} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
+  Dockerfile = "Dockerfile.release." ++ bucs:to_string(RelName) ++ "." ++ RelVsn,
+  Conf = buclists:keyfind(release, 1, Data, []),
+  Maintainer = case lists:keyfind(maintainer, 1, Data) of
+                 false -> {maintainer, "Jorel"};
+                 M -> M
+               end,
+  RemoveOrigin = buclists:keyfind(remove_origins, 1, Data, false),
+  RemoveDockerfile = buclists:keyfind(remove_dockerfiles, 1, Data, false),
+  BuildImageName = string:to_lower(bucs:to_string(RelName) ++ ":" ++ RelVsn),
+  FromImageName = case buclist:keyfind(from, 1, Conf, buclist:keyfind(from, 1, Data, undefined)) of
+                    undefined ->
+                      ?HALT("!!! Missing from", []);
+                    From1 ->
+                      From1
+                  end,
+  ?INFO("* Dockerize ~s", [BuildPath]),
+  case file:open(Dockerfile, [write,binary]) of
+    {ok, FD} ->
+      ?INFO("* Create ~s", [Dockerfile]),
+      DockerfileData = [{from, FromImageName}, Maintainer] ++
+        buclists:keyfind(prerelease, 1, Conf, []) ++
+        ?RELEASE(BuildPath, bucs:to_string(RelName)) ++
+        buclists:keyfind(postrelease, 1, Conf, []) ++
+        ?RELEASECMD(bucs:to_string(RelName)),
+      _ = dockerfile(FD, DockerfileData),
+      _ = file:close(FD);
+    {error, Reason} ->
+      ?HALT("!!! Can't create ~s: ~p", [Dockerfile, Reason])
+  end,
+  ?INFO("* Build release image ~s (This can take a while... Go get yourself a cup of coffee.)", [BuildImageName]),
+  _ = case sh:sh("docker build --file=~s -q -t ~s .", [Dockerfile, BuildImageName], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?HALT("!!! Build image faild", [])
+      end,
+  if
+    RemoveOrigin ->
+      ?INFO("* Remove origin image", []),
+      _ = case sh:sh("docker rmi ~s", [FromImageName], [return_on_error]) of
+            {ok, _} ->
+              ok;
+            {error, _} ->
+              ?ERROR("! Faild to remove image ~s", [FromImageName])
+          end;
+    true ->
+      ok
+  end,
+  if
+    RemoveDockerfile ->
+      ?INFO("* Remove ~s", [Dockerfile]),
+      case file:delete(Dockerfile) of
+        ok ->
+          ok;
+        {error, Reason1} ->
+          ?ERROR("! Can't delete file ~s: ~p", [Dockerfile, Reason1])
+      end;
+    true ->
+      ok
+  end,
+  State.
 
 dockerfile(_, []) -> ok;
 dockerfile(FD, [{label, Key, Value}|Data]) ->
