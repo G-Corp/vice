@@ -3,7 +3,11 @@
 JOREL_CONFIG ?= jorel.config
 JOREL_BUILD ?= false
 
+ifeq ($(JOREL_MASTER),true)
+JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel.master
+else
 JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel
+endif
 
 ifeq ($(JOREL_BUILD),true)
 JOREL ?= $(DEPS_DIR)/jorel/jorel

@@ -52,6 +52,13 @@ else
 	rm -rf $(PROJECT).wiki
 endif
 
+release-master: escript
+	@echo "==> Release master"
+	git clone git@github.com:emedia-project/$(PROJECT).wiki.git
+	cp $(PROJECT) $(PROJECT).wiki/$(PROJECT).master
+	cd $(PROJECT).wiki; git commit -am "New master"; git push origin master
+	rm -rf $(PROJECT).wiki
+
 dev: deps app
 	$(verbose) erl -pa ebin include deps/*/ebin deps/*/include
 

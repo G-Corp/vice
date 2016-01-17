@@ -20,7 +20,7 @@ init(State) ->
     {?PROVIDER,
      #{
         module => ?MODULE,
-        depends => [], % TODO: [release],
+        depends => [],
         desc => "Create a Docker container with your App"
       }
     }
@@ -48,9 +48,15 @@ dockerize(State, Data) ->
                  Maintainer1 ->
                    Maintainer1
                end,
-  {Build, State1} = case lists:keyfind(build, 1, Data) of
+  RemoveOrigin = case lists:keyfind(remove_origin, 1, Data) of
+                   {remove_origin, true} ->
+                     true;
+                   _ ->
+                     false
+                 end,
+  {Clean, Build, State1} = case lists:keyfind(build, 1, Data) of
             {build, BuildConf} ->
-              build_in_docker(State, BuildConf, From, Maintainer);
+              build_in_docker(State, BuildConf, From, Maintainer, RemoveOrigin);
             _ ->
               build(State)
           end,
@@ -58,18 +64,31 @@ dockerize(State, Data) ->
   ?INFO("* Dockerize ~s", [Build]),
   ?DEBUG("* TODO", []),
 
+  _ = if 
+    Clean ->
+      ?DEBUG("* TODO Clean ~s", [Build]);
+    true ->
+      ok
+  end,
+
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State1.
 
 build(State) ->
   State1 = jorel_provider:run(State, release),
   {outdir, Build} = jorel_config:get(State1, outdir),
-  {Build, State1}.
+  {false, Build, State1}.
 
-build_in_docker(State, Conf, From, Maintainer) ->
+build_in_docker(State, Conf, From, Maintainer, RemoveOrigin) ->
   Dockerfile = "Dockerfile.build",
+  {from, FromImageName} = From,
+  BuildImageName = string:to_lower("jbi_" ++ bucrandom:randstr(8)),
+  BuildContainerName = string:to_lower("jbc_" ++ bucrandom:randstr(8)),
+  {output_dir, OutputDir} = jorel_config:get(State, output_dir),
+  BuildPath = string:to_lower(OutputDir ++ "_" ++ bucrandom:randstr(8)),
   {relname, RelName} = jorel_config:get(State, relname),
   {output_dir, OutputDir} = jorel_config:get(State, output_dir),
+  DockerAppPath = filename:join(["/app", RelName, OutputDir]),
   case file:open(Dockerfile, [write,binary]) of
     {ok, FD} ->
       ?INFO("* Create ~s", [Dockerfile]),
@@ -84,22 +103,52 @@ build_in_docker(State, Conf, From, Maintainer) ->
       ?HALT("!!! Can't create ~s: ~p", [Dockerfile, Reason])
   end,
   ?INFO("* Prepare the build container (This can take a while... Go get yourself a cup of coffee.)", []),
-  _ = case sh:sh("docker build --file=~s -q -t erlang_dev .", [Dockerfile], [return_on_error]) of
+  ?DEBUG("docker build --file=~s -q -t ~s .", [Dockerfile, BuildImageName]),
+  _ = case sh:sh("docker build --file=~s -q -t ~s .", [Dockerfile, BuildImageName], [return_on_error]) of
         {ok, _} ->
           ok;
         {error, _} ->
           ?HALT("!!! Build image faild", [])
       end,
   ?INFO("* Create the release", []),
-  ?DEBUG("* docker run --name tmp_build erlang_dev", []),
-  Release = "TODO",
-  ?INFO("* Copy ~s", [Release]),
-  ?DEBUG("* docker cp tmp_build:~s _docker", [filename:join(["/app", RelName, OutputDir])]),
-  ?INFO("* Remove build container", []),
-  ?DEBUG("* docker rm tmp_build", []),
-  ?DEBUG("* docker rmi erlang_dev", []),
-  Build = "TODO",
-  {Build, State}.
+  _ = case sh:sh("docker run --name ~s ~s", [BuildContainerName, BuildImageName], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?HALT("!!! Build release faild", [])
+      end,
+  ?INFO("* Copy ~s:~s to ~s", [BuildContainerName, DockerAppPath, BuildPath]),
+  _ = case sh:sh("docker cp ~s:~s ~s", [BuildContainerName, DockerAppPath, BuildPath], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?HALT("!!! Build release faild", [])
+      end,
+  ?INFO("* Remove container and image", []),
+  _ = case sh:sh("docker rm ~s", [BuildContainerName], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?ERROR("! Faild to remove container ~s", [BuildContainerName])
+      end,
+  _ = case sh:sh("docker rmi ~s", [BuildImageName], [return_on_error]) of
+        {ok, _} ->
+          ok;
+        {error, _} ->
+          ?ERROR("! Faild to remove image ~s", [BuildImageName])
+      end,
+  if
+    RemoveOrigin ->
+      _ = case sh:sh("docker rmi ~s", [FromImageName], [return_on_error]) of
+            {ok, _} ->
+              ok;
+            {error, _} ->
+              ?ERROR("! Faild to remove image ~s", [FromImageName])
+          end;
+    true ->
+      ok
+  end,
+  {true, BuildPath, State}.
 
 dockerfile(_, []) -> ok;
 dockerfile(FD, [{label, Key, Value}|Data]) ->
