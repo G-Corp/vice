@@ -18,7 +18,7 @@
                     {workdir, "/app/" ++ Name}
                    ]).
 -define(RELEASECMD(Name), [
-                       {cmd, "./bin/" ++ Name ++ " --no-detach start"}
+                       {cmd, ["./bin/" ++ Name, "--no-detach", "start"]}
                    ]).
 
 
@@ -232,6 +232,16 @@ dockerfile(FD, [{env, Key, Value}|Data]) ->
 dockerfile(FD, [{expose, Ports}|Data]) ->
   file:write(FD, io_lib:format("EXPOSE ~s~n", [string:join([bucs:to_string(E) || E <- Ports], " ")])),
   dockerfile(FD, Data);
+dockerfile(FD, [{cmd, Cmd}|Data]) ->
+  case is_list_of_list(Cmd) of
+    true ->
+      file:write(FD, io_lib:format("CMD [~s]~n", 
+                                   [string:join(["\"" ++ bucs:to_string(P) ++ "\"" || P <- Cmd], ", ")])),
+      dockerfile(FD, Data);
+    false ->
+      file:write(FD, io_lib:format("CMD ~s~n", [Cmd])),
+      dockerfile(FD, Data)
+  end;
 dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy; Cmd == entrypoint ->
   file:write(FD, io_lib:format("~s [~s]~n", 
                                [string:to_upper(bucs:to_string(Cmd)),
@@ -241,3 +251,7 @@ dockerfile(FD, [{Cmd, Param}|Data]) ->
   file:write(FD, io_lib:format("~s ~s~n", [string:to_upper(bucs:to_string(Cmd)), Param])),
   dockerfile(FD, Data).
 
+is_list_of_list(L) when is_list(L) ->
+  lists:all(fun is_list/1, L);
+is_list_of_list(_) ->
+  false.
