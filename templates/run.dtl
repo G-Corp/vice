@@ -125,8 +125,8 @@ start_app() {
   $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
 
   if [ $NO_DETACH = true ] ; then
-    sleep 1
     trap "$SCRIPT stop" 1 2 15
+    sleep 10
     while jorel_nodetool "ping" >/dev/null; do
       sleep 1
     done
