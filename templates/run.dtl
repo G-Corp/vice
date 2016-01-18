@@ -123,6 +123,12 @@ start_app() {
   mkdir -p $PIPE_DIR
   mkdir -p $LOG_DIR
   $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
+  # TODO: Find a better solution
+  if [ $NO_DETACH = true ] ; then
+    trap "$SCRIPT stop" 1 2 15
+    touch $LOG_DIR/erlang.log.1 $LOG_DIR/erlang.log.2 $LOG_DIR/erlang.log.3 $LOG_DIR/erlang.log.4 $LOG_DIR/erlang.log.5
+    tail -F $LOG_DIR/erlang.log.1 $LOG_DIR/erlang.log.2 $LOG_DIR/erlang.log.3 $LOG_DIR/erlang.log.4 $LOG_DIR/erlang.log.5
+  fi
 }
 
 attach_app() {
@@ -175,10 +181,15 @@ help() {
   echo ""
   echo "Options :"
   echo "  -h --help        : Display this message"
+  echo "     --no-detach   : Do not detach"
 }
 
+NO_DETACH=false
 while [ $# -ne 0 ] ; do
   case $1 in
+    --no-detach)
+      NO_DETACH=true
+      ;;
     console) 
       run_app ;;
     start)
