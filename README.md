@@ -52,6 +52,18 @@ Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it ex
 * `license_type`
 * `copyright`
 * `jorel_provider_git_tag` : Create a git tag
+* `jorel_provider_dockerize` : Create a [docker](). This provider use the following parameters :* `from`
+* `remove_origins`
+* `remove_dockerfiles`
+* `output_dir`
+* `clean_build`
+* `maintainer`
+* `build`* `from`
+* `prebuild`
+* `postbuild`
+* `release`* `from`
+* `prerelease`
+* `postrelease`
 
 
 
@@ -114,5 +126,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/emedia-project/jorel/blob/dockerize/doc/jorel.md" class="module">jorel</a></td></tr></table>
+<tr><td><a href="https://github.com/emedia-project/jorel/blob/master/doc/jorel.md" class="module">jorel</a></td></tr></table>
 

@@ -54,6 +54,24 @@
     <li><code>copyright</code></li>
   </ul></li>
   <li><code>jorel_provider_git_tag</code> : Create a git tag</li>
+  <li><code>jorel_provider_dockerize</code> : Create a [docker](). This provider use the following parameters :<ul>
+    <li><code>from</code></li>
+    <li><code>remove_origins</code></li>
+    <li><code>remove_dockerfiles</code></li>
+    <li><code>output_dir</code></li>
+    <li><code>clean_build</code></li>
+    <li><code>maintainer</code></li>
+    <li><code>build</code><ul>
+      <li><code>from</code></li>
+      <li><code>prebuild</code></li>
+      <li><code>postbuild</code></li>
+    </ul></li>
+    <li><code>release</code><ul>
+      <li><code>from</code></li>
+      <li><code>prerelease</code></li>
+      <li><code>postrelease</code></li>
+    </ul></li>
+  </ul></li>
 </ul>
 
 <h2>Contributing</h2>
