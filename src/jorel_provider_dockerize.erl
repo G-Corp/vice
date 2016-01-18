@@ -18,7 +18,7 @@
                     {workdir, "/app/" ++ Name}
                    ]).
 -define(RELEASECMD(Name), [
-                       {cmd, "./bin/" ++ Name ++ " start"}
+                       {cmd, "./bin/" ++ Name ++ " --no-detach start"}
                    ]).
 
 

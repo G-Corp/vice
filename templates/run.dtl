@@ -6,6 +6,7 @@ REL_VSN="{{relvsn}}"
 REL_NAME="{{relname}}"
 ERTS_VSN="{{ertsvsn}}"
 
+SCRIPT=$0
 SCRIPT_DIR="$(cd ${0%/*} && pwd)"
 ROOT_DIR="$(dirname $SCRIPT_DIR)"
 NAME="$(basename $0)"
@@ -122,6 +123,14 @@ start_app() {
   mkdir -p $PIPE_DIR
   mkdir -p $LOG_DIR
   $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
+
+  if [ $NO_DETACH = true ] ; then
+    sleep 1
+    trap "$SCRIPT stop" 1 2 15
+    while jorel_nodetool "ping" >/dev/null; do
+      sleep 1
+    done
+  fi
 }
 
 attach_app() {
@@ -174,10 +183,15 @@ help() {
   echo ""
   echo "Options :"
   echo "  -h --help        : Display this message"
+  echo "     --no-detach   : Do not detach"
 }
 
+NO_DETACH=false
 while [ $# -ne 0 ] ; do
   case $1 in
+    --no-detach)
+      NO_DETACH=true
+      ;;
     console) 
       run_app ;;
     start)
