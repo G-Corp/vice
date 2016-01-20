@@ -20,3 +20,4 @@ jorel
 jorel.d
 test/TEST-*.xml
 Dockerfile.*
+mix.lock
