@@ -2,6 +2,7 @@
 -include("../include/jorel.hrl").
 
 -export([main/1]).
+-export([run/2]).
 
 % @hidden
 main(Args) ->
