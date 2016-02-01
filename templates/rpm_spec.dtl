@@ -1,0 +1,71 @@
+%define install_dir     /usr/local
+%define _topdir         {{ project_topdir }}
+%define temp_dir       /tmp
+Name:    {{ relname }}
+Version: {{ relvsn }}
+
+# Up issuing the release is NOT supported due to live upgrades. Please 
+# up issue the Version only
+Release: 0%{?dist}
+Summary: {{ package_summary }}
+
+Group:         {{ package_group }}
+License:       {{ license_type }}
+URL:           {{ package_url }}
+Source0:       %{name}-%{version}.tar.gz
+Source1:       %{name}
+BuildRoot:     %{_tmppath}/%{name}-root
+ExclusiveArch: {{ build_architecture }}
+AutoReq:  0
+Provides: %{name}
+
+%description
+{{ package_description }}
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/tmp
+mkdir -p $RPM_BUILD_ROOT/%{install_dir}/%{name}
+mkdir -p $RPM_BUILD_ROOT/%{_initrddir}
+cp %{SOURCE0} %{buildroot}/%{temp_dir}/
+cp %{SOURCE1} $RPM_BUILD_ROOT/%{_initrddir}/%{name}
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post
+if [ $1 -eq 1 ]; then
+    # new install
+    tar xzf %{temp_dir}/%{name}-%{version}.tar.gz -C %{install_dir}/%{name}
+    rm %{temp_dir}/%{name}-%{version}.tar.gz
+    /sbin/chkconfig --add %{name}
+    /sbin/service %{name} start  > /dev/null 2>&1
+else
+    # upgrade
+    mkdir %{install_dir}/%{name}/releases/%{version}
+    mv %{temp_dir}/%{name}-%{version}.tar.gz %{install_dir}/%{name}/releases/%{version}/%{name}.tar.gz
+    cd %{install_dir}/%{name} && bin/%{name} upgrade "%{version}"
+fi
+exit 0
+
+%preun
+if [ "$1" = 0 ]; then
+    # package remove
+    /sbin/service %{name} stop > /dev/null 2>&1
+    /sbin/chkconfig --del %{name}
+    rm -rf /usr/local/%{name}
+fi
+exit 0
+
+%files
+%defattr(-, root, root, -)
+%{temp_dir}/%{name}-%{version}.tar.gz
+%dir %{install_dir}/%{name}
+
+%defattr(755, root, root, -)
+%{_initrddir}/%{name}
+
+%changelog
+* {{ build_date }} {{ author_name }} <{{ author_email }}> {{ relvsn }}
+- Create release {{ relvsn }}
+

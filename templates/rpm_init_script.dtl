@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# chkconfig: 345 95 5
+# description: The extest service script
+# process name: {{ relname }}
+#
+# Author: Auto Generated
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+PROG_NAME={{ relname }}
+INSTALL_DIR=/usr/local/$PROG_NAME
+PROG=$INSTALL_DIR/bin/$PROG_NAME
+RETVAl=0
+
+txtgrn=$(tput setaf 2)
+txtred=$(tput setaf 1)
+txtrst=$(tput sgr0)
+
+if [ -f /etc/sysconfig/$PROG_NAME ] ; then
+  . /etc/sysconfig/$PROG_NAME
+fi
+
+[ -f $PROG ] || exit 0
+
+message() {
+  if [ $RETVAL -eq 0 ]; then
+    printf "%-45s[${txtgrn}  OK  ${txtrst}]\n" "$1"
+  else
+    printf "%-45s[${txtred}FAILED${txtrst}]\n" "$1"
+  fi
+}
+run() {
+  HOME=$INSTALL_DIR $PROG $1 > /dev/null 2>&1
+}
+start() {
+        #echo -n $"Starting $PROG_NAME: "
+        run start
+        RETVAL=$?
+        message $"Starting $PROG_NAME: "
+        return $RETVAL
+}
+stop() {
+        run stop
+        RETVAL=$?
+        message "Stopping $PROG_NAME: "
+        return $RETVAL
+}
+restart() {
+       run restart
+        RETVAL=$?
+        message $"Restarting $PROG_NAME: "
+        return $RETVAL
+}
+status() {
+      run ping
+      RETVAL=$?
+      echo -n "Status: $PROG_NAME is "
+      if [ $RETVAL -eq 0 ]; then
+        echo "running ..."
+      else
+        echo "stopped"
+      fi
+      return $RETVAL
+} 
+
+case "$1" in
+        start)
+          start
+          RETVAL=$?
+                ;;
+        stop)
+                stop
+                ;;
+        status)
+                status
+                ;;
+        restart)
+                restart
+                ;;
+        *)
+                echo $"Usage: $0 {start|stop|status|restart}"
+                exit 1
+                ;;
+esac
+exit $RETVAL
