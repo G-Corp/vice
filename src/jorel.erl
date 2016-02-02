@@ -29,6 +29,7 @@ main(Args) ->
 
 run(Options, Commands) ->
   State = jorel_config:to_state(Options, Commands),
+  {config, JorelConfig} = jorel_config:get(State, config),
   {providers, Providers} = jorel_config:get(State, providers, []),
   {State1, Providers1} = add_provider(State, Providers, jorel_provider_release),
   {State2, Providers2} = add_provider(State1, Providers1, jorel_provider_providers),
@@ -41,6 +42,12 @@ run(Options, Commands) ->
                 Commands1 -> Commands1
               end,
   _ = lists:foldl(fun(P, S) ->
+                      if
+                        P =/= providers ->
+                          ?INFO("== Config file: ~s", [JorelConfig]);
+                        true ->
+                          ok
+                      end,
                       jorel_provider:run(S, P)
                   end, State4, Commands2),
   ok.

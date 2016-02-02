@@ -10,8 +10,8 @@
                                  {copy, [".", "/app/" ++ Name ++ "/"]},
                                  {workdir, "/app/" ++ Name}
                                 ]).
--define(BUILDCMD(), [
-                     {cmd, "make distclean && make jorel.release"}
+-define(BUILDCMD(Config), [
+                     {cmd, "make distclean && make jorel.release c=" ++ Config}
                     ]).
 -define(RELEASE(BuildPath, Name), [
                     {copy, [BuildPath ++ "/.", "/app/"]},
@@ -77,6 +77,8 @@ build_in_docker(State, Data) ->
                  false -> {maintainer, "Jorel"};
                  M -> M
                end,
+  {config, JorelConfig} = jorel_config:get(State, config),
+  JorelBuildConfig = buclists:keyfind(jorel_config, 1, Data, JorelConfig),
   RemoveOrigin = buclists:keyfind(remove_origins, 1, Data, false),
   RemoveDockerfile = buclists:keyfind(remove_dockerfiles, 1, Data, false),
   BuildImageName = string:to_lower("jbi_" ++ bucrandom:randstr(8)),
@@ -91,7 +93,7 @@ build_in_docker(State, Data) ->
         buclists:keyfind(prebuild, 1, Conf, []) ++
         ?BUILD(OutputDir, bucs:to_string(RelName)) ++
         buclists:keyfind(postbuild, 1, Conf, []) ++
-        ?BUILDCMD(),
+        ?BUILDCMD(JorelBuildConfig),
       _ = dockerfile(FD, DockerfileData),
       _ = file:close(FD);
     {error, Reason} ->
