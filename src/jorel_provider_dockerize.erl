@@ -242,7 +242,7 @@ dockerfile(FD, [{cmd, Cmd}|Data]) ->
       file:write(FD, io_lib:format("CMD ~s~n", [Cmd])),
       dockerfile(FD, Data)
   end;
-dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy; Cmd == entrypoint ->
+dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy; Cmd == entrypoint, Cmd == volume ->
   file:write(FD, io_lib:format("~s [~s]~n", 
                                [string:to_upper(bucs:to_string(Cmd)),
                                 string:join(["\"" ++ bucs:to_string(P) ++ "\"" || P <- Paths], ", ")])),
