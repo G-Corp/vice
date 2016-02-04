@@ -49,7 +49,7 @@ do(State) ->
                      {RebarFileForTag, DepsVersions} = create_rebar_release(TagVersion),
                      ok = file:rename("rebar.config", "rebar.config.save"),
                      ok = file:rename(RebarFileForTag, "rebar.config"),
-                     {DepsVersions, ["rebar.confi"|FileInTag]};
+                     {DepsVersions, ["rebar.config"|FileInTag]};
                    false ->
                      {[], FileInTag}
                  end,
