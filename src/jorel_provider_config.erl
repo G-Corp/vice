@@ -87,7 +87,10 @@ do(State) ->
                 [Config] -> 
                   Term ++ [{sys_config, Config}];
                 _ ->
-                  Term
+                  case jorel_elixir:exist() andalso filelib:is_file("config/config.exs") of
+                    true -> Term ++ [{sys_config, "config/config.exs"}];
+                    _ -> Term
+                  end
               end,
       Term2 = case filelib:is_regular("config/vm.args") of
                 true ->
