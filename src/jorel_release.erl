@@ -226,6 +226,8 @@ make_boot_script(State, BootApps) ->
   end.
 
 make_bin(State) ->
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  NodetoolDest = filename:join([Outdir, "bin", "nodetool"]),
   {binfile, BinFile} = jorel_config:get(State, binfile),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   {relname, Name} = jorel_config:get(State, relname),
@@ -261,39 +263,39 @@ make_bin(State) ->
       end;
     {error, Reason1} ->
       ?HALT("!!! Error while creating ~s: ~p", [BinFile, Reason1])
+  end,
+  ?INFO("* Generate ~s", [NodetoolDest]),
+  case nodetool_dtl:render() of
+    {ok, NodetoolData} ->
+      case file:write_file(NodetoolDest, NodetoolData) of
+        ok -> 
+          ok;
+        {error, Reason3} ->
+          ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason3])
+      end;
+    {error, Reason4} ->
+      ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason4])
   end.
 
 make_upgrade_scripts(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
-  NodetoolDest = filename:join([Outdir, "bin", "nodetool"]),
   UpgradeEscriptDest = filename:join([Outdir, "bin", "upgrade.escript"]),
   case jorel_config:get(State, disable_relup) of
     {disable_relup, true} ->
       ?INFO("* relup disabled, don't install upgrade scripts", []);
     {disable_relup, false} ->
       ?INFO("* Install upgrade scripts", []),
-      ?INFO("* Generate ~s", [NodetoolDest]),
-      case nodetool_dtl:render() of
-        {ok, NodetoolData} ->
-          case file:write_file(NodetoolDest, NodetoolData) of
+      ?INFO("* Generate ~s", [UpgradeEscriptDest]),
+      case upgrade_escript_dtl:render() of
+        {ok, UpgradeData} ->
+          case file:write_file(UpgradeEscriptDest, UpgradeData) of
             ok -> 
-              ?INFO("* Generate ~s", [UpgradeEscriptDest]),
-              case upgrade_escript_dtl:render() of
-                {ok, UpgradeData} ->
-                  case file:write_file(UpgradeEscriptDest, UpgradeData) of
-                    ok -> 
-                      ok;
-                    {error, Reason4} ->
-                      ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
-                  end;
-                {error, Reason3} ->
-                  ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason3])
-              end;
-            {error, Reason2} ->
-              ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason2])
+              ok;
+            {error, Reason4} ->
+              ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
           end;
-        {error, Reason1} ->
-          ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason1])
+        {error, Reason3} ->
+          ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason3])
       end
   end.
 
