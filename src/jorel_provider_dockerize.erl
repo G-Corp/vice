@@ -10,8 +10,11 @@
                                  {copy, [".", "/app/" ++ Name ++ "/"]},
                                  {workdir, "/app/" ++ Name}
                                 ]).
--define(BUILDCMD(Config), [
+-define(BUILD_ERLANG_CMD(Config), [
                      {cmd, "make distclean && make jorel.release c=" ++ Config}
+                    ]).
+-define(BUILD_ELIXIR_CMD, [
+                     {cmd, "mix deps.clean --all && mix clean && mix jorel.release"}
                     ]).
 -define(RELEASE(BuildPath, Name), [
                     {copy, [BuildPath ++ "/.", "/app/"]},
@@ -93,7 +96,12 @@ build_in_docker(State, Data) ->
         buclists:keyfind(prebuild, 1, Conf, []) ++
         ?BUILD(OutputDir, bucs:to_string(RelName)) ++
         buclists:keyfind(postbuild, 1, Conf, []) ++
-        ?BUILDCMD(JorelBuildConfig),
+        case jorel_elixir:exist() of
+          true ->
+            ?BUILD_ELIXIR_CMD;
+          false ->
+            ?BUILD_ERLANG_CMD(JorelBuildConfig)
+        end,
       _ = dockerfile(FD, DockerfileData),
       _ = file:close(FD);
     {error, Reason} ->
