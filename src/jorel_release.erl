@@ -16,6 +16,8 @@
          make_relup/2
         ]).
 
+-define(COPY_OPTIONS(Other), [{directory_mode, 8#00755}, {regular_file_mode, 8#00644}, {executable_file_mode, 8#00755}|Other]).
+
 get_erts(State) ->
   case jorel_config:get(State, erts_info, false) of
     {erts_info, {_, _, _} = ERTSInfo} ->
@@ -176,7 +178,9 @@ make_release(State, AllApps, BootApps) ->
       tempdir:mktmp(fun(TmpDir) ->
                         BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
                         BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
-                        case bucfile:copyfile(BootExe, filename:join(RelDir, filename:basename(BootExe))) of
+                        case bucfile:copyfile(BootExe, 
+                                              filename:join(RelDir, filename:basename(BootExe)),
+                                              ?COPY_OPTIONS([])) of
                           ok -> ok;
                           {error, Reason2} ->
                             ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
@@ -307,7 +311,7 @@ include_erts(State) ->
       bucfile:copy(
         filename:join(Path, "erts-" ++ ERTSVersion),
         Outdir,
-        [recursive]),
+        ?COPY_OPTIONS([recursive])),
       ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
       ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
       %%! Workaround for pre OTP 17.0: start.src does
@@ -323,10 +327,12 @@ include_erts(State) ->
                         [preserve]),
       ?INFO("* Install start_clean.boot", []),
       ok = bucfile:copy(filename:join([Path, "bin", "start_clean.boot"]),
-                        filename:join([Outdir, "bin", "start_clean.boot"])),
+                        filename:join([Outdir, "bin", "start_clean.boot"]),
+                        ?COPY_OPTIONS([])),
       ?INFO("* Install start.boot", []),
       ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
-                        filename:join([Outdir, "bin", "start.boot"]));
+                        filename:join([Outdir, "bin", "start.boot"]),
+                        ?COPY_OPTIONS([]));
     _ ->
       ok
   end.
@@ -571,7 +577,9 @@ app_path(App, Vsn, Path) ->
 
 copy_deps(App, Vsn, Path, Dest, Extra) ->
   ?INFO("* Copy ~s version ~s (~s)", [App, Vsn, Path]),
-  bucfile:copy(Path, Dest, [recursive, {only, ["ebin", "priv"] ++ Extra}]),
+  bucfile:copy(Path, 
+               Dest, 
+               ?COPY_OPTIONS([recursive, {only, ["ebin", "priv"] ++ Extra}])),
   FinalDest = filename:join(Dest, bucs:to_list(App) ++ "-" ++ Vsn),
   CopyDest = filename:join(Dest, filename:basename(Path)),
   if
