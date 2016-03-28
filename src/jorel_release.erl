@@ -284,7 +284,7 @@ make_bin(State) ->
 make_upgrade_scripts(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
   UpgradeEscriptDest = filename:join([Outdir, "bin", "upgrade.escript"]),
-  case jorel_config:get(State, disable_relup) of
+  case jorel_config:get(State, disable_relup, false) of
     {disable_relup, true} ->
       ?INFO("* relup disabled, don't install upgrade scripts", []);
     {disable_relup, false} ->
@@ -458,7 +458,7 @@ get_apps_and_versions(App, From) ->
               end, {[], []}, From).
 
 find_all_deps(State, Apps) ->
-  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
+  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs, ["**/_jorel/**", "**/_rel*/**", "**/test/**"]),
   case bucfile:wildcard(
          filename:join(["**", "ebin", "*.app"]),
          Exclude,
@@ -532,7 +532,7 @@ resolv_local(State, App) ->
   end.
 
 resolv_app(State, Path, Name) ->
-  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs),
+  {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs, ["**/_jorel/**", "**/_rel*/**", "**/test/**"]),
   case bucfile:wildcard(
          filename:join(Path, bucs:to_list(Name) ++ ".app"),
          Exclude,
