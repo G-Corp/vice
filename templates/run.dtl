@@ -5,7 +5,9 @@ OPTS=$*
 REL_VSN="{{relvsn}}"
 REL_NAME="{{relname}}"
 ERTS_VSN="{{ertsvsn}}"
-
+{% for source in sources %}
+[-f {{source}} ] && . {{source}}
+{% empty %}{% endfor %}
 SCRIPT=$0
 SCRIPT_DIR="$(cd ${0%/*} && pwd)"
 ROOT_DIR="$(dirname $SCRIPT_DIR)"

@@ -235,6 +235,12 @@ make_bin(State) ->
   {binfile, BinFile} = jorel_config:get(State, binfile),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   {relname, Name} = jorel_config:get(State, relname),
+  {init_sources, InitSources} = jorel_config:get(State, init_sources, []),
+  InitSources1 = case {is_list(InitSources), 
+                       (bucs:is_string(InitSources) andalso length(InitSources) > 0)} of
+                   {true, true} -> [InitSources];
+                   _ -> InitSources
+                 end,
   {_, ERTSVersion, _} = get_erts(State),
   BinFileWithVsn = BinFile ++ "-" ++ Vsn,
   ?INFO("* Generate ~s", [BinFile]),
@@ -243,7 +249,7 @@ make_bin(State) ->
         {error, Reason} ->
           ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
       end,
-  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}]) of
+  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}, {sources, InitSources1}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok ->
