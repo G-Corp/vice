@@ -16,7 +16,7 @@ jorel_release_jorel_elixir_test_() ->
           ?assertEqual(ok, bucfile:make_dir(".tests/0.0.1")),
           ?assertEqual(ok, bucfile:copy("test_apps/0.0.1/elixir_test", ".tests/0.0.1", [recursive])),
           ?assertEqual(ok, bucfile:make_dir(".tests/0.0.1/elixir_test/.jorel")),
-          ?assertEqual(ok, bucfile:copy("jorel", ".tests/0.0.1/elixir_test/.jorel/jorel"))
+          ?assertEqual(ok, bucfile:copy("_build/default/bin/jorel", ".tests/0.0.1/elixir_test/.jorel/jorel"))
       end}
      , {timeout, 200, 
         fun() ->

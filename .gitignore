@@ -18,6 +18,7 @@ jorel
 .erlang.mk
 .tests
 jorel.d
-test/TEST-*.xml
+test/eunit/
 Dockerfile.*
 mix.lock
+_build/
