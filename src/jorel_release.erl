@@ -27,9 +27,12 @@ get_erts(State) ->
         {include_erts, true} -> {ok, erlang:system_info(version), code:root_dir()};
         {include_erts, false} -> {false, erlang:system_info(version), code:root_dir()};
         {include_erts, "jorel://" ++ Path} -> get_erts_from_url(?JOREL_IN ++ Path ++ ".tgz");
+        {include_erts, <<"jorel://", Path>>} -> get_erts_from_url(?JOREL_IN ++ bucs:to_string(Path) ++ ".tgz");
         {include_erts, URL = "http://" ++ _} -> get_erts_from_url(URL);
+        {include_erts, URL = <<"http://",  _/binary>>} -> get_erts_from_url(bucs:to_string(URL));
         {include_erts, URL = "https://" ++ _} -> get_erts_from_url(URL);
-        {include_erts, Path} -> find_erts_info(Path)
+        {include_erts, URL = <<"https://",  _/binary>>} -> get_erts_from_url(bucs:to_string(URL));
+        {include_erts, Path} -> find_erts_info(bucs:to_string(Path))
       end
   end.
 

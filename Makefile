@@ -1,20 +1,19 @@
-.PHONY: doc docker-compose.yml
 REBAR = ./rebar3
 
 compile:
-	$(verbose) $(REBAR) escriptize
+	@$(REBAR) escriptize
 
 tests:
-	$(verbose) $(REBAR) eunit
+	@$(REBAR) eunit
 
 doc:
-	$(verbose) $(REBAR) as doc edoc
+	@$(REBAR) as doc edoc
 
 dist: compile tests doc
 
 distclean:
-	$(verbose) rm -rf _build rebar.lock test/eunit
+	@rm -rf _build _jorel rebar.lock test/eunit
 
 dev: compile
-	$(verbose) erl -pa _build/default/lib/*/ebin _build/default/lib/*/include
+	@erl -pa _build/default/lib/*/ebin _build/default/lib/*/include
 
