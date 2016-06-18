@@ -7,71 +7,15 @@
 
 <img src="https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg" alt="Jorel"/>
 
-<h2>Install</h2>
+<h2>Documentation</h2>
 
-<p>Download <a href="https://github.com/emedia-project/jorel/wiki/jorel">jorel</a>, make it executable and place it in your PATH.</p>
-
-<h2>Configuration</h2>
+See <a href="http://jorel.in">jorel.in</a> for documentation :
 
 <ul>
-  <li><code>output_dir</code> : Output directory (default: <code>_jorel</code>)</li>
-  <li><code>exclude_dirs</code> : Path to exclude (default: <code>_jorel</code>)</li>
-  <li><code>include_src</code> : Include sources in the release (default: false)</li>
-  <li><code>sys_config</code> : Path to the configuration file (default: none)</li>
-  <li><code>vm_args</code> : Path to the <code>vm.args</code> file to use (default: none)</li>
-  <li><code>generate_start_script</code> : Generate start script (default: true)</li>
-  <li><code>include_erts</code> : Include ERTS in the release (default: true)</li>
-  <li><code>lib_dirs</code> : List of directory to search apps (default: none) / TODO</li>
-  <li><code>providers</code> : Add providers (default: none)</li>
-  <li><code>boot</code> : List of apps in boot script (default: all)</li>
-  <li><code>disable_relup</code> : Enable/disable relup (default: true)</li>
-  <li><code>env</code> : Environment (default: prod)</li>
-</ul>
-
-<h2>Providers</h2>
-
-<ul>
-  <li><code>jorel_provider_tar</code> : Create a Tar archive</li>
-  <li><code>jorel_provider_zip</code> : Create a Zip archive</li>
-  <li><code>jorel_provider_artifactory</code> : Deploy to artifactory. This provider use the following parameters : <ul>
-    <li><code>url</code> :: <code>string()</code> : Artifactory URL (mandatory).</li>
-    <li><code>username</code> :: <code>env | string()</code> : Username (optional).</li>
-    <li><code>password</code> :: <code>env | string()</code> : Password (optional).</li>
-    <li><code>repository</code> :: <code>string()</code> : Repository (mandatory).</li>
-    <li><code>checksum</code> :: <code>string()</code> : Checksum when you want to deploy with checksum (optional).</li>
-  </ul></li>
-  <li><code>jorel_provider_deb</code> : Create a Debian package (you need to install <code>debuild</code> from <code>devscripts</code>). This provider use the following parameters :<ul>
-    <li><code>author_name</code></li>
-    <li><code>author_email</code></li>
-    <li><code>install_user</code></li>
-    <li><code>install_user_desc</code></li>
-    <li><code>package_url</code></li>
-    <li><code>package_git</code></li>
-    <li><code>package_shortdesc</code></li>
-    <li><code>package_desc</code></li>
-    <li><code>package_depends</code></li>
-    <li><code>license_type</code></li>
-    <li><code>copyright</code></li>
-  </ul></li>
-  <li><code>jorel_provider_git_tag</code> : Create a git tag</li>
-  <li><code>jorel_provider_dockerize</code> : Create a [docker](). This provider use the following parameters :<ul>
-    <li><code>from</code></li>
-    <li><code>remove_origins</code></li>
-    <li><code>remove_dockerfiles</code></li>
-    <li><code>output_dir</code></li>
-    <li><code>clean_build</code></li>
-    <li><code>maintainer</code></li>
-    <li><code>build</code><ul>
-      <li><code>from</code></li>
-      <li><code>prebuild</code></li>
-      <li><code>postbuild</code></li>
-    </ul></li>
-    <li><code>release</code><ul>
-      <li><code>from</code></li>
-      <li><code>prerelease</code></li>
-      <li><code>postrelease</code></li>
-    </ul></li>
-  </ul></li>
+<li><a href="http://jorel.in/installation/#command-line">Command line tool</a></li>
+<li><a href="http://jorel.in/installation/#erlangmk-plugin">Use with erlang.mk</a></li>
+<li><a href="http://jorel.in/installation/#rebar3-plugin">Use with rebar3</a></li>
+<li><a href="http://jorel.in/installation/#mix-task">Use with mix</a></li>
 </ul>
 
 <h2>Contributing</h2>

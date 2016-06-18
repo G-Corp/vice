@@ -11,59 +11,17 @@ __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.le
 ![Jorel](https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg)
 
 
-## Install ##
+## Documentation ##
 
-Download [jorel](https://github.com/emedia-project/jorel/wiki/jorel), make it executable and place it in your PATH.
+See [jorel.in](http://jorel.in) for documentation :
 
+* [Command line tool](http://jorel.in/installation/#command-line)
 
-## Configuration ##
-* `output_dir` : Output directory (default: `_jorel`)
-* `exclude_dirs` : Path to exclude (default: `_jorel`)
-* `include_src` : Include sources in the release (default: false)
-* `sys_config` : Path to the configuration file (default: none)
-* `vm_args` : Path to the `vm.args` file to use (default: none)
-* `generate_start_script` : Generate start script (default: true)
-* `include_erts` : Include ERTS in the release (default: true)
-* `lib_dirs` : List of directory to search apps (default: none) / TODO
-* `providers` : Add providers (default: none)
-* `boot` : List of apps in boot script (default: all)
-* `disable_relup` : Enable/disable relup (default: true)
-* `env` : Environment (default: prod)
+* [Use with erlang.mk](http://jorel.in/installation/#erlangmk-plugin)
 
+* [Use with rebar3](http://jorel.in/installation/#rebar3-plugin)
 
-
-## Providers ##
-* `jorel_provider_tar` : Create a Tar archive
-* `jorel_provider_zip` : Create a Zip archive
-* `jorel_provider_artifactory` : Deploy to artifactory. This provider use the following parameters : * `url` :: `string()` : Artifactory URL (mandatory).
-* `username` :: `env | string()` : Username (optional).
-* `password` :: `env | string()` : Password (optional).
-* `repository` :: `string()` : Repository (mandatory).
-* `checksum` :: `string()` : Checksum when you want to deploy with checksum (optional).
-* `jorel_provider_deb` : Create a Debian package (you need to install `debuild` from `devscripts`). This provider use the following parameters :* `author_name`
-* `author_email`
-* `install_user`
-* `install_user_desc`
-* `package_url`
-* `package_git`
-* `package_shortdesc`
-* `package_desc`
-* `package_depends`
-* `license_type`
-* `copyright`
-* `jorel_provider_git_tag` : Create a git tag
-* `jorel_provider_dockerize` : Create a [docker](). This provider use the following parameters :* `from`
-* `remove_origins`
-* `remove_dockerfiles`
-* `output_dir`
-* `clean_build`
-* `maintainer`
-* `build`* `from`
-* `prebuild`
-* `postbuild`
-* `release`* `from`
-* `prerelease`
-* `postrelease`
+* [Use with mix](http://jorel.in/installation/#mix-task)
 
 
 
