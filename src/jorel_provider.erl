@@ -18,7 +18,7 @@ run(State, Provider) ->
     {Provider, #{module := ProviderMod}} ->
       run_provider(State, Provider, ProviderMod);
     false ->
-      ?HALT("!!! Missing configuration for provider ~p", [Provider])
+      ?HALT("!!! Failed to run provider ~p", [Provider])
   end.
 
 run_deps(State, Provider) ->
@@ -29,7 +29,7 @@ run_deps(State, Provider) ->
                       run(S, Deps)
                   end, State, ProviderDeps);
     _ ->
-      ?HALT("!!! Missing configuration for provider ~p", [Provider])
+      ?HALT("!!! Failed to run provider ~p", [Provider])
   end.
 
 run_provider(State, Provider, ProviderMod) ->
