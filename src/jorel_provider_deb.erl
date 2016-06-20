@@ -36,15 +36,15 @@ do(State) ->
              undefined
          end,
   FileMap = [
-             {"debian/changelog", deb_debian_changelog_dtl},
-             {"debian/compat", deb_debian_compat_dtl},
-             {"debian/control", deb_debian_control_dtl},
-             {"debian/copyright", deb_debian_copyright_dtl},
-             {"debian/postinst", deb_debian_postinst_dtl},
-             {"debian/postrm", deb_debian_postrm_dtl},
-             {"debian/rules", deb_debian_rules_dtl},
-             {"debian/" ++ bucs:to_string(RelName) ++ ".init", deb_debian_init_dtl},
-             {"debian/" ++ bucs:to_string(RelName) ++ ".install", deb_debian_install_dtl}
+             {"debian/changelog", jorel_deb_debian_changelog_dtl},
+             {"debian/compat", jorel_deb_debian_compat_dtl},
+             {"debian/control", jorel_deb_debian_control_dtl},
+             {"debian/copyright", jorel_deb_debian_copyright_dtl},
+             {"debian/postinst", jorel_deb_debian_postinst_dtl},
+             {"debian/postrm", jorel_deb_debian_postrm_dtl},
+             {"debian/rules", jorel_deb_debian_rules_dtl},
+             {"debian/" ++ bucs:to_string(RelName) ++ ".init", jorel_deb_debian_init_dtl},
+             {"debian/" ++ bucs:to_string(RelName) ++ ".install", jorel_deb_debian_install_dtl}
             ],
   {deb, DebData} = jorel_config:get(State, deb, []),
   DebData1 = DebData ++

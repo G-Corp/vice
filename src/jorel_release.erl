@@ -148,14 +148,14 @@ make_release(State, AllApps, BootApps) ->
   ?INFO("* Create ~s", [RelDir]),
   case bucfile:make_dir(RelDir) of
     ok ->
-      _ = make_rel_file(State, RelDir, "vm.args", vm_args),
+      _ = make_rel_file(State, RelDir, "vm.args", jorel_vm_args),
       _ = case jorel_elixir:exist() of
             true ->
               Dest = filename:join(RelDir, "sys.config"),
               case jorel_config:get(State, sys_config, false) of
                 {sys_config, false} ->
                   {relname, RelName} = jorel_config:get(State, relname),
-                  case sys_config_dtl:render([{relname, RelName}]) of
+                  case jorel_sys_config_dtl:render([{relname, RelName}]) of
                     {ok, Data} ->
                       case file:write_file(Dest, Data) of
                         ok -> Dest;
@@ -176,10 +176,10 @@ make_release(State, AllApps, BootApps) ->
                   end
               end;
             false ->
-              make_rel_file(State, RelDir, "sys.config", sys_config)
+              make_rel_file(State, RelDir, "sys.config", jorel_sys_config)
           end,
       tempdir:mktmp(fun(TmpDir) ->
-                        BootErl = make_rel_file(State, TmpDir, "extrel.erl", extrel),
+                        BootErl = make_rel_file(State, TmpDir, "extrel.erl", jorel_extrel),
                         BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
                         case bucfile:copyfile(BootExe, 
                                               filename:join(RelDir, filename:basename(BootExe)),
@@ -252,7 +252,7 @@ make_bin(State) ->
         {error, Reason} ->
           ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
       end,
-  case run_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}, {sources, InitSources1}]) of
+  case jorel_unix_start_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}, {sources, InitSources1}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok ->
@@ -278,7 +278,7 @@ make_bin(State) ->
       ?HALT("!!! Error while creating ~s: ~p", [BinFile, Reason1])
   end,
   ?INFO("* Generate ~s", [NodetoolDest]),
-  case nodetool_dtl:render() of
+  case jorel_nodetool_dtl:render() of
     {ok, NodetoolData} ->
       case file:write_file(NodetoolDest, NodetoolData) of
         ok -> 
@@ -299,7 +299,7 @@ make_upgrade_scripts(State) ->
     {disable_relup, false} ->
       ?INFO("* Install upgrade scripts", []),
       ?INFO("* Generate ~s", [UpgradeEscriptDest]),
-      case upgrade_escript_dtl:render() of
+      case jorel_upgrade_escript_dtl:render() of
         {ok, UpgradeData} ->
           case file:write_file(UpgradeEscriptDest, UpgradeData) of
             ok -> 
@@ -649,7 +649,7 @@ make_release_file(State, RelDir, Apps, Ext) ->
            ],
   Dest = filename:join(RelDir, bucs:to_list(Name) ++ Ext),
   ?INFO("* Create ~s", [Dest]),
-  case rel_dtl:render(Params) of
+  case jorel_rel_dtl:render(Params) of
     {ok, Data} ->
       case file:write_file(Dest, Data) of
         ok -> Dest;

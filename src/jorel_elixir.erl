@@ -46,7 +46,7 @@ config_to_sys_config(Config, SysConfig, Env) ->
     false ->
       {error, elixir_not_found};
     ELIXIR ->
-      case elixir_config_dtl:render([]) of
+      case jorel_elixir_config_dtl:render([]) of
         {ok, Data} ->
           TmpFile = tempfile:name("jorel", [{ext, "ex"}]),
           case file:write_file(TmpFile, Data, [write, binary]) of

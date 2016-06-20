@@ -1,0 +1,86 @@
+{release,
+ {jorel, "0.2.5-pre"}, [jorel, vsn, tempfile, sh, getopt, erlydtl, erlconf, color, bucs, sasl]}.
+{ignore_deps, [eunit_formatters]}.
+{all_deps, false}.
+{output_dir, "_jorel"}.
+{boot, [jorel, sasl]}.
+{exclude_dirs, ["**/_jorel/**", "**/_rel*/**", "**/test/**"]}.
+{include_src, true}.
+{include_erts, true}.
+{sys_config, "config/jorel.config"}.
+{vm_args, "config/vm.args"}.
+{disable_relup, false}.
+{init_sources, "/etc/environment"}.
+{providers,
+ [jorel_provider_tar, jorel_provider_zip, jorel_provider_deb, jorel_provider_artifactory, jorel_provider_git_tag, jorel_provider_config,
+  jorel_provider_dockerize, jorel_provider_rpm]}.
+{artifactory,
+ [{url, "https://localhost/artifactory"},
+  {username, env},
+  {password, env},
+  {repository, "repository-erlang"}]}.
+{deb,
+ [{author_name, "Gregoire Lejeune"},
+  {author_email, "gregoire.lejeune@free.fr"},
+  {install_user, "example"},
+  {install_user_desc, "Example user"},
+  {package_url, "http://github.com/emedia-project/jorel"},
+  {package_git, "http://github.com/emedia-project/jorel"},
+  {package_shortdesc, "Release tool for Erlang"},
+  {package_desc, "eXtanded Release assembler for Erlang/OTP Releases"},
+  {package_depends, "libc6 (>= 2.4)"},
+  {license_type, "BSD"},
+  {copyright, "2015 Gregoire Lejeune"}]}.
+{rpm,
+ [{package_summary, "Releases tool for Erlang"},
+  {package_description, "eXtanded Release assembler for Erlang/OTP Releases"},
+  {license_type, "BSD"},
+  {package_group, "Applications"},
+  {build_architecture, "x86_64"},
+  {package_url, "http://github.com/emedia-project/jorel"},
+  {author_name, "Gregoire Lejeune"},
+  {author_email, "gregoire.lejeune@free.fr"}]}.
+{dockerize,
+ [{from, "ubuntu"},
+  {remove_origins, false},
+  {remove_dockerfiles, false},
+  {output_dir, "_jorel_docker"},
+  {clean_build, false},
+  {maintainer, "Gregoire Lejeune <gregoire.lejeune@free.fr>"},
+  {build,
+   [{from, "ubuntu"},
+    {prebuild,
+     [{run, "locale-gen en_US.UTF-8"},
+      {env, "LANG", "en_US.UTF-8"},
+      {env, "LANGUAGE", "en_US:en"},
+      {env, "LC_ALL", "en_US.UTF-8"},
+      {run, "DEBIAN_FRONTEND=noninteractive apt-get update"},
+      {run,
+       "DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential git libncurses5-dev openssl libssl-dev "
+       "fop xsltproc unixodbc-dev curl"},
+      {run, "curl -O https://raw.githubusercontent.com/yrashk/kerl/master/kerl"},
+      {run, "chmod +x kerl"},
+      {env, "KERL_CONFIGURE_OPTIONS",
+       "--disable-debug --without-javac --enable-shared-zlib --enable-dynamic-ssl-lib --enable-hipe --enable-smp"
+       "-support --enable-threads --enable-kernel-poll"},
+      {run,
+       "./kerl update releases && ./kerl build 18.2.1 18.2.1-bu && ./kerl install 18.2.1-bu ~/.kerl/installs/18."
+       "2.1-bu"},
+      {run, "curl -O https://raw.githubusercontent.com/glejeune/kex/master/kex"},
+      {run, "chmod +x kex"},
+      {run, ". ~/.kerl/installs/18.2.1-bu/activate && ./kex update && ./kex install v1.2.1"},
+      {run, "echo \"#!/bin/bash\" > /entrypoint.sh"},
+      {run, "echo \". ~/.kerl/installs/18.2.1-bu/activate\" >> /entrypoint.sh"},
+      {run, "echo \". ~/.kex/installs/v1.2.1/activate\" >> /entrypoint.sh"},
+      {run, "echo \"exec \\\"\\$@\\\"\" >> /entrypoint.sh"},
+      {run, "chmod 755 /entrypoint.sh"},
+      {entrypoint, ["/entrypoint.sh"]}]},
+    {postbuild,
+     [{run, "rm -rf _jorel"}]}]},
+  {release,
+   [{from, "ubuntu"},
+    {prerelease,
+     [{run, "apt-get update"},
+      {run, "apt-get upgrade -y"}]},
+    {postrelease,
+     [{run, "echo \"no preinstall\""}]}]}]}.

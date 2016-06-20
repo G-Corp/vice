@@ -65,7 +65,7 @@ do(State) ->
                      ]),
   SpecFile = filename:join([RPMBuildDir, "SPECS", bucs:to_string(RelName) ++ ".spec"]),
   ?INFO("* Create file ~s", [SpecFile]),
-  {ok, SpecContent} = rpm_spec_dtl:render(RPMData),
+  {ok, SpecContent} = jorel_rpm_spec_dtl:render(RPMData),
   ok = file:write_file(SpecFile, iolist_to_binary(SpecContent)),
   Tar = bucs:to_list(RelName) ++ "-" ++ RelVsn ++ ".tar.gz",
   SourceFile = filename:join([Outdir, RelName, "releases", Tar]),
@@ -81,7 +81,7 @@ do(State) ->
     {error, Reason} ->
       ?HALT("! Faild to copy ~s to ~s: ~p", [SourceFile, SourceDest, Reason])
   end,
-  {ok, InitContent} = rpm_init_script_dtl:render(RPMData),
+  {ok, InitContent} = jorel_rpm_init_script_dtl:render(RPMData),
   InitScript = filename:join([RPMBuildDir, "SOURCES", RelName]),
   ?INFO("* Create file ~s", [InitScript]),
   ok = file:write_file(InitScript, iolist_to_binary(InitContent)),
