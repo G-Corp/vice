@@ -31,11 +31,13 @@ run(Options, Commands) ->
   State = jorel_config:to_state(Options, Commands),
   {config, JorelConfig} = jorel_config:get(State, config),
   {providers, Providers} = jorel_config:get(State, providers, []),
+  {paths, Paths} = jorel_config:get(State, paths, []),
+  load_paths(Paths),
   {State1, Providers1} = add_provider(State, Providers, jorel_provider_release),
   {State2, Providers2} = add_provider(State1, Providers1, jorel_provider_providers),
   {State3, Providers3} = add_provider(State2, Providers2, jorel_provider_config),
   State4 = lists:foldl(fun(P, S) ->
-                           P:init(S)
+                           load_provider(P, S)
                        end, State3, Providers3),
   Commands2 = case lists:map(fun bucs:to_atom/1, Commands) of
                 [] -> [release];
@@ -60,6 +62,41 @@ add_provider(State, Providers, Provider) ->
       {jorel_config:set(State, {providers, [Provider|Providers]}),
        [Provider|Providers]}
   end.
+
+load_provider(Provider, State) ->
+  _ = application:load(Provider),
+  case code:ensure_loaded(Provider) of
+    {module, Module} ->
+      case erlang:function_exported(Module, init, 1) of
+        true ->
+          erlang:apply(Module, init, [State]);
+        false ->
+          ?ERROR("Provider ~p does not export init/1. It will not be used.", [Provider]),
+          State
+      end;
+    {error, _} ->
+      ?ERROR("Provider ~p not found. It will not be used.", [Provider]),
+      State
+  end.
+
+load_paths(Paths) ->
+  code:add_pathsa(load_paths(Paths, [])).
+load_paths([], Acc) ->
+  Acc;
+load_paths([Path|Rest], Acc) ->
+  Ebins = case filelib:wildcard(Path) of
+            [Path] -> 
+              Ebin = filename:join([Path, "ebin"]),
+              case filelib:is_dir(Ebin) of
+                true ->
+                  [Ebin];
+                false ->
+                  []
+              end;
+            Paths ->
+              load_paths(Paths, [])
+          end,
+  load_paths(Rest, Acc ++ Ebins).
 
 opts() ->
   [
