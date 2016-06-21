@@ -113,11 +113,16 @@ make_root(State) ->
 
 resolv_apps(State) ->
   {release, {_, _}, Apps} = jorel_config:get(State, release),
-  Apps1 = case jorel_config:get(State, all_deps, false) of
-            {all_deps, true} -> find_all_deps(State, Apps);
-            _ -> Apps
-          end,
-  resolv_apps(State, Apps1, [], []).
+  case Apps of
+    [] ->
+      ?HALT("!!! Missing apps in release", []);
+    _ ->
+      Apps1 = case jorel_config:get(State, all_deps, false) of
+                {all_deps, true} -> find_all_deps(State, Apps);
+                _ -> Apps
+              end,
+      resolv_apps(State, Apps1, [], [])
+  end.
 
 resolv_boot(State, AllApps) ->
   case jorel_config:get(State, boot, all) of
