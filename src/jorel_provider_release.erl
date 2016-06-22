@@ -30,9 +30,10 @@ do(State) ->
   _ = jorel_release:make_release(State1, AllApps, BootApps),
   _ = jorel_release:make_boot_script(State1, BootApps),
   _ = jorel_release:make_bin(State1),
-  _ = jorel_release:make_upgrade_scripts(State1),
-  _ = jorel_release:make_relup(State1, AllApps),
   _ = jorel_release:include_erts(State1),
+  _ = jorel_release:make_upgrade_scripts(State1),
+  % MOVE TO RELUP PROVIDER
+  % _ = jorel_release:make_relup(State1, AllApps),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State1.
 

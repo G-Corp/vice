@@ -22,7 +22,7 @@ build(Source, Dest) ->
           ?HALT("!!! Failed to create ~s: ~p", [Script, Reason])
       end;
     {error, Errors, Warnings} ->
-      ?DEBUG("~p", [Warnings]),
+      ?WARN("~p", [Warnings]),
       ?HALT("~p", [Errors])
   end.
 

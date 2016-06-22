@@ -16,9 +16,7 @@ main(Args) ->
         false ->
           case lists:member(help, Options) of
             true ->
-              help(),
-              io:format("~nCommandes:~n~n"),
-              run(Options, [providers]);
+              help(Options);
             false ->
               run(Options, Commands)
           end
@@ -33,17 +31,21 @@ run(Options, Commands) ->
   {providers, Providers} = jorel_config:get(State, providers, []),
   {paths, Paths} = jorel_config:get(State, paths, []),
   load_paths(Paths),
-  {State1, Providers1} = add_provider(State, Providers, jorel_provider_release),
-  {State2, Providers2} = add_provider(State1, Providers1, jorel_provider_providers),
-  {State3, Providers3} = add_provider(State2, Providers2, jorel_provider_config),
-  State4 = lists:foldl(fun(P, S) ->
+  {State1, Providers1} = lists:foldl(fun(Provider, {S, P}) ->
+                                         add_provider(S, P, Provider)
+                                     end, {State, Providers}, [jorel_provider_release,
+                                                               jorel_provider_relup,
+                                                               jorel_provider_providers,
+                                                               jorel_provider_config,
+                                                               jorel_provider_appup]),
+  State2 = lists:foldl(fun(P, S) ->
                            load_provider(P, S)
-                       end, State3, Providers3),
-  Commands2 = case lists:map(fun bucs:to_atom/1, Commands) of
-                [] -> [release];
-                Commands1 -> Commands1
-              end,
-  _ = lists:foldl(fun(P, S) ->
+                       end, State1, Providers1),
+  case lists:map(fun bucs:to_atom/1, Commands) of
+    [] -> 
+      help(Options);
+    Commands1 -> 
+      lists:foldl(fun(P, S) ->
                       if
                         P =/= providers ->
                           ?INFO("== Config file: ~s", [JorelConfig]);
@@ -51,8 +53,8 @@ run(Options, Commands) ->
                           ok
                       end,
                       jorel_provider:run(S, P)
-                  end, State4, Commands2),
-  ok.
+                  end, State2, Commands1)
+  end.
 
 add_provider(State, Providers, Provider) ->
   case lists:member(Provider, Providers) of
@@ -71,11 +73,11 @@ load_provider(Provider, State) ->
         true ->
           erlang:apply(Module, init, [State]);
         false ->
-          ?ERROR("Provider ~p does not export init/1. It will not be used.", [Provider]),
+          ?DEBUG("Provider ~p does not export init/1. It will not be used.", [Provider]),
           State
       end;
     {error, _} ->
-      ?ERROR("Provider ~p not found. It will not be used.", [Provider]),
+      ?DEBUG("Provider ~p not found. It will not be used.", [Provider]),
       State
   end.
 
@@ -110,5 +112,8 @@ opts() ->
    {include_src,  undefined, "include-src",  undefined,                "Include source"}
   ].
 
-help() ->
-  getopt:usage(opts(), "jorel", "").
+help(Options) ->
+  getopt:usage(opts(), "jorel", ""),
+  io:format("Use DEBUG=1 to display debug informations~n~nCommandes:~n~n"),
+  run(Options, [providers]).
+

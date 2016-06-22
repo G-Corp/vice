@@ -90,7 +90,7 @@ find_erts_info(Path) ->
         [ERTS|_] -> 
           case re:run(ERTS, "^.*-(.*)$", [{capture, all_but_first, list}]) of
             {match,[Version]} -> 
-              ?INFO("= Will use ERTS ~s from ~s", [Version, Path]),
+              ?DEBUG("= Will use ERTS ~s from ~s", [Version, Path]),
               {ok, Version, Path};
             _ ->
               ?HALT("!!! Can't retrieve ERTS informations from ~p", [Path])
@@ -106,7 +106,7 @@ make_root(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
   case bucfile:make_dir(Outdir) of
     ok ->
-      ?INFO("* Create directory ~s", [Outdir]);
+      ?DEBUG("* Create directory ~s", [Outdir]);
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [Outdir, Reason])
   end.
@@ -232,7 +232,7 @@ make_boot_script(State, BootApps) ->
     {ok, _, []} ->
       ok;
     {ok, _, Warnings} ->
-      ?DEBUG("! Generate boot script : ~p", [Warnings]);
+      ?WARN("! Generate boot script : ~p", [Warnings]);
     _ ->
       ok
   end.
@@ -298,23 +298,18 @@ make_bin(State) ->
 make_upgrade_scripts(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
   UpgradeEscriptDest = filename:join([Outdir, "bin", "upgrade.escript"]),
-  case jorel_config:get(State, disable_relup, false) of
-    {disable_relup, true} ->
-      ?INFO("* relup disabled, don't install upgrade scripts", []);
-    {disable_relup, false} ->
-      ?INFO("* Install upgrade scripts", []),
-      ?INFO("* Generate ~s", [UpgradeEscriptDest]),
-      case jorel_upgrade_escript_dtl:render() of
-        {ok, UpgradeData} ->
-          case file:write_file(UpgradeEscriptDest, UpgradeData) of
-            ok -> 
-              ok;
-            {error, Reason4} ->
-              ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
-          end;
-        {error, Reason3} ->
-          ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason3])
-      end
+  ?INFO("* Install upgrade scripts", []),
+  ?DEBUG("* Generate ~s", [UpgradeEscriptDest]),
+  case jorel_upgrade_escript_dtl:render() of
+    {ok, UpgradeData} ->
+      case file:write_file(UpgradeEscriptDest, UpgradeData) of
+        ok -> 
+          ok;
+        {error, Reason4} ->
+          ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
+      end;
+    {error, Reason3} ->
+      ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason3])
   end.
 
 include_erts(State) ->
@@ -327,7 +322,7 @@ include_erts(State) ->
         Outdir,
         ?COPY_OPTIONS([recursive])),
       ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
-      ?INFO("* Substituting in erl.src and start.src to form erl and start", []),
+      ?DEBUG("* Substituting in erl.src and start.src to form erl and start", []),
       %%! Workaround for pre OTP 17.0: start.src does
       %%! not have correct permissions, so the above 'preserve' option did not help
       %%! Workaround for Charlie who have a fucking monkey MB
@@ -354,7 +349,7 @@ include_erts(State) ->
 make_relup(State, AllApps) ->
   case jorel_config:get(State, disable_relup, true) of
     {disable_relup, true} ->
-      ?INFO("* relup disabled, don't create appup file", []);
+      ?INFO("* relup disabled", []);
     _ ->
       case lists:any(fun(#{app := sasl}) -> true;
                         (_) -> false
@@ -445,21 +440,21 @@ make_relup(State, AllApps) ->
                               end,
                               erl_tar:close(TD);
                             {error, Reason} ->
-                              ?DEBUG("Can't create release archive: ~p",
+                              ?ERROR("Can't create release archive: ~p",
                                      [Reason])
                           end
                       end;
                     {Missing, _} ->
-                      ?DEBUG("* Can't create relup, missing apps ~s", [string:join(Missing, ", ")])
+                      ?ERROR("* Can't create relup, missing apps ~s", [string:join(Missing, ", ")])
                   end;
                 _ ->
-                  ?DEBUG("* Invalid appup file (~s)", [AppupFile])
+                  ?ERROR("* Invalid appup file (~s)", [AppupFile])
               end;
             _ ->
-              ?DEBUG("* No appup found", [])
+              ?ERROR("* No appup found", [])
           end;
         false ->
-          ?DEBUG("* SASL not present, can't create relup file", [])
+          ?ERROR("* SASL not present, can't create relup file", [])
       end
   end.
 
@@ -554,7 +549,7 @@ resolv_app(State, Path, Name) ->
         ) of
     [] -> notfound;
     [AppFile|_] ->
-      ?INFO("= Found ~s", [AppFile]),
+      ?DEBUG("= Found ~s", [AppFile]),
       AppPathFile = bucfile:expand_path(AppFile),
       case file:consult(AppPathFile) of
         {ok, [{application, Name, Config}]} ->
@@ -611,7 +606,7 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
           end,
       case file:rename(CopyDest, FinalDest) of
         ok ->
-          ?INFO("* Move ~s to ~s", [CopyDest, FinalDest]);
+          ?DEBUG("* Move ~s to ~s", [CopyDest, FinalDest]);
         {error, Reason1} ->
           ?HALT("!!! Can't rename ~s: ~p", [CopyDest, Reason1])
       end
