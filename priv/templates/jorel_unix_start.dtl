@@ -22,7 +22,6 @@ SYS_CONFIG="$REL_DIR/sys.config"
 VM_ARGS="$REL_DIR/vm.args"
 REL_FILE="$REL_DIR/$REL_NAME-$REL_VSN.rel"
 BOOT_FILE="$REL_DIR/$REL_NAME-$REL_VSN"
-DEPS_FILE="$REL_DIR/$REL_NAME-$REL_VSN.deps"
 
 ERTS_DIR="$ROOT_DIR/erts-$ERTS_VSN"
 if [ -d "$ERTS_DIR" ] ; then
@@ -55,6 +54,14 @@ fi
 
 # Extract cookie name from NODE_COOKIE_ARG
 NODE_COOKIE="$(echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
+
+jorel_debug() {
+  if [ $DEBUG = "1" ] ; then
+    PURPLE='\033[0;35m'
+    NC='\033[0m'
+    printf "${PURPLE}$1${NC}\n"
+  fi
+}
 
 jorel_nodetool() {
   command="$1"; shift
@@ -111,12 +118,16 @@ run_app() {
       EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
       EXTRA_ARGS=$(eval echo $EXTRA)
     fi
-    LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $DEPS_FILE $LIBDIR)
-    export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $DEPS_FILE $LIBDIR)
+    LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $REL_FILE $LIBDIR)
+    export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $REL_FILE $LIBDIR)
     export ROOTDIR="$ROOT_DIR"
     export EMU="beam"
     export PROGNAME="erlexec"
     export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
+    jorel_debug "Start "
+    jorel_debug "ROOTDIR = $ROOTDIR"
+    jorel_debug "ERL_LIBS = $ERL_LIBS"
+    jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $SYS_CONFIG -boot $BOOT_FILE
   fi
 }
