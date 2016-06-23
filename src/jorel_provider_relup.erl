@@ -20,10 +20,104 @@ init(State) ->
 
 do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
-  ERTSInfo = jorel_release:get_erts(State),
-  State1 = jorel_config:set(State, {erts_info, ERTSInfo}),
-  AllApps = jorel_release:resolv_apps(State1), % TODO Remove and use deps file in release
-  _ = jorel_release:make_relup(State1, AllApps),
+  {relname, RelName} = jorel_config:get(State, relname),
+  {relvsn, RelVsn} = jorel_config:get(State, relvsn),
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  {upfrom, UpFrom} = jorel_config:get(State, upfrom, "0"),
+
+  CurrentRel = filename:join([Outdir, "releases", RelVsn, io_lib:format("~s-~s.rel", [RelName, RelVsn])]),
+  Rel = case filelib:is_file(CurrentRel) of
+          true -> 
+            strip_rel(CurrentRel);
+          false -> 
+            ?HALT("Missing release ~s (version ~s)", [RelName, RelVsn])
+        end,
+
+  ReleasesPaths = get_releases_path(Outdir, UpFrom, RelVsn),
+  UpDown = get_up_from(ReleasesPaths, RelName, RelVsn),
+  case UpDown of
+    [] ->
+      ?HALT("No previous ~s release found", [RelName]);
+    _ ->
+      ok
+  end,
+
+  Options = [{outdir, filename:join([Outdir, "releases", RelVsn])},
+             {path, get_all_paths(ReleasesPaths, RelName, Outdir)},
+             silent],
+
+  ?DEBUG("= systools:make_relup(~p, ~p, ~p, ~p)", [Rel, UpDown, UpDown, Options]),
+  case systools:make_relup(Rel, UpDown, UpDown, Options) of
+    {error, _, Error} ->
+      ?HALT("!!! Create relup faild: ~p", [Error]);
+    error ->
+      ?HALT("!!! Create relup faild", []);
+    _ ->
+      todo
+  end,
+
+  % Y = systools:make_tar(Rel),
+  % ?DEBUG("===> ~p", [Y]),
+
   ?INFO("== Provider ~p complete", [?PROVIDER]),
-  State1.
+  State.
+
+get_up_from(ReleasesPaths, Name, Vsn) ->
+  get_up_from(ReleasesPaths, Name, Vsn, []).
+get_up_from([], _, _, Acc) ->
+  Acc;
+get_up_from([Path|Rest], Name, Vsn, Acc) ->
+  case filename:basename(Path) of
+    Vsn ->
+      get_up_from(Rest, Name, Vsn, Acc);
+    CurVsn ->
+      RelFile = filename:join([Path, io_lib:format("~s-~s.rel", [Name, CurVsn])]),
+      case filelib:is_file(RelFile) of
+        true ->
+          get_up_from(Rest, Name, Vsn, [strip_rel(RelFile)|Acc]);
+        false ->
+          ?HALT("Missing release for ~s version ~s", [Name, CurVsn])
+      end
+  end.
+
+get_releases_path(Outdir, From, To) ->
+  [Path || Path <- filelib:wildcard(
+                     filename:join(
+                       [Outdir, "releases", "*"])),
+           vsn:compare(filename:basename(Path), From) > -1,
+           vsn:compare(filename:basename(Path), To) < 1].
+
+get_all_paths(ReleasesPaths, Name, Outdir) ->
+  get_all_paths(ReleasesPaths, Name, Outdir, ReleasesPaths).
+get_all_paths([], _, _, Acc) ->
+  Acc;
+get_all_paths([Path|Rest], Name, Outdir, Acc) ->
+  ?DEBUG("____> ~p", [Path]),
+  Vsn = filename:basename(Path),
+  RelFile = filename:join([Path, io_lib:format("~s-~s.rel", [Name, Vsn])]),
+  Ebins = case file:consult(RelFile) of
+            {ok, [{release, _, _, Deps}]} ->
+              lists:foldl(fun({N, V}, Acc1) ->
+                              P = bucs:to_string(
+                                    filename:join([Outdir, 
+                                                   "lib", 
+                                                   io_lib:format("~s-~s", [N, V]), 
+                                                   "ebin"])),
+                              case lists:member(P, Acc1) of
+                                true ->
+                                  Acc1;
+                                false ->
+                                  [P|Acc1]
+                              end
+                          end, Acc, Deps);
+            _ ->
+              ?HALT("Missing rel file for ~s (version ~s)", [Name, Vsn])
+          end,
+  get_all_paths(Rest, Name, Outdir, Ebins).
+
+strip_rel(Name) ->
+  bucs:to_string(
+    filename:join(
+      filename:dirname(Name),
+      filename:basename(Name, ".rel"))).
 
