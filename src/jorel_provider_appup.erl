@@ -23,58 +23,137 @@ do(State) ->
   {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   {outdir, Outdir} = jorel_config:get(State, outdir),
+  {upfrom, UpFrom} = jorel_config:get(State, upfrom, "0"),
   RelDir = filename:join([Outdir, "releases"]),
-  RelNameAtom = bucs:to_string(RelName),
+  RelNameStr = bucs:to_string(RelName),
   ?INFO("= Current release ~s (version ~s)", [RelName, RelVsn]),
-  ReleaseApps = [{App, Vsn, Path} || #{app := App,
-                                       vsn := Vsn,
-                                       path := Path} <- jorel_release:resolv_apps(State)],
-  ?INFO("= Search for previous releases in ~s", [RelDir]),
-  Rels = lists:foldl(fun(DepsFile, Acc) ->
-                         case file:consult(DepsFile) of
-                           {ok, [{release, {RelNameAtom, Vsn}, _, Deps}]} ->
-                             case vsn:compare(RelVsn, Vsn) of
-                               1 -> 
-                                 ?INFO("= Found release ~s", [Vsn]),
-                                 [{Vsn, Deps}|Acc];
-                               _ ->
-                                 ?DEBUG("= Ignore release ~s (>= ~s)", [Vsn, RelVsn]),
-                                 Acc
-                             end;
-                           {ok, [{release, {Name, Vsn}, _, _}]} ->
-                             ?DEBUG("= Ignore ~s (version ~s): name mismatch", [Name, Vsn]),
-                             Acc;
-                           {error, _} ->
-                             Acc
-                         end
-                     end, [], filelib:wildcard(
-                                filename:join(
-                                  [RelDir, "*", "*.deps"]))),
-  case Rels of
-    [] ->
-      ?ERROR("= No previous release found", []);
-    _ ->
-      AppDiffs = [{Vsn, diff_apps(Deps, ReleaseApps)} || {Vsn, Deps} <- Rels],
-      ?DEBUG("====> ~p", [AppDiffs])
+  RelDepsFile = filename:join([RelDir, RelVsn, io_lib:format("~s-~s.rel", [RelName, RelVsn])]),
+  ?DEBUG("= Read deps in ~s", [RelDepsFile]),
+  case filelib:is_file(RelDepsFile) of
+    true ->
+      case file:consult(RelDepsFile) of
+        {ok, [{release, {RelNameStr, RelVsn}, _, ReleaseDeps}]} ->
+          ?INFO("= Search for releases (>= ~s) in ~s", [UpFrom, RelDir]),
+          Appups = lists:foldl(fun(RelFile, Acc) ->
+                                   case file:consult(RelFile) of
+                                     {ok, [{release, {RelNameStr, Vsn}, _, Deps}]} when Vsn =/= RelVsn ->
+                                       case (-1 < vsn:compare(Vsn, UpFrom)) of
+                                         true ->
+                                           ?INFO("= Found release ~s", [Vsn]),
+                                           [{N, V, add_rel(N, V, Vs, Deps)} || {N, V, Vs} <- Acc];
+                                         false ->
+                                           ?DEBUG("= Ignore ~s (version ~s): version < ~s", [RelNameStr, Vsn, UpFrom]),
+                                           Acc
+                                       end;
+                                     {ok, [{release, {RelNameStr, _}, _, _}]} ->
+                                       Acc;
+                                     {ok, [{release, {Name, Vsn}, _, _}]} ->
+                                       ?DEBUG("= Ignore ~s (version ~s): name mismatch", [Name, Vsn]),
+                                       Acc;
+                                     {error, _} ->
+                                       ?ERROR("!!! Failed to read rel file ~s", [RelFile]),
+                                       Acc
+                                   end
+                               end, 
+                               [{N, V, []} || {N, V} <- ReleaseDeps, no_appup(N, V, Outdir)],
+                               filelib:wildcard(
+                                 filename:join(
+                                   [RelDir, "*", "*.rel"]))),
+          ?DEBUG("= Appups to build ~p", [Appups]),
+          build_appups(Appups, Outdir);
+        _ ->
+          ?ERROR("Missing file ~s", [RelDepsFile])
+      end;
+    false ->
+      ?ERROR("Can't find release ~s", [RelVsn])
   end,
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.
 
-diff_apps(Deps, ReleaseApps) ->
-  Remove = app_diff(Deps, ReleaseApps, 1),
-  Add = app_diff(ReleaseApps, Deps, 1),
-  Update = lists:foldl(fun({Name, Vsn, Path}, Acc) ->
-                           case lists:member({Name, Vsn}, Deps) of
-                             true ->
-                               Acc;
-                             false ->
-                               [{Name, Vsn, Path}|Acc]
-                           end
-                       end, [], ReleaseApps),
-  {Remove, Add, Update}.
+no_appup(N, V, Outdir) ->
+  Ebin = filename:join([Outdir, "lib", io_lib:format("~s-~s", [N, V]), "ebin", "*.appup"]),
+  ?DEBUG("= Search for appup ~s", [Ebin]),
+  filelib:wildcard(Ebin) == [].
 
-app_diff(List1, List2, N) ->
-  lists:foldl(fun(E, List) ->
-                  lists:keydelete(element(N, E), N, List)
-              end, List1, List2).
+add_rel(Name, Vsn, OldVsns, Deps) ->
+  case lists:keyfind(Name, 1, Deps) of
+    {Name, Vsn} ->
+      OldVsns;
+    {Name, Old} ->
+      case lists:member(Old, OldVsns) of
+        true ->
+          OldVsns;
+        false ->
+          [Old|OldVsns]
+      end;
+    _ ->
+      OldVsns
+  end.
+
+build_appups([], _) ->
+  ok;
+build_appups([{Name, Vsn, PrevVsns}|Rest], Outdir) ->
+  ?DEBUG("= Buils appup for ~s (~s)", [Name, Vsn]),
+  AppFile = filename:join([Outdir, "lib", io_lib:format("~s-~s", [Name, Vsn]), "ebin", "*.app"]),
+  AppupFile = case filelib:wildcard(AppFile) of
+                [] ->
+                  ?HALT("Missing app file for ~s (~s)", [Name, Vsn]);
+                [App] ->
+                  App ++ "up"
+              end,
+  ?DEBUG("= ~s", [AppupFile]),
+  {UpFrom, DownTo} = get_diffs(PrevVsns, Name, Vsn, Outdir, [], []),
+  ok = file:write_file(AppupFile,
+                       io_lib:fwrite("% Generated by jorel appup~n{~p,~n ~p,~n ~p}~n",
+                                     [Vsn, UpFrom, DownTo])),
+  build_appups(Rest, Outdir).
+
+get_diffs([], _, _, _, UpFrom, DownTo) ->
+  {UpFrom, DownTo};
+% [{"1", [{load_module, ch3}]}],
+get_diffs([Old|Rest], Name, Vsn, Outdir, UpFrom, DownTo) ->
+  ?DEBUG("= Compare ~s ~s vs ~s", [Name, Vsn, Old]),
+  OldEbinDir = filename:join([Outdir, "lib", io_lib:format("~s-~s", [Name, Old]), "ebin"]),
+  NewEbinDir = filename:join([Outdir, "lib", io_lib:format("~s-~s", [Name, Vsn]), "ebin"]),
+
+  % UpFrom
+  {UpFromAddedFiles, UpFromDeletedFiles, UpFromChangedFiles} = beam_lib:cmp_dirs(NewEbinDir, OldEbinDir),
+  UpFromAdded = [{add_module, bucs:to_atom(filename(F))} || F <- UpFromAddedFiles],
+  UpFromDeleted = [{delete_module, bucs:to_atom(filename(F))} || F <- UpFromDeletedFiles],
+  UpFromChanged = [changed(F) || {F, _} <- UpFromChangedFiles],
+
+  % FownTo
+  {DownToAddedFiles, DownToDeletedFiles, DownToChangedFiles} = beam_lib:cmp_dirs(OldEbinDir, NewEbinDir),
+  DownToAdded = [{add_module, bucs:to_atom(filename(F))} || F <- DownToAddedFiles],
+  DownToDeleted = [{delete_module, bucs:to_atom(filename(F))} || F <- DownToDeletedFiles],
+  DownToChanged = [changed(F) || {F, _} <- DownToChangedFiles],
+
+  get_diffs(Rest, Name, Vsn, Outdir, 
+            [{Old, lists:append([UpFromAdded, UpFromDeleted, UpFromChanged])}|UpFrom], 
+            [{Old, lists:append([DownToAdded, DownToDeleted, DownToChanged])}|DownTo]).
+
+changed(File) ->
+  {ok, {Name, List}} = beam_lib:chunks(File, [attributes, exports]),
+  case {behavior(List), code_change(List)} of
+    {[supervisor], _} ->
+      {update, Name, supervisor};
+    {_, true} ->
+      {update, Name, {advanced, []}};
+    {_, _} ->
+      {load_module, Name}
+  end.
+
+behavior(List) ->
+  Attributes = proplists:get_value(attributes, List),
+  case proplists:get_value(behavior, Attributes) of
+    undefined -> proplists:get_value(behaviour, Attributes);
+    Else -> Else
+  end.
+
+code_change(List) ->
+  Exports = proplists:get_value(exports, List),
+  proplists:is_defined(code_change, Exports) orelse proplists:is_defined(system_code_change, Exports).
+
+filename(File) ->
+    filename:rootname(filename:basename(File)).
 

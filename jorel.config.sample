@@ -10,6 +10,7 @@
 {sys_config, "config/jorel.config"}.
 {vm_args, "config/vm.args"}.
 {disable_relup, false}.
+{upfrom, "0.2.3"}.
 {init_sources, "/etc/environment"}.
 {paths, ["_build/*/lib/*"]}.
 {providers,
