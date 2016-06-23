@@ -194,8 +194,14 @@ make_release(State, AllApps, BootApps) ->
                             ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
                         end
                     end),
-      _ = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".deps"),
-      RelFile = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel"),
+      RelBootFile = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel"),
+      _ = make_boot_script(State, BootApps),
+      case file:rename(RelBootFile, RelBootFile ++ ".boot") of
+        ok -> ok;
+        {error, Reason4} ->
+          ?HALT("!!! Faild to rename release boot file: ~p", [Reason4])
+      end,
+      RelFile = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".rel"),
       ?INFO("* Create RELEASES file", []),
       case release_handler:create_RELEASES(Outdir, RelDir, RelFile, []) of
         ok -> ok;
