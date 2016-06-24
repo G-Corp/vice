@@ -110,7 +110,6 @@ build_appups([{Name, Vsn, PrevVsns}|Rest], Outdir) ->
 
 get_diffs([], _, _, _, UpFrom, DownTo) ->
   {UpFrom, DownTo};
-% [{"1", [{load_module, ch3}]}],
 get_diffs([Old|Rest], Name, Vsn, Outdir, UpFrom, DownTo) ->
   ?DEBUG("= Compare ~s ~s vs ~s", [Name, Vsn, Old]),
   OldEbinDir = filename:join([Outdir, "lib", io_lib:format("~s-~s", [Name, Old]), "ebin"]),
@@ -122,7 +121,7 @@ get_diffs([Old|Rest], Name, Vsn, Outdir, UpFrom, DownTo) ->
   UpFromDeleted = [{delete_module, bucs:to_atom(filename(F))} || F <- UpFromDeletedFiles],
   UpFromChanged = [changed(F) || {F, _} <- UpFromChangedFiles],
 
-  % FownTo
+  % DownTo
   {DownToAddedFiles, DownToDeletedFiles, DownToChangedFiles} = beam_lib:cmp_dirs(OldEbinDir, NewEbinDir),
   DownToAdded = [{add_module, bucs:to_atom(filename(F))} || F <- DownToAddedFiles],
   DownToDeleted = [{delete_module, bucs:to_atom(filename(F))} || F <- DownToDeletedFiles],

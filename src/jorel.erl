@@ -114,6 +114,6 @@ opts() ->
 
 help(Options) ->
   getopt:usage(opts(), "jorel", ""),
-  io:format("Use DEBUG=1 to display debug informations~n~nCommandes:~n~n"),
+  io:format("Use DEBUG=1 to display debug informations~n~nCommands:~n~n"),
   run(Options, [providers]).
 
