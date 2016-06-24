@@ -12,8 +12,7 @@
          make_bin/1,
          make_upgrade_scripts/1,
          include_erts/1,
-         make_boot_script/2,
-         make_relup/2
+         make_boot_script/2
         ]).
 
 -define(COPY_OPTIONS(Other), [{directory_mode, 8#00755}, {regular_file_mode, 8#00644}, {executable_file_mode, 8#00755}|Other]).
@@ -352,125 +351,7 @@ include_erts(State) ->
       ok
   end.
 
-make_relup(State, AllApps) ->
-  case jorel_config:get(State, disable_relup, true) of
-    {disable_relup, true} ->
-      ?INFO("* relup disabled", []);
-    _ ->
-      case lists:any(fun(#{app := sasl}) -> true;
-                        (_) -> false
-                     end, AllApps) of
-        true ->
-          {relname, RelName} = jorel_config:get(State, relname),
-          {relvsn, RelVsn} = jorel_config:get(State, relvsn),
-          {outdir, Outdir} = jorel_config:get(State, outdir),
-          VsnApp = bucs:to_string(RelName) ++ "-" ++ RelVsn,
-          AppDir = filename:join([Outdir, "lib", VsnApp, "ebin", "*.appup"]),
-          case filelib:wildcard(AppDir) of
-            [AppupFile] ->
-              case file:consult(AppupFile) of
-                {ok, [{Vsn, UpFrom, DownTo}]} ->
-                  ?INFO("* Use appup ~s", [AppupFile]),
-                  {UpFrom2, Versions1} = get_apps_and_versions(RelName, UpFrom),
-                  {DownTo2, Versions2} = get_apps_and_versions(RelName, DownTo),
-                  Versions3 = lists:umerge(lists:sort([Vsn|Versions1]), lists:sort(Versions2)),
-                  case lists:foldl(fun(CurrentApp, {Missing, Exist}) ->
-                                       Path = filename:join([Outdir, "lib", CurrentApp, "ebin"]),
-                                       case filelib:is_dir(Path) of
-                                         true ->
-                                           {Missing, [Path|Exist]};
-                                         false ->
-                                           {[CurrentApp|Missing], Exist}
-                                       end
-                                   end, {[], []},
-                                   [VsnApp,
-                                    lists:umerge(lists:sort(UpFrom2),
-                                                 lists:sort(DownTo2))]) of
-                    {[], AppsPath} ->
-                      AppsPath2 = lists:foldl(fun(Version, AppsPath3) ->
-                                                  [filename:join([Outdir, "releases", Version])|AppsPath3]
-                                              end, AppsPath, Versions3),
-                      ?INFO("* Generate relup file", []),
-                      case systools:make_relup(
-                             VsnApp,
-                             UpFrom2,
-                             DownTo2,
-                             [{path, AppsPath2},
-                              {outdir, filename:join([Outdir, "releases", RelVsn])},
-                              warnings_as_errors]) of
-                        {error, _, Error} ->
-                          ?HALT("!!! Create relup faild: ~p", [Error]);
-                        error ->
-                          ?HALT("!!! Create relup faild", []);
-                        _ ->
-                          RelArchive = filename:join([Outdir, "releases", VsnApp ++ ".tar.gz"]),
-                          case erl_tar:open(RelArchive, [write, compressed]) of
-                            {ok, TD} ->
-                              ?INFO("* Create release archive: ~s", [RelArchive]),
-                              lists:foreach(
-                                fun(#{app := AppName,
-                                      vsn := AppVsn}) ->
-                                    LN = bucs:to_string(AppName) ++ "-" ++ AppVsn,
-                                    IF = filename:join([Outdir, "lib", LN]),
-                                    OF = filename:join(["lib", LN]),
-                                    lists:foreach(fun(F) ->
-                                                      case erl_tar:add(TD, F, filename:join([OF, bucfile:relative_from(F, IF)]), []) of
-                                                        {error, {F, R}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F, R]);
-                                                        _ -> ok
-                                                      end
-                                                  end, filelib:wildcard(filename:join([IF, "**", "*"])))
-                                end, AllApps),
-                              RI = filename:join([Outdir, "releases", RelVsn]),
-                              lists:foreach(fun(F) ->
-                                                case erl_tar:add(TD, F, bucfile:relative_from(F, Outdir), []) of
-                                                  {error, {F, R}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F, R]);
-                                                  _ -> ok
-                                                end
-                                            end, filelib:wildcard(filename:join([RI, "**", "*"]))),
-                              case erl_tar:add(TD, filename:join([RI, VsnApp ++ ".rel"]), filename:join(["releases", VsnApp ++ ".rel"]), []) of
-                                {error, {F, R}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F, R]);
-                                _ -> ok
-                              end,
-                              case erl_tar:add(TD, filename:join([RI, VsnApp ++ ".boot"]), filename:join(["releases", RelVsn, "start.boot"]), []) of
-                                {error, {F3, R3}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F3, R3]);
-                                _ -> ok
-                              end,
-                              BI = filename:join([Outdir, "bin"]),
-                              case erl_tar:add(TD, filename:join([BI, VsnApp]), filename:join(["bin", VsnApp]), []) of
-                                {error, {F1, R1}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F1, R1]);
-                                _ -> ok
-                              end,
-                              case erl_tar:add(TD, filename:join([BI, RelName]), filename:join(["bin", RelName]), []) of
-                                {error, {F2, R2}} -> ?HALT("!!! Can't add ~s in release archive: ~p", [F2, R2]);
-                                _ -> ok
-                              end,
-                              erl_tar:close(TD);
-                            {error, Reason} ->
-                              ?ERROR("Can't create release archive: ~p",
-                                     [Reason])
-                          end
-                      end;
-                    {Missing, _} ->
-                      ?ERROR("* Can't create relup, missing apps ~s", [string:join(Missing, ", ")])
-                  end;
-                _ ->
-                  ?ERROR("* Invalid appup file (~s)", [AppupFile])
-              end;
-            _ ->
-              ?ERROR("* No appup found", [])
-          end;
-        false ->
-          ?ERROR("* SASL not present, can't create relup file", [])
-      end
-  end.
-
 % Private
-
-get_apps_and_versions(App, From) ->
-  lists:foldl(fun({Vsn, _}, {Apps, Versions}) ->
-                  {[bucs:to_string(App) ++ "-" ++ Vsn|Apps],
-                   [Vsn|Versions]}
-              end, {[], []}, From).
 
 find_all_deps(State, Apps) ->
   {exclude_dirs, Exclude} = jorel_config:get(State, exclude_dirs, ["**/_jorel/**", "**/_rel*/**", "**/test/**"]),

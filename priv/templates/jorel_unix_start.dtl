@@ -56,7 +56,7 @@ fi
 NODE_COOKIE="$(echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
 
 jorel_debug() {
-  if [ $DEBUG = "1" ] ; then
+  if [ "$DEBUG" = "1" ] ; then
     PURPLE='\033[0;35m'
     NC='\033[0m'
     printf "${PURPLE}$1${NC}\n"

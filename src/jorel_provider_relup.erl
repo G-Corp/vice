@@ -24,14 +24,15 @@ do(State) ->
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   {outdir, Outdir} = jorel_config:get(State, outdir),
   {upfrom, UpFrom} = jorel_config:get(State, upfrom, "0"),
+  NameWithVsn = io_lib:format("~s-~s", [RelName, RelVsn]),
 
-  CurrentRel = filename:join([Outdir, "releases", RelVsn, io_lib:format("~s-~s.rel", [RelName, RelVsn])]),
-  Rel = case filelib:is_file(CurrentRel) of
-          true -> 
-            strip_rel(CurrentRel);
-          false -> 
-            ?HALT("Missing release ~s (version ~s)", [RelName, RelVsn])
-        end,
+  CurrentRel = filename:join([Outdir, "releases", RelVsn, NameWithVsn ++ ".rel"]),
+  {Rel, ErtsVersion, Deps} = case file:consult(CurrentRel) of
+                               {ok, [{release, _, {erts, V}, D}]} ->
+                                 {strip_rel(CurrentRel), V, D};
+                               _ ->
+                                 ?HALT("Missing release ~s (version ~s)", [RelName, RelVsn])
+                             end,
 
   ReleasesPaths = get_releases_path(Outdir, UpFrom, RelVsn),
   UpDown = get_up_from(ReleasesPaths, RelName, RelVsn),
@@ -46,6 +47,7 @@ do(State) ->
              {path, get_all_paths(ReleasesPaths, RelName, Outdir)},
              silent],
 
+  ?INFO("* Create relup", []),
   ?DEBUG("= systools:make_relup(~p, ~p, ~p, ~p)", [Rel, UpDown, UpDown, Options]),
   case systools:make_relup(Rel, UpDown, UpDown, Options) of
     {error, _, Error} ->
@@ -56,11 +58,60 @@ do(State) ->
       todo
   end,
 
-  % Y = systools:make_tar(Rel),
-  % ?DEBUG("===> ~p", [Y]),
+  ?INFO("* Create release archive", []),
+  RelArchive = filename:join([Outdir, "releases", NameWithVsn ++ ".tar.gz"]),
+  ?DEBUG("= ~s", [RelArchive]),
+  case erl_tar:open(RelArchive, [write, compressed]) of
+    {ok, Tar} ->
+      % Add libs
+      Lib = filename:join([Outdir, "lib"]),
+      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) 
+       || F <- lists:concat([filelib:wildcard(filename:join([L, "**", "*"])) 
+                             || L <- [filename:join([Lib, io_lib:format("~s-~s", [N, V])]) 
+                                      || {N, V} <- Deps]])],
+      % Add erts
+      case jorel_config:get(State, include_erts, true) of
+        {include_erts, false} ->
+          ok;
+        _ ->
+          Erts = filename:join([Outdir, io_lib:format("erts-~s", [ErtsVersion])]),
+          [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) ||
+           F <- filelib:wildcard(filename:join([Erts, "**", "*"]))]
+      end,
+      % Add bin
+      [add_to_tar(Tar, filename:join([Outdir, "bin", F]), filename:join(["bin", F]), []) ||
+       F <- [RelName, NameWithVsn, "nodetool", "start.boot", "start_clean.boot", "upgrade.escript"]],
+
+      % Add release
+      Release = filename:join([Outdir, "releases", RelVsn]),
+      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) ||
+       F <- filelib:wildcard(filename:join([Release, "**", "*"]))],
+      add_to_tar(Tar,
+                 filename:join([Release, NameWithVsn ++ ".boot"]),
+                 filename:join(["releases", RelVsn, "start.boot"]),
+                 []),
+      add_to_tar(Tar,
+                 filename:join([Release, NameWithVsn ++ ".rel"]),
+                 filename:join(["releases", NameWithVsn ++ ".rel"]),
+                 []),
+
+      % Close
+      erl_tar:close(Tar);
+    {error, Reason} ->
+      ?HALT("Can't create release archive; ~p", [Reason])
+  end,
 
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.
+
+add_to_tar(Tar, File, NameInArchive, Opts) ->
+  ?DEBUG("= Add ~s with name ~s in tar", [File, NameInArchive]),
+  case erl_tar:add(Tar, File, NameInArchive, Opts) of
+    {error, {F, R}} ->
+      ?HALT("!!! Can't add ~s in ~s", [F, R]);
+    _ ->
+      ok
+  end.
 
 get_up_from(ReleasesPaths, Name, Vsn) ->
   get_up_from(ReleasesPaths, Name, Vsn, []).
@@ -92,7 +143,6 @@ get_all_paths(ReleasesPaths, Name, Outdir) ->
 get_all_paths([], _, _, Acc) ->
   Acc;
 get_all_paths([Path|Rest], Name, Outdir, Acc) ->
-  ?DEBUG("____> ~p", [Path]),
   Vsn = filename:basename(Path),
   RelFile = filename:join([Path, io_lib:format("~s-~s.rel", [Name, Vsn])]),
   Ebins = case file:consult(RelFile) of
