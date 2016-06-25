@@ -21,6 +21,8 @@ help::
 	$(verbose) printf "%s\n" "" \
 		"Jorel targets:" \
 		"  jorel.release        Create a release with Jorel" \
+		"  jorel.appup          Create appup" \
+		"  jorel.relup          Create relup for release" \
 		"  jorel.exec cmd=CMD   Execute the Jorel command specified" \
 	  "" \
 		"Jorel rules accepts the following options :" \
@@ -31,6 +33,12 @@ help::
 
 jorel.release: 
 	$(verbose) make jorel.exec cmd=release
+
+jorel.appup: 
+	$(verbose) make jorel.exec cmd=appup
+
+jorel.relup: 
+	$(verbose) make jorel.exec cmd=relup
 
 $(JOREL_CONFIG):
 	$(verbose) make jorel.exec cmd=gen_config
