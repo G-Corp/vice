@@ -5,7 +5,7 @@ REBAR = ./rebar3
 compile:
 	@$(REBAR) escriptize
 
-tests:
+tests: compile
 	@$(REBAR) eunit
 
 doc:
