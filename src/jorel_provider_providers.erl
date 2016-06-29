@@ -23,9 +23,9 @@ do(State) ->
   lists:foreach(fun({Name, #{depends := Deps, desc := Desc}}) ->
                     case Deps of
                       [] ->
-                        io:format("~s: ~s~n", [Name, Desc]);
+                        io:format("~s:~n\t~s~n~n", [Name, Desc]);
                       Deps ->
-                        io:format("~s: ~s (dependencies: ~p)~n", [Name, Desc, Deps])
+                        io:format("~s:~n\t~s (dependencies: ~p)~n~n", [Name, Desc, Deps])
                     end
                 end, Providers),
   State.

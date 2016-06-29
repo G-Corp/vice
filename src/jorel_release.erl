@@ -46,7 +46,7 @@ get_erts_from_url(URL) ->
   end,
   case http_uri:parse(URL) of
     {ok, {http, _, _, _, P, _}} ->
-      Archive = filename:join([?JOREL_TMP|string:tokens(P, "/")]),
+      Archive = filename:join([?JOREL_HOME|string:tokens(P, "/")]),
       Path = filename:rootname(Archive, ".tgz"),
       Install = filename:dirname(Archive),
       _ = case filelib:is_dir(Path) of

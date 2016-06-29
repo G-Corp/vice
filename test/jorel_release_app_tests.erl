@@ -68,6 +68,9 @@ jorel_release_jorel_sample_test_() ->
             ?assertMatch({ok, _}, 
                          sh:sh("make jorel.relup",
                                [return_on_error, {cd, ".tests/0.0.2/jorel_sample"}])),
+            ?assertMatch({ok, _}, 
+                         sh:sh("make jorel.archive",
+                               [return_on_error, {cd, ".tests/0.0.2/jorel_sample"}])),
             ?assertEqual(ok, bucfile:copy(".tests/0.0.2/jorel_sample/_jorel/jorel_sample/releases/jorel_sample-0.0.2.tar.gz",
                                           ".tests/0.0.1/jorel_sample/_jorel/jorel_sample/releases/jorel_sample-0.0.2.tar.gz"))
         end}

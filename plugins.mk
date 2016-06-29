@@ -23,6 +23,7 @@ help::
 		"  jorel.release        Create a release with Jorel" \
 		"  jorel.appup          Create appup" \
 		"  jorel.relup          Create relup for release" \
+		"  jorel.archive        Create archive release" \
 		"  jorel.exec cmd=CMD   Execute the Jorel command specified" \
 	  "" \
 		"Jorel rules accepts the following options :" \
@@ -39,6 +40,9 @@ jorel.appup:
 
 jorel.relup: 
 	$(verbose) make jorel.exec cmd=relup
+
+jorel.archive: 
+	$(verbose) make jorel.exec cmd=archive
 
 $(JOREL_CONFIG):
 	$(verbose) make jorel.exec cmd=gen_config

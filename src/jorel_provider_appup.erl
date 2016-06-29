@@ -13,7 +13,7 @@ init(State) ->
      #{
        module => ?MODULE,
        depends => [],
-       desc => "Generate appup file"
+       desc => "Generate appup files"
       }
     }
    ).

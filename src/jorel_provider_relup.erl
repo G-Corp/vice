@@ -11,10 +11,10 @@ init(State) ->
     State,
     {?PROVIDER,
      #{
-       module => ?MODULE,
-       depends => [],
-       desc => "Create relup of release"
-      }
+        module => ?MODULE,
+        depends => [],
+        desc => "Create relup of release"
+       }
     }
    ).
 
@@ -27,91 +27,32 @@ do(State) ->
   NameWithVsn = io_lib:format("~s-~s", [RelName, RelVsn]),
 
   CurrentRel = filename:join([Outdir, "releases", RelVsn, NameWithVsn ++ ".rel"]),
-  {Rel, ErtsVersion, Deps} = case file:consult(CurrentRel) of
-                               {ok, [{release, _, {erts, V}, D}]} ->
-                                 {strip_rel(CurrentRel), V, D};
-                               _ ->
-                                 ?HALT("Missing release ~s (version ~s)", [RelName, RelVsn])
-                             end,
+  Rel = strip_rel(CurrentRel),
 
   ReleasesPaths = get_releases_path(Outdir, UpFrom, RelVsn),
   UpDown = get_up_from(ReleasesPaths, RelName, RelVsn),
   case UpDown of
     [] ->
-      ?HALT("No previous ~s release found", [RelName]);
+      ?WARN("!!! No previous ~s release found", [RelName]);
     _ ->
-      ok
-  end,
+      Options = [{outdir, filename:join([Outdir, "releases", RelVsn])},
+                 {path, get_all_paths(ReleasesPaths, RelName, Outdir)},
+                 silent],
 
-  Options = [{outdir, filename:join([Outdir, "releases", RelVsn])},
-             {path, get_all_paths(ReleasesPaths, RelName, Outdir)},
-             silent],
-
-  ?INFO("* Create relup", []),
-  ?DEBUG("= systools:make_relup(~p, ~p, ~p, ~p)", [Rel, UpDown, UpDown, Options]),
-  case systools:make_relup(Rel, UpDown, UpDown, Options) of
-    {error, _, Error} ->
-      ?HALT("!!! Create relup faild: ~p", [Error]);
-    error ->
-      ?HALT("!!! Create relup faild", []);
-    _ ->
-      todo
-  end,
-
-  ?INFO("* Create release archive", []),
-  RelArchive = filename:join([Outdir, "releases", NameWithVsn ++ ".tar.gz"]),
-  ?DEBUG("= ~s", [RelArchive]),
-  case erl_tar:open(RelArchive, [write, compressed]) of
-    {ok, Tar} ->
-      % Add libs
-      Lib = filename:join([Outdir, "lib"]),
-      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) 
-       || F <- lists:concat([filelib:wildcard(filename:join([L, "**", "*"])) 
-                             || L <- [filename:join([Lib, io_lib:format("~s-~s", [N, V])]) 
-                                      || {N, V} <- Deps]])],
-      % Add erts
-      case jorel_config:get(State, include_erts, true) of
-        {include_erts, false} ->
-          ok;
+      ?INFO("* Create relup", []),
+      ?DEBUG("= systools:make_relup(~p, ~p, ~p, ~p)", [Rel, UpDown, UpDown, Options]),
+      case systools:make_relup(Rel, UpDown, UpDown, Options) of
+        {error, _, Error} ->
+          ?HALT("!!! Create relup faild: ~p", [Error]);
+        error ->
+          ?HALT("!!! Create relup faild", []);
         _ ->
-          Erts = filename:join([Outdir, io_lib:format("erts-~s", [ErtsVersion])]),
-          [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) ||
-           F <- filelib:wildcard(filename:join([Erts, "**", "*"]))]
-      end,
-      % Add bin
-      [add_to_tar(Tar, filename:join([Outdir, "bin", F]), filename:join(["bin", F]), []) ||
-       F <- [RelName, NameWithVsn, "nodetool", "start.boot", "start_clean.boot", "upgrade.escript"]],
-
-      % Add release
-      Release = filename:join([Outdir, "releases", RelVsn]),
-      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) ||
-       F <- filelib:wildcard(filename:join([Release, "**", "*"]))],
-      add_to_tar(Tar,
-                 filename:join([Release, NameWithVsn ++ ".boot"]),
-                 filename:join(["releases", RelVsn, "start.boot"]),
-                 []),
-      add_to_tar(Tar,
-                 filename:join([Release, NameWithVsn ++ ".rel"]),
-                 filename:join(["releases", NameWithVsn ++ ".rel"]),
-                 []),
-
-      % Close
-      erl_tar:close(Tar);
-    {error, Reason} ->
-      ?HALT("Can't create release archive; ~p", [Reason])
+          todo
+      end
   end,
 
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State.
-
-add_to_tar(Tar, File, NameInArchive, Opts) ->
-  ?DEBUG("= Add ~s with name ~s in tar", [File, NameInArchive]),
-  case erl_tar:add(Tar, File, NameInArchive, Opts) of
-    {error, {F, R}} ->
-      ?HALT("!!! Can't add ~s in ~s", [F, R]);
-    _ ->
-      ok
-  end.
 
 get_up_from(ReleasesPaths, Name, Vsn) ->
   get_up_from(ReleasesPaths, Name, Vsn, []).

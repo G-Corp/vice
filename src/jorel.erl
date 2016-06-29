@@ -35,9 +35,13 @@ run(Options, Commands) ->
                                          add_provider(S, P, Provider)
                                      end, {State, Providers}, [jorel_provider_release,
                                                                jorel_provider_relup,
+                                                               jorel_provider_appup,
+                                                               jorel_provider_archive,
                                                                jorel_provider_providers,
                                                                jorel_provider_config,
-                                                               jorel_provider_appup]),
+                                                               jorel_provider_register,
+                                                               jorel_provider_publish,
+                                                               jorel_provider_install]),
   State2 = lists:foldl(fun(P, S) ->
                            load_provider(P, S)
                        end, State1, Providers1),
