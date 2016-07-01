@@ -13,9 +13,13 @@ init(State) ->
     State,
     {?PROVIDER,
      #{
-        module => ?MODULE,
-        depends => [],
-        desc => "Create a configuration file"
+        module => ?MODULE
+        , depends => []
+        , desc => "Create a configuration file"
+        , opts => [
+                   {relname, $n, "relname", string, "Specify the name for the release that will be generated"},
+                   {relvsn,  $v, "relvsn",  string, "Specify the version for the release"}
+                  ]
       }
     }
    ).
