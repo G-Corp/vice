@@ -13,7 +13,14 @@ init(State) ->
      #{
        module => ?MODULE,
        depends => [],
-       desc => "Create a release"
+       desc => "Create a release",
+       opts => [
+                {relname,      $n,        "relname",      string,                   "Specify the name for the release that will be generated"},
+                {relvsn,       $v,        "relvsn",       string,                   "Specify the version for the release"},
+                {output_dir,   $o,        "output-dir",   {string, "./_jorel"},     "Output directory"},
+                {exclude_dirs, $e,        "exclude-dirs", list,                     "Exclude directories"},
+                {include_src,  undefined, "include-src",  undefined,                "Include source"}
+               ]
       }
     }
    ).

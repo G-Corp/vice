@@ -8,7 +8,8 @@ jorel_release_jorel_elixir_test_() ->
         bucfile:make_dir(".tests")
     end,
     fun(_) ->
-        bucfile:remove_recursive(".tests")
+        % bucfile:remove_recursive(".tests")
+        ok
     end,
     [
      {timeout, 200, 
@@ -27,7 +28,7 @@ jorel_release_jorel_elixir_test_() ->
      , {timeout, 200, 
         fun() ->
             ?assertMatch({ok, _}, 
-                         sh:sh(".jorel/jorel gen_config -v 0.0.1",
+                         sh:sh(".jorel/jorel -v 0.0.1 gen_config",
                                [return_on_error, {cd, ".tests/0.0.1/elixir_test"}]))
         end}
      , {timeout, 200, 

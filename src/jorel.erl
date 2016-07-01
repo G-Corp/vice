@@ -2,63 +2,145 @@
 -include("../include/jorel.hrl").
 
 -export([main/1]).
--export([run/2]).
+%-export([run/2]).
 
-% @hidden
 main(Args) ->
-  case getopt:parse(opts(), Args) of
-    {ok, {Options, Commands}} ->
-      case lists:member(version, Options) of
-        true ->
-          application:load(jorel),
-          {ok, Vsn} = application:get_key(jorel, vsn),
-          io:format("jorel ~s~n", [Vsn]);
-        false ->
-          case lists:member(help, Options) of
-            true ->
-              help(Options);
-            false ->
-              run(Options, Commands)
-          end
-      end;
-    {error, Details} ->
-      io:format("Error : ~p~n", [Details])
-  end.
-
-run(Options, Commands) ->
-  State = jorel_config:to_state(Options, Commands),
-  {config, JorelConfig} = jorel_config:get(State, config),
+  State = get_state(Args),
   {providers, Providers} = jorel_config:get(State, providers, []),
-  {paths, Paths} = jorel_config:get(State, paths, []),
-  load_paths(Paths),
   {State1, Providers1} = lists:foldl(fun(Provider, {S, P}) ->
                                          add_provider(S, P, Provider)
                                      end, {State, Providers}, [jorel_provider_release,
                                                                jorel_provider_relup,
                                                                jorel_provider_appup,
                                                                jorel_provider_archive,
-                                                               jorel_provider_providers,
                                                                jorel_provider_config,
                                                                jorel_provider_register,
                                                                jorel_provider_publish,
                                                                jorel_provider_install]),
+  {paths, Paths} = jorel_config:get(State, paths, []),
+  _ = load_paths(Paths),
   State2 = lists:foldl(fun(P, S) ->
                            load_provider(P, S)
                        end, State1, Providers1),
-  case lists:map(fun bucs:to_atom/1, Commands) of
-    [] -> 
-      help(Options);
-    Commands1 -> 
-      lists:foldl(fun(P, S) ->
-                      if
-                        P =/= providers ->
-                          ?INFO("== Config file: ~s", [JorelConfig]);
-                        true ->
-                          ok
-                      end,
-                      jorel_provider:run(S, P)
-                  end, State2, Commands1)
+  case get_commands(Args, State2) of
+    [] ->
+      help([], State2);
+    Commands -> 
+      ?DEBUG("* Commands = ~p", [Commands]),
+      Options = options(Args, Commands, State2),
+      ?DEBUG("* Options = ~p", [Options]),
+      case lists:member(help, Options) of
+        true ->
+          help(Commands, State2);
+        false ->
+          case lists:member(version, Options) of
+            true ->
+              ?INFO("VERSION !!!", []); % TODO
+            false ->
+              State3 = buclists:merge_keylists(1, Options, State2),
+              ?DEBUG("* State = ~p", [State3]),
+              [jorel_provider:run(State3, Command) || Command <- Commands]
+          end
+      end
   end.
+
+get_state(Args) ->
+  lists:map(fun
+              (E) when is_tuple(E) -> E;
+              (E) -> {E, true}
+            end, read_config(Args)).
+
+read_config(Args) ->
+  ConfigFile = find_config_file(Args),
+  case filelib:is_file(ConfigFile) of
+    true ->
+      case file:consult(ConfigFile) of
+        {ok, Config} ->
+          Config;
+        {error, Reason} ->
+          ?DEBUG("= Can't read configuration file (~s) : ~p", [ConfigFile, Reason]),
+          []
+      end;
+    false ->
+      ?DEBUG("= Configuration file (~s) not found", [ConfigFile]),
+      []
+  end.
+
+find_config_file([]) ->
+  ?CONFIG_FILE;
+find_config_file(["--config", Config|_]) ->
+  Config;
+find_config_file(["-c", Config|_]) ->
+  Config;
+find_config_file([_|Rest]) ->
+  find_config_file(Rest).
+
+get_commands(Args, State) ->
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
+  ProvidersNames = [P || {P, _} <- Providers],
+  buclists:delete_if(fun(E) ->
+                         not lists:member(E, ProvidersNames)
+                     end, get_commands0(lists:reverse(Args), [])).
+get_commands0([], Acc) ->
+  Acc;
+get_commands0([[$-|_]|_], Acc) ->
+  Acc;
+get_commands0([Cmd|Rest], Acc) ->
+  get_commands0(Rest, [bucs:to_atom(Cmd)|Acc]).
+
+options(Args, Commands, State) ->
+  Opts = commands_options(Commands, State),
+  case getopt:parse(Opts, Args) of
+    {ok, {Options, _}} ->
+      Options;
+    {error, {invalid_option, Option}} ->
+      ?ERROR("!!! Invalid option ~s", [Option]),
+      help(Commands, State);
+    {error, {missing_option_arg, Option}} ->
+      ?ERROR("!!! Missing argument for option --~s", [Option]),
+      help(Commands, State)
+  end.
+
+commands_options(Commands, State) ->
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
+  lists:foldl(fun(Provider, Acc) ->
+                  case lists:keyfind(Provider, 1, Providers) of
+                    {Provider, #{opts := ProviderOpts}} ->
+                      Acc ++ ProviderOpts;
+                    _ ->
+                      Acc
+                  end
+              end, opts(), Commands).
+
+opts() ->
+  [
+   {config,       $c,        "config",       {string, "jorel.config"}, "Path to the config file"},
+   {help,         $h,        "help",         undefined,                "Display this help"},
+   {version,      $V,        "version",      undefined,                "Display version"}
+  ].
+
+help(Commands, State) ->
+  Opts = commands_options(Commands, State),
+  getopt:usage(Opts, "jorel", "[commands ...]"),
+  {providers_def, Providers} = jorel_config:get(State, providers_def),
+  io:format(standard_error, "Commands:~n~n", []),
+  providers(Commands, Providers),
+  halt(0).
+
+providers(Commands, Providers) ->
+  lists:foreach(fun({Name, #{depends := Deps, desc := Desc}}) ->
+                    case Commands == [] orelse lists:member(Name, Commands) of
+                      true ->
+                        case Deps of
+                          [] ->
+                            io:format(standard_error, "  ~s:~n      ~s~n", [Name, Desc]);
+                          Deps ->
+                            io:format(standard_error, "  ~s:~n      ~s (dependencies: ~p)~n", [Name, Desc, Deps])
+                        end;
+                      false ->
+                        ok
+                    end
+                end, Providers).
 
 add_provider(State, Providers, Provider) ->
   case lists:member(Provider, Providers) of
@@ -103,21 +185,4 @@ load_paths([Path|Rest], Acc) ->
               load_paths(Paths, [])
           end,
   load_paths(Rest, Acc ++ Ebins).
-
-opts() ->
-  [
-   {relname,      $n,        "relname",      string,                   "Specify the name for the release that will be generated"},
-   {relvsn,       $v,        "relvsn",       string,                   "Specify the version for the release"},
-   {config,       $c,        "config",       {string, "jorel.config"}, "Path to the config file"},
-   {help,         $h,        "help",         undefined,                "Display this help"},
-   {version,      $V,        "version",      undefined,                "Display version"},
-   {output_dir,   $o,        "output-dir",   {string, "./_jorel"},     "Output directory"},
-   {exclude_dirs, $e,        "exclude-dirs", list,                     "Exclude directories"},
-   {include_src,  undefined, "include-src",  undefined,                "Include source"}
-  ].
-
-help(Options) ->
-  getopt:usage(opts(), "jorel", ""),
-  io:format("Use DEBUG=1 to display debug informations~n~nCommands:~n~n"),
-  run(Options, [providers]).
 

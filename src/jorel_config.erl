@@ -3,38 +3,11 @@
 -include("../include/jorel.hrl").
 
 -export([
-         to_state/2,
          add_provider/2,
          set/2,
          get/2,
          get/3
         ]).
-
-to_state(Options, Commands) ->
-  State = case lists:keyfind(config, 1, Options) of
-            {config, ConfigFile} ->
-              case filelib:is_file(ConfigFile) of
-                true ->
-                  buclists:merge_keylists(
-                    1, Options, read_config(ConfigFile));
-                false ->
-                  case lists:member(gen_config, Commands) orelse
-                       lists:member("gen_config", Commands) orelse
-                       lists:member(providers, Commands) orelse
-                       lists:member("providers", Commands) of
-                    true -> 
-                      Options;
-                    _ ->
-                      ?HALT("! Can't find ~s.", [ConfigFile])
-                  end
-              end;
-            _ ->
-              ?HALT("Missing config file", [])
-          end,
-  lists:map(fun
-              (E) when is_tuple(E) -> E;
-              (E) -> {E, true}
-            end, State).
 
 add_provider(State, Provider) ->
   {providers_def, Providers} = get(State, providers_def, []),
@@ -84,12 +57,3 @@ get(State, Key, Default) ->
     T -> T
   end.
 
-% Private
-
-read_config(File) ->
-  case file:consult(File) of
-    {ok, Config} ->
-      Config;
-    {error, Reason} ->
-      ?HALT("Error while reading ~s: ~p", [File, Reason])
-  end.

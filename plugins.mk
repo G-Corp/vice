@@ -70,7 +70,7 @@ endif
 ifdef c
 	$(eval x := --config $c $x)
 endif
-	$(verbose) $(JOREL) $(cmd) $x
+	$(verbose) $(JOREL) $x $(cmd) 
 
 ifeq ($(JOREL_BUILD),true)
 $(JOREL): rel-deps
