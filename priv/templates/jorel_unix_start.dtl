@@ -19,6 +19,7 @@ LIBDIR="$ROOT_DIR/lib"
 PIPE_DIR="$SCRIPT_DIR/.erlang.$NAME.pipe"
 LOG_DIR="$ROOT_DIR/log"
 SYS_CONFIG="$REL_DIR/sys.config"
+COMPILED_SYS_CONFIG="${ROOT_DIR}/bin/${REL_NAME}.config"
 VM_ARGS="$REL_DIR/vm.args"
 REL_FILE="$REL_DIR/$REL_NAME-$REL_VSN.rel"
 BOOT_FILE="$REL_DIR/$REL_NAME-$REL_VSN"
@@ -109,10 +110,17 @@ print_info() {
   fi
 }
 
+compile_config() {
+  rm -f "$COMPILED_SYS_CONFIG"
+  "$BINDIR/escript" "$ROOT_DIR/bin/config.escript" "$SYS_CONFIG" "$COMPILED_SYS_CONFIG"
+}
+
 run_app() {
   if [ $STARTED = true ] ; then
     echo "$NAME is already running (PID $PID)"
   else
+    echo "Start $NAME"
+    compile_config
     EXTRA_ARGS=""
     if [ -f $VM_ARGS ] ; then
       EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
@@ -128,7 +136,7 @@ run_app() {
     jorel_debug "ROOTDIR = $ROOTDIR"
     jorel_debug "ERL_LIBS = $ERL_LIBS"
     jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $SYS_CONFIG -boot $BOOT_FILE
+    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $COMPILED_SYS_CONFIG -boot $BOOT_FILE
   fi
 }
 

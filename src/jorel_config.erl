@@ -26,16 +26,18 @@ get(State, outdir) ->
   {outdir, filename:join(Outdir, RelName)};
 
 get(State, relname) ->
-  {release, {RelName, _}, _} = get(State, release),
   case get(State, relname, undefined) of
-    {relname, undefined} -> {relname, RelName};
+    {relname, undefined} -> 
+      {release, {RelName, _}, _} = get(State, release),
+      {relname, RelName};
     RelName1 -> RelName1
   end;
 
 get(State, relvsn) ->
-  {release, {_, RelVsn}, _} = get(State, release),
   case get(State, relvsn, undefined) of
-    {relvsn, undefined} -> {relvsn, RelVsn};
+    {relvsn, undefined} -> 
+      {release, {_, RelVsn}, _} = get(State, release),
+      {relvsn, RelVsn};
     RelVsn1 -> RelVsn1
   end;
 

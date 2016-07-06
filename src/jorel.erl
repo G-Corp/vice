@@ -22,24 +22,30 @@ main(Args) ->
   State2 = lists:foldl(fun(P, S) ->
                            load_provider(P, S)
                        end, State1, Providers1),
-  case get_commands(Args, State2) of
-    [] ->
-      help([], State2);
-    Commands -> 
-      ?DEBUG("* Commands = ~p", [Commands]),
-      Options = options(Args, Commands, State2),
-      ?DEBUG("* Options = ~p", [Options]),
-      case lists:member(help, Options) of
+  Commands = get_commands(Args, State2),
+  ?DEBUG("* Commands = ~p", [Commands]),
+  Options = options(Args, Commands, State2),
+  ?DEBUG("* Options = ~p", [Options]),
+  case lists:member(help, Options) of
+    true ->
+      help(Commands, State2);
+    false ->
+      case lists:member(version, Options) of
         true ->
-          help(Commands, State2);
+          version();
         false ->
-          case lists:member(version, Options) of
-            true ->
-              ?INFO("VERSION !!!", []); % TODO
-            false ->
+          case Commands of
+            [] ->
+              help([], State2);
+            _ ->
               State3 = buclists:merge_keylists(1, Options, State2),
               ?DEBUG("* State = ~p", [State3]),
-              [jorel_provider:run(State3, Command) || Command <- Commands]
+              [try
+                 jorel_provider:run(State3, Command)
+               catch
+                 _:_ ->
+                   ?HALT("Provider ~s failed!", [Command])
+               end || Command <- Commands]
           end
       end
   end.
@@ -80,11 +86,11 @@ get_commands(Args, State) ->
   ProvidersNames = [P || {P, _} <- Providers],
   buclists:delete_if(fun(E) ->
                          not lists:member(E, ProvidersNames)
-                     end, get_commands0(lists:reverse(Args), [])).
+                     end, get_commands0(Args, [])).
 get_commands0([], Acc) ->
-  Acc;
+  lists:reverse(Acc);
 get_commands0([[$-|_]|_], Acc) ->
-  Acc;
+  lists:reverse(Acc);
 get_commands0([Cmd|Rest], Acc) ->
   get_commands0(Rest, [bucs:to_atom(Cmd)|Acc]).
 
@@ -121,7 +127,7 @@ opts() ->
 
 help(Commands, State) ->
   Opts = commands_options(Commands, State),
-  getopt:usage(Opts, "jorel", "[commands ...]"),
+  getopt:usage(Opts, "jorel [commands ...]", ""),
   {providers_def, Providers} = jorel_config:get(State, providers_def),
   io:format(standard_error, "Commands:~n~n", []),
   providers(Commands, Providers),
@@ -185,4 +191,11 @@ load_paths([Path|Rest], Acc) ->
               load_paths(Paths, [])
           end,
   load_paths(Rest, Acc ++ Ebins).
+
+version() ->
+  application:load(?MODULE),
+  {ok, Vsn} = application:get_key(?MODULE, vsn),
+  ?REMARK("~s ~s (Erlang/OTP ~s Erts ~s)", [?MODULE, Vsn, 
+                                             erlang:system_info(otp_release), 
+                                             erlang:system_info(version)]).
 

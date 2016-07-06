@@ -35,6 +35,7 @@ do(State) ->
   _ = jorel_release:make_root(State1),
   _ = jorel_release:make_lib(State1, AllApps),
   _ = jorel_release:make_release(State1, AllApps, BootApps),
+  _ = jorel_release:build_config_compiler(State1),
   _ = jorel_release:make_bin(State1),
   _ = jorel_release:include_erts(State1),
   _ = jorel_release:make_upgrade_scripts(State1),

@@ -12,7 +12,8 @@
          make_bin/1,
          make_upgrade_scripts/1,
          include_erts/1,
-         make_boot_script/2
+         make_boot_script/2,
+         build_config_compiler/1
         ]).
 
 -define(COPY_OPTIONS(Other), [{directory_mode, 8#00755}, {regular_file_mode, 8#00644}, {executable_file_mode, 8#00755}|Other]).
@@ -606,4 +607,35 @@ subst_var([C| Rest], Vars, Result, VarAcc) ->
   subst_var(Rest, Vars, Result, [C| VarAcc]);
 subst_var([], Vars, Result, VarAcc) ->
   subst([], Vars, [VarAcc ++ [$%| Result]]).
+
+build_config_compiler(State) ->
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  ConfigScript = filename:join([Outdir, "bin", "config.escript"]),
+  ok = filelib:ensure_dir(ConfigScript),
+  tempdir:mktmp(
+    fun(TmpDir) ->
+        {ok, Escript} = escript:extract(escript:script_name(), []),
+        {archive, Archive} = lists:keyfind(archive, 1, Escript),
+        ?DEBUG("* Extract ~s tp ~s", [escript:script_name(), TmpDir]),
+        zip:extract(Archive, [{cwd, TmpDir}]),
+        ?INFO("* Create ~s", [ConfigScript]),
+        ArchiveFiles = [read_file(File, TmpDir, "doteki") 
+                        || File <- filelib:wildcard("*", filename:join([TmpDir, "doteki", "ebin"]))],
+        case escript:create(ConfigScript, 
+                            [{shebang, "/usr/bin/env escript"}
+                             , {comment, ""}
+                             , {emu_args, " -escript main doteki -pz doteki/ebin"}
+                             , {archive, ArchiveFiles, []}]) of
+          ok -> ok;
+          {error, EscriptError} ->
+            ?ERROR("Failed to create ~s: ~p", [ConfigScript, EscriptError])
+        end
+    end),
+  State.
+
+read_file(Filename, Prefix, App) ->
+  File = filename:join([Prefix, App, "ebin", Filename]),
+  ArchiveFile = filename:join([App, "ebin", Filename]),
+  {ok, Bin} = file:read_file(File),
+  {ArchiveFile, Bin}.
 

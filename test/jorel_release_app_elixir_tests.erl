@@ -8,8 +8,7 @@ jorel_release_jorel_elixir_test_() ->
         bucfile:make_dir(".tests")
     end,
     fun(_) ->
-        % bucfile:remove_recursive(".tests")
-        ok
+        bucfile:remove_recursive(".tests")
     end,
     [
      {timeout, 200, 
