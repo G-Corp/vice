@@ -56,6 +56,9 @@ fi
 # Extract cookie name from NODE_COOKIE_ARG
 NODE_COOKIE="$(echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
 
+# All deps ebin path
+APP_DEPS=$($BINDIR/escript $REL_DIR/extrel get_libs $REL_FILE $LIBDIR)
+
 jorel_debug() {
   if [ "$DEBUG" = "1" ] ; then
     PURPLE='\033[0;35m'
@@ -112,21 +115,23 @@ print_info() {
 
 compile_config() {
   rm -f "$COMPILED_SYS_CONFIG"
-  "$BINDIR/escript" "$ROOT_DIR/bin/config.escript" "$SYS_CONFIG" "$COMPILED_SYS_CONFIG"
+  "$BINDIR/escript" "$ROOT_DIR/bin/config.escript" "$SYS_CONFIG" "$COMPILED_SYS_CONFIG" $APP_DEPS
+  if [ "$?" = "1" ] ; then
+    echo "Invalid configuration!"
+    exit 1
+  fi
 }
 
 run_app() {
   if [ $STARTED = true ] ; then
     echo "$NAME is already running (PID $PID)"
   else
-    echo "Start $NAME"
     compile_config
     EXTRA_ARGS=""
     if [ -f $VM_ARGS ] ; then
       EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
       EXTRA_ARGS=$(eval echo $EXTRA)
     fi
-    LIBS=$($BINDIR/escript $REL_DIR/extrel get_libs $REL_FILE $LIBDIR)
     export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $REL_FILE $LIBDIR)
     export ROOTDIR="$ROOT_DIR"
     export EMU="beam"
@@ -136,7 +141,7 @@ run_app() {
     jorel_debug "ROOTDIR = $ROOTDIR"
     jorel_debug "ERL_LIBS = $ERL_LIBS"
     jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $LIBS -config $COMPILED_SYS_CONFIG -boot $BOOT_FILE
+    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $BOOT_FILE
   fi
 }
 
