@@ -27,7 +27,7 @@ jorel_release_jorel_elixir_test_() ->
      , {timeout, 200, 
         fun() ->
             ?assertMatch({ok, _}, 
-                         sh:sh(".jorel/jorel -v 0.0.1 gen_config",
+                         sh:sh(".jorel/jorel gen_config -v 0.0.1",
                                [return_on_error, {cd, ".tests/0.0.1/elixir_test"}]))
         end}
      , {timeout, 200, 
