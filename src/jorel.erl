@@ -2,7 +2,7 @@
 -include("../include/jorel.hrl").
 
 -export([main/1]).
-%-export([run/2]).
+-export([version/0]).
 
 main(Args) ->
   State = get_state(Args),
@@ -197,5 +197,6 @@ version() ->
   {ok, Vsn} = application:get_key(?MODULE, vsn),
   ?REMARK("~s ~s (Erlang/OTP ~s Erts ~s)", [?MODULE, Vsn, 
                                              erlang:system_info(otp_release), 
-                                             erlang:system_info(version)]).
+                                             erlang:system_info(version)]),
+  init:stop().
 
