@@ -55,7 +55,7 @@ do(State) ->
       % Add bin
       ?INFO("* Add bin", []),
       [add_to_tar(Tar, filename:join([Outdir, "bin", F]), filename:join(["bin", F]), [])
-       || F <- [RelName, NameWithVsn, "nodetool", "start.boot", "start_clean.boot", "upgrade.escript"]],
+       || F <- [RelName, NameWithVsn, "nodetool", "start.boot", "start_clean.boot", "upgrade.escript", "config.escript"]],
 
       % Add release
       Release = filename:join([Outdir, "releases", RelVsn]),
