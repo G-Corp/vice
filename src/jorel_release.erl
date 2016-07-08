@@ -623,16 +623,21 @@ build_config_compiler(State) ->
         AppsForArchive = [{"doteki", TmpDir}|Apps],
         ArchiveFiles = lists:foldl(
                          fun({App, Path}, Acc) ->
+                             ?DEBUG("= Add files from ~s", [App]),
                              Acc ++ [read_file(File, Path, App) 
                                      || File <- filelib:wildcard("*", filename:join([Path, App, "ebin"]))]
                          end, [], AppsForArchive),
-        PZ = lists:concat(lists:join(" ", [A ++ "/ebin" || {A, _} <- AppsForArchive])),
+        ?DEBUG("= CREATE PZ with ~p", [AppsForArchive]),
+        PZ = lists:concat(join(" ", [A ++ "/ebin" || {A, _} <- AppsForArchive])),
+        ?DEBUG("= Script epu args : -pz ~s", [PZ]),
         case escript:create(ConfigScript, 
                             [{shebang, "/usr/bin/env escript"}
                              , {comment, ""}
                              , {emu_args, " -escript main doteki -pz " ++ PZ}
                              , {archive, ArchiveFiles, []}]) of
-          ok -> ok;
+          ok -> 
+            ?DEBUG("= config.escript ok", []),
+            ok;
           {error, EscriptError} ->
             ?ERROR("Failed to create ~s: ~p", [ConfigScript, EscriptError])
         end
@@ -652,7 +657,16 @@ extract_app(Path) ->
 read_file(Filename, Prefix, App) ->
   File = filename:join([Prefix, App, "ebin", Filename]),
   ArchiveFile = filename:join([App, "ebin", Filename]),
-  ?DEBUG("= Add ~p (~p) in update script", [File, ArchiveFile]),
-  {ok, Bin} = file:read_file(File),
-  {ArchiveFile, Bin}.
+  case file:read_file(File) of
+    {ok, Bin} -> 
+      {ArchiveFile, Bin};
+    {error, Reason} ->
+      ?HALT("Failed to read ~s: ~p", [File, Reason])
+  end.
+
+join(_Sep, []) -> [];
+join(Sep, [H|T]) -> [H|join_prepend(Sep, T)].
+
+join_prepend(_Sep, []) -> [];
+join_prepend(Sep, [H|T]) -> [Sep,H|join_prepend(Sep,T)].
 
