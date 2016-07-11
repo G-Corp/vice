@@ -238,6 +238,9 @@ help() {
 }
 
 NO_DETACH=false
+if [ "$#" = "0" ] ; then
+  help
+fi
 while [ $# -ne 0 ] ; do
   case $1 in
     --no-detach)
