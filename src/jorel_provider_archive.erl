@@ -50,12 +50,15 @@ do(State) ->
           ?INFO("* Add Erts ~s", [ErtsVersion]),
           Erts = filename:join([Outdir, io_lib:format("erts-~s", [ErtsVersion])]),
           [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), [])
-           || F <- filelib:wildcard(filename:join([Erts, "**", "*"]))]
+           || F <- filelib:wildcard(filename:join([Erts, "**", "*"]))],
+          ?INFO("* Add boot scripts", []),
+          [add_to_tar(Tar, filename:join([Outdir, "bin", F]), filename:join(["bin", F]), [])
+           || F <- ["start.boot", "start_clean.boot"]]
       end,
       % Add bin
       ?INFO("* Add bin", []),
       [add_to_tar(Tar, filename:join([Outdir, "bin", F]), filename:join(["bin", F]), [])
-       || F <- [RelName, NameWithVsn, "nodetool", "start.boot", "start_clean.boot", "upgrade.escript", "config.escript"]],
+       || F <- [RelName, NameWithVsn, "nodetool", "upgrade.escript", "config.escript"]],
 
       % Add release
       Release = filename:join([Outdir, "releases", RelVsn]),
