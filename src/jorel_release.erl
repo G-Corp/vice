@@ -12,7 +12,7 @@
          make_bin/1,
          make_upgrade_scripts/1,
          include_erts/1,
-         make_boot_script/2,
+         make_boot_script/3,
          build_config_compiler/1
         ]).
 
@@ -148,7 +148,9 @@ make_lib(State, Apps) ->
 
 make_release(State, AllApps, BootApps) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
+  {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
+  RelNameWithVsn = bucs:to_string(RelName) ++ "-" ++ Vsn,
   RelDir = filename:join([Outdir, "releases", Vsn]),
   ?INFO("* Create ~s", [RelDir]),
   case bucfile:make_dir(RelDir) of
@@ -159,7 +161,6 @@ make_release(State, AllApps, BootApps) ->
               Dest = filename:join(RelDir, "sys.config"),
               case jorel_config:get(State, sys_config, false) of
                 {sys_config, false} ->
-                  {relname, RelName} = jorel_config:get(State, relname),
                   case jorel_sys_config_dtl:render([{relname, RelName}]) of
                     {ok, Data} ->
                       case file:write_file(Dest, Data) of
@@ -194,14 +195,31 @@ make_release(State, AllApps, BootApps) ->
                             ?HALT("Can't copy ~s: ~p", [BootExe, Reason2])
                         end
                     end),
-      RelBootFile = make_release_file(State, RelDir, BootApps, "-" ++ Vsn ++ ".rel"),
-      _ = make_boot_script(State, BootApps),
+      % Create application boot file
+      RelBootFile = make_release_file(State, RelDir, BootApps, RelNameWithVsn ++ ".rel"),
+      _ = make_boot_script(State, BootApps, RelNameWithVsn),
       case file:rename(RelBootFile, RelBootFile ++ ".boot") of
         ok -> ok;
         {error, Reason4} ->
           ?HALT("!!! Faild to rename release boot file: ~p", [Reason4])
       end,
-      RelFile = make_release_file(State, RelDir, AllApps, "-" ++ Vsn ++ ".rel"),
+      % Create start_clean.boot
+      _ = make_clean_release_file(State, RelDir, BootApps, "start_clean.rel"),
+      {StartCleanRel, StartCleanScript, StartCleanBoot} = make_boot_script(State, BootApps, "start_clean"),
+      StartCleanBootBin = filename:join([Outdir, "bin", "start_clean.boot"]),
+      R0 = file:delete(StartCleanRel),
+      ?DEBUG("= Remove ~s: ~p", [StartCleanRel, R0]),
+      R1 = file:delete(StartCleanScript),
+      ?DEBUG("= Remove ~s: ~p", [StartCleanScript, R1]),
+      R2 = case filelib:ensure_dir(StartCleanBootBin) of
+             ok ->
+               file:copy(StartCleanBoot, StartCleanBootBin);
+             Error ->
+               Error
+           end,
+      ?DEBUG("= Copy ~s to ~s: ~p", [StartCleanBoot, StartCleanBootBin, R2]),
+      % Create release file
+      RelFile = make_release_file(State, RelDir, AllApps, RelNameWithVsn ++ ".rel"),
       ?INFO("* Create RELEASES file", []),
       case release_handler:create_RELEASES(Outdir, RelDir, RelFile, []) of
         ok -> ok;
@@ -212,9 +230,8 @@ make_release(State, AllApps, BootApps) ->
       ?HALT("!!! Failed to create ~s: ~p", [RelDir, Reason])
   end.
 
-make_boot_script(State, BootApps) ->
+make_boot_script(State, BootApps, BootFile) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
-  {relname, Relname} = jorel_config:get(State, relname),
   {relvsn, RelVsn} = jorel_config:get(State, relvsn),
   AppsPaths = lists:foldl(
                 fun(#{app := App, vsn := Vsn}, Acc) ->
@@ -225,9 +242,9 @@ make_boot_script(State, BootApps) ->
                 end, [], BootApps),
   RelDir = filename:join([Outdir, "releases", RelVsn]),
   Paths = [RelDir|AppsPaths],
-  ?INFO("* Create boot script", []),
+  ?INFO("* Create boot script ~s", [BootFile]),
   case systools:make_script(
-         bucs:to_list(Relname) ++ "-" ++ RelVsn,
+         BootFile,
          [{path, Paths},
           {outdir, RelDir},
           silent]) of
@@ -241,7 +258,10 @@ make_boot_script(State, BootApps) ->
       ?WARN("! Generate boot script : ~p", [Warnings]);
     _ ->
       ok
-  end.
+  end,
+  {filename:join(RelDir, BootFile ++ ".rel"),
+   filename:join(RelDir, BootFile ++ ".script"),
+   filename:join(RelDir, BootFile ++ ".boot")}.
 
 make_bin(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
@@ -339,15 +359,15 @@ include_erts(State) ->
       subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir,
                         [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
                          {"EMU", "beam"}],
-                        [preserve]),
-      ?INFO("* Install start_clean.boot", []),
-      ok = bucfile:copy(filename:join([Path, "bin", "start_clean.boot"]),
-                        filename:join([Outdir, "bin", "start_clean.boot"]),
-                        ?COPY_OPTIONS([])),
-      ?INFO("* Install start.boot", []),
-      ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
-                        filename:join([Outdir, "bin", "start.boot"]),
-                        ?COPY_OPTIONS([]));
+                        [preserve]);
+      % ?INFO("* Install start_clean.boot", []),
+      % ok = bucfile:copy(filename:join([Path, "bin", "start_clean.boot"]),
+      %                   filename:join([Outdir, "bin", "start_clean.boot"]),
+      %                   ?COPY_OPTIONS([])),
+      % ?INFO("* Install start.boot", []),
+      % ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
+      %                   filename:join([Outdir, "bin", "start.boot"]),
+      %                   ?COPY_OPTIONS([]));
     _ ->
       ok
   end.
@@ -525,7 +545,18 @@ make_rel_file(State, RelDir, File, Type) ->
       end
   end.
 
-make_release_file(State, RelDir, Apps, Ext) ->
+make_clean_release_file(State, RelDir, Apps, RelFileName) ->
+  CleanApps = lists:foldl(
+                fun
+                  (#{app := App} = A, Acc) when App == kernel;
+                                                App == stdlib ->
+                    [A|Acc];
+                  (_, Acc) ->
+                    Acc
+                end, [], Apps),
+  make_release_file(State, RelDir, CleanApps, RelFileName).
+
+make_release_file(State, RelDir, Apps, RelFileName) ->
   {_, ERTSVersion, _} = get_erts(State),
   {relname, Name} = jorel_config:get(State, relname),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
@@ -535,7 +566,7 @@ make_release_file(State, RelDir, Apps, Ext) ->
             {ertsvsn, ERTSVersion},
             {apps, lists:map(fun maps:to_list/1, Apps)}
            ],
-  Dest = filename:join(RelDir, bucs:to_list(Name) ++ Ext),
+  Dest = filename:join(RelDir, RelFileName),
   ?INFO("* Create ~s", [Dest]),
   case jorel_rel_dtl:render(Params) of
     {ok, Data} ->

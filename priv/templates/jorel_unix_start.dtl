@@ -141,6 +141,7 @@ run_app() {
     jorel_debug "ROOTDIR = $ROOTDIR"
     jorel_debug "ERL_LIBS = $ERL_LIBS"
     jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
+    jorel_debug "BOOT_FILE = $BOOT_FILE"
     $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $BOOT_FILE
   fi
 }
