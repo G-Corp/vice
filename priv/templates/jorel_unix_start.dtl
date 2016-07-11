@@ -23,6 +23,7 @@ COMPILED_SYS_CONFIG="${ROOT_DIR}/bin/${REL_NAME}.config"
 VM_ARGS="$REL_DIR/vm.args"
 REL_FILE="$REL_DIR/$REL_NAME-$REL_VSN.rel"
 BOOT_FILE="$REL_DIR/$REL_NAME-$REL_VSN"
+CLEAN_BOOT_FILE="$REL_DIR/start_clean"
 
 ERTS_DIR="$ROOT_DIR/erts-$ERTS_VSN"
 if [ -d "$ERTS_DIR" ] ; then
@@ -178,7 +179,8 @@ exec_command() {
   jorel_debug "ROOTDIR = $ROOTDIR"
   jorel_debug "ERL_LIBS = $ERL_LIBS"
   jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-  $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -noshell -s "$MODULE" "$FUNCTION" -extra $ARGS
+  jorel_debug "BOOT_FILE = $CLEAN_BOOT_FILE"
+  $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -noshell -boot $CLEAN_BOOT_FILE -s "$MODULE" "$FUNCTION" -extra $ARGS
   exit "$?"
 }
 
