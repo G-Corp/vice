@@ -640,7 +640,6 @@ subst_var([], Vars, Result, VarAcc) ->
   subst([], Vars, [VarAcc ++ [$%| Result]]).
 
 build_config_compiler(State) ->
-  Apps = [extract_app(Path) || #{path := Path} <- resolv_apps(State, [syntax_tools], [], [])],
   {outdir, Outdir} = jorel_config:get(State, outdir),
   ConfigScript = filename:join([Outdir, "bin", "config.escript"]),
   ok = filelib:ensure_dir(ConfigScript),
@@ -651,20 +650,11 @@ build_config_compiler(State) ->
         ?DEBUG("* Extract ~s tp ~s", [escript:script_name(), TmpDir]),
         zip:extract(Archive, [{cwd, TmpDir}]),
         ?INFO("* Create ~s", [ConfigScript]),
-        AppsForArchive = [{"doteki", TmpDir}|Apps],
-        ArchiveFiles = lists:foldl(
-                         fun({App, Path}, Acc) ->
-                             ?DEBUG("= Add files from ~s", [App]),
-                             Acc ++ [read_file(File, Path, App) 
-                                     || File <- filelib:wildcard("*", filename:join([Path, App, "ebin"]))]
-                         end, [], AppsForArchive),
-        ?DEBUG("= CREATE PZ with ~p", [AppsForArchive]),
-        PZ = lists:concat(join(" ", [A ++ "/ebin" || {A, _} <- AppsForArchive])),
-        ?DEBUG("= Script epu args : -pz ~s", [PZ]),
+        ArchiveFiles = [read_file(File, TmpDir, "doteki") || File <- filelib:wildcard("*", filename:join([TmpDir, "doteki","ebin"]))],
         case escript:create(ConfigScript, 
                             [{shebang, "/usr/bin/env escript"}
                              , {comment, ""}
-                             , {emu_args, " -escript main doteki -pz " ++ PZ}
+                             , {emu_args, " -escript main doteki -pz doteki/ebin"}
                              , {archive, ArchiveFiles, []}]) of
           ok -> 
             ?DEBUG("= config.escript ok", []),
@@ -675,16 +665,6 @@ build_config_compiler(State) ->
     end),
   State.
 
-extract_app(Path) ->
-  case lists:reverse(Path) of
-    [$/|Rest] ->
-      {filename:basename(lists:reverse(Rest)),
-       filename:dirname(lists:reverse(Rest))};
-    _ ->
-      {filename:basename(Path),
-       filename:dirname(Path)}
-  end.
-
 read_file(Filename, Prefix, App) ->
   File = filename:join([Prefix, App, "ebin", Filename]),
   ArchiveFile = filename:join([App, "ebin", Filename]),
@@ -694,10 +674,4 @@ read_file(Filename, Prefix, App) ->
     {error, Reason} ->
       ?HALT("Failed to read ~s: ~p", [File, Reason])
   end.
-
-join(_Sep, []) -> [];
-join(Sep, [H|T]) -> [H|join_prepend(Sep, T)].
-
-join_prepend(_Sep, []) -> [];
-join_prepend(Sep, [H|T]) -> [Sep,H|join_prepend(Sep,T)].
 
