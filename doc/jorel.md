@@ -9,16 +9,22 @@
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#run-2">run/2</a></td><td></td></tr></table>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#main-1">main/1</a></td><td></td></tr><tr><td valign="top"><a href="#version-0">version/0</a></td><td></td></tr></table>
 
 
 <a name="functions"></a>
 
 ## Function Details ##
 
-<a name="run-2"></a>
+<a name="main-1"></a>
 
-### run/2 ###
+### main/1 ###
 
-`run(Options, Commands) -> any()`
+`main(Args) -> any()`
+
+<a name="version-0"></a>
+
+### version/0 ###
+
+`version() -> any()`
 
