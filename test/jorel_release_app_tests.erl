@@ -5,9 +5,11 @@ jorel_release_jorel_sample_test_() ->
   {"Build release 0.0.1 for Erlang app and upgrade to 0.0.2",
    {setup,
     fun() ->
+        os:putenv("JOREL", ".jorel/jorel"),
         bucfile:make_dir(".tests")
     end,
     fun(_) ->
+        os:unsetenv("JOREL"),
         bucfile:remove_recursive(".tests")
     end,
     [

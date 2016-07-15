@@ -3,6 +3,7 @@
 JOREL_CONFIG ?= jorel.config
 JOREL_BUILD ?= false
 
+ifndef(JOREL)
 ifeq ($(JOREL_MASTER),true)
 JOREL_EXE = jorel.master
 else
@@ -18,6 +19,10 @@ else
 JOREL ?= $(HOME)/.jorel/$(JOREL_EXE)
 RMD5 = $(shell curl -s -L ${JOREL_MD5_URL} | cut -f 1 -d " ")
 LMD5 = $(shell md5sum ${JOREL} | cut -f 1 -d " ")
+endif
+else
+RMD5=1
+LMD5=$(RMD5)
 endif
 
 export JOREL
