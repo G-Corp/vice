@@ -43,7 +43,8 @@ main(Args) ->
               [try
                  jorel_provider:run(State3, Command)
                catch
-                 _:_ ->
+                 Error:Reason ->
+                   ?DEBUG("Provider ~s failed : ~p:~p", [Command, Error, Reason]),
                    ?HALT("Provider ~s failed!", [Command])
                end || Command <- Commands]
           end
