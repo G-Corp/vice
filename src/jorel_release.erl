@@ -347,11 +347,11 @@ include_erts(State) ->
         filename:join(Path, "erts-" ++ ERTSVersion),
         Outdir,
         ?COPY_OPTIONS([recursive])),
-      ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
-      ?DEBUG("* Substituting in erl.src and start.src to form erl and start", []),
       %%! Workaround for pre OTP 17.0: start.src does
       %%! not have correct permissions, so the above 'preserve' option did not help
       %%! Workaround for Charlie who have a fucking monkey MB
+      ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
+      ?DEBUG("* Substituting in erl.src and start.src to form erl and start in ~s", [ErtsBinDir]),
       ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
       ok = file:change_mode(filename:join(ErtsBinDir, "start.src"), 8#0755),
       ok = file:change_mode(filename:join(ErtsBinDir, "erl"), 8#0755),
