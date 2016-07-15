@@ -45,6 +45,9 @@ main(Args) ->
                catch
                  Error:Reason ->
                    ?DEBUG("Provider ~s failed : ~p:~p", [Command, Error, Reason]),
+                   ?DEBUG("================================================", []),
+                   ?DEBUG("~p", [erlang:get_stacktrace()]),
+                   ?DEBUG("================================================", []),
                    ?HALT("Provider ~s failed!", [Command])
                end || Command <- Commands]
           end
