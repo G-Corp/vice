@@ -4,15 +4,20 @@ JOREL_CONFIG ?= jorel.config
 JOREL_BUILD ?= false
 
 ifeq ($(JOREL_MASTER),true)
-JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel.master
+JOREL_EXE = jorel.master
 else
-JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/jorel
+JOREL_EXE = jorel
 endif
+
+JOREL_URL ?= https://github.com/emedia-project/jorel/wiki/$(JOREL_EXE)
+JOREL_MD5_URL = $(JOREL_URL).md5
 
 ifeq ($(JOREL_BUILD),true)
 JOREL ?= $(DEPS_DIR)/jorel/jorel
 else
-JOREL ?= $(CURDIR)/.jorel/jorel
+JOREL ?= $(HOME)/.jorel/$(JOREL_EXE)
+RMD5 = $(shell curl -s -L ${JOREL_MD5_URL} | cut -f 1 -d " ")
+LMD5 = $(shell md5sum ${JOREL} | cut -f 1 -d " ")
 endif
 
 export JOREL
@@ -75,12 +80,14 @@ endif
 ifeq ($(JOREL_BUILD),true)
 $(JOREL): rel-deps
 else
+ifeq ($(RMD5),$(LMD5))
 $(JOREL):
+else
+$(JOREL):
+	$(verbose) curl -L $(JOREL_MD5_URL)
 	$(verbose) mkdir -p $(dir $(JOREL))
 	$(gen_verbose) $(call core_http_get,$(JOREL),$(JOREL_URL))
 	$(verbose) chmod +x $(JOREL)
-
-distclean::
-	$(verbose) rm -rf $(dir $(JOREL))
+endif
 endif
 
