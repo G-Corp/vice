@@ -3,7 +3,7 @@
 JOREL_CONFIG ?= jorel.config
 JOREL_BUILD ?= false
 
-ifndef(JOREL)
+ifndef (JOREL)
 ifeq ($(JOREL_MASTER),true)
 JOREL_EXE = jorel.master
 else
