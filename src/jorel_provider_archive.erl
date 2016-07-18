@@ -80,11 +80,16 @@ do(State) ->
   State.
 
 add_to_tar(Tar, File, NameInArchive, Opts) ->
-  ?DEBUG("* Add ~s with name ~s in tar", [File, NameInArchive]),
-  case erl_tar:add(Tar, File, NameInArchive, Opts) of
-    {error, {F, R}} ->
-      ?HALT("!!! Can't add ~s in ~s", [F, R]);
-    _ ->
-      ok
+  case filelib:is_dir(File) andalso (not (file:list_dir(File) == {ok,[]})) of
+    true ->
+      ok;
+    false ->
+      ?DEBUG("* Add ~s with name ~s in tar", [File, NameInArchive]),
+      case erl_tar:add(Tar, File, NameInArchive, Opts) of
+        {error, {F, R}} ->
+          ?HALT("!!! Can't add ~s in ~s", [F, R]);
+        _ ->
+          ok
+      end
   end.
 
