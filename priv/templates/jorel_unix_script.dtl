@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SCRIPT_DIR="$(cd ${0%/*} && pwd)"
-ROOT_DIR="$(realpath $SCRIPT_DIR/../..)"
+ROOT_DIR="$(cd $SCRIPT_DIR/../.. && pwd)"
 {{relname}}_SCRIPT="$ROOT_DIR/bin/{{relname}}"
 
 {% for cmd in actions %}
