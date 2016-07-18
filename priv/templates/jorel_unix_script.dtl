@@ -6,13 +6,15 @@ ROOT_DIR="$(realpath $SCRIPT_DIR/../..)"
 
 {% for cmd in actions %}
 {% if cmd.type == "command" %}
-${{relname}}_SCRIPT command {{cmd.content}}
+CMD="${{relname}}_SCRIPT command {{cmd.content}}"
+eval ${CMD}
 if [ "$?" != "0" ] ; then
   echo "Error while running command {{cmd.content}}"
   exit 1
 fi
 {% elif cmd.type == "exec" %}
-${{relname}}_SCRIPT exec {{cmd.content}}
+CMD="${{relname}}_SCRIPT exec {{cmd.content}}"
+eval ${CMD}
 if [ "$?" != "0" ] ; then
   echo "Error while running exec {{cmd.content}}"
   exit 1
