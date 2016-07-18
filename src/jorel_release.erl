@@ -372,7 +372,7 @@ include_erts(State) ->
   end.
 
 make_custom_scripts(State) ->
-  {scripts, Scripts} = jorel_config:get(State, scripts),
+  {scripts, Scripts} = jorel_config:get(State, scripts, []),
   [make_custom_script(State, Name, Actions) || {Name, Actions} <- Scripts].
 
 make_custom_script(State, Name, Actions) ->
