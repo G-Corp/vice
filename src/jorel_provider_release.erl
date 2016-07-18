@@ -38,7 +38,8 @@ do(State) ->
   _ = jorel_release:build_config_compiler(State1),
   _ = jorel_release:make_bin(State1),
   _ = jorel_release:include_erts(State1),
-  _ = jorel_release:make_upgrade_scripts(State1),
+  _ = jorel_release:make_upgrade_script(State1),
+  _ = jorel_release:make_custom_scripts(State1),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
   State1.
 

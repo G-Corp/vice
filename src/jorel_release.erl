@@ -10,10 +10,11 @@
          make_lib/2,
          make_release/3,
          make_bin/1,
-         make_upgrade_scripts/1,
+         make_upgrade_script/1,
          include_erts/1,
          make_boot_script/3,
-         build_config_compiler/1
+         build_config_compiler/1,
+         make_custom_scripts/1
         ]).
 
 -define(COPY_OPTIONS(Other), [{directory_mode, 8#00755}, {regular_file_mode, 8#00644}, {executable_file_mode, 8#00755}|Other]).
@@ -321,10 +322,10 @@ make_bin(State) ->
       ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason4])
   end.
 
-make_upgrade_scripts(State) ->
+make_upgrade_script(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
   UpgradeEscriptDest = filename:join([Outdir, "bin", "upgrade.escript"]),
-  ?INFO("* Install upgrade scripts", []),
+  ?INFO("* Install upgrade script", []),
   ?DEBUG("* Generate ~s", [UpgradeEscriptDest]),
   case jorel_upgrade_escript_dtl:render() of
     {ok, UpgradeData} ->
@@ -353,24 +354,60 @@ include_erts(State) ->
       ErtsBinDir = filename:join([Outdir, "erts-" ++ ERTSVersion, "bin"]),
       ?DEBUG("* Substituting in erl.src and start.src to form erl and start in ~s", [ErtsBinDir]),
       ok = file:change_mode(filename:join(ErtsBinDir, "start"), 8#0755),
-      ok = file:change_mode(filename:join(ErtsBinDir, "start.src"), 8#0755),
       ok = file:change_mode(filename:join(ErtsBinDir, "erl"), 8#0755),
-      ok = file:change_mode(filename:join(ErtsBinDir, "erl.src"), 8#0755),
-      subst_src_scripts(["erl", "start"], ErtsBinDir, ErtsBinDir,
-                        [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
-                         {"EMU", "beam"}],
-                        [preserve]);
-      % ?INFO("* Install start_clean.boot", []),
-      % ok = bucfile:copy(filename:join([Path, "bin", "start_clean.boot"]),
-      %                   filename:join([Outdir, "bin", "start_clean.boot"]),
-      %                   ?COPY_OPTIONS([])),
-      % ?INFO("* Install start.boot", []),
-      % ok = bucfile:copy(filename:join([Path, "bin", "start.boot"]),
-      %                   filename:join([Outdir, "bin", "start.boot"]),
-      %                   ?COPY_OPTIONS([]));
+      case filelib:is_file(filename:join(ErtsBinDir, "start.src")) andalso
+           filelib:is_file(filename:join(ErtsBinDir, "erl.src")) of
+        true ->
+          ok = file:change_mode(filename:join(ErtsBinDir, "start.src"), 8#0755),
+          ok = file:change_mode(filename:join(ErtsBinDir, "erl.src"), 8#0755),
+          subst_src_scripts(["start", "erl"], ErtsBinDir, ErtsBinDir,
+                            [{"FINAL_ROOTDIR", "`cd $(dirname $0)/../../ && pwd`"},
+                             {"EMU", "beam"}],
+                            [preserve]);
+        false ->
+          ?WARN("! Can't find start.src, if you use a pre 17.0 OTP, this release may not work", [])
+      end;
     _ ->
       ok
   end.
+
+make_custom_scripts(State) ->
+  {scripts, Scripts} = jorel_config:get(State, scripts),
+  [make_custom_script(State, Name, Actions) || {Name, Actions} <- Scripts].
+
+make_custom_script(State, Name, Actions) ->
+  {outdir, Outdir} = jorel_config:get(State, outdir),
+  Dest = filename:join([Outdir, "bin", "scripts", bucs:to_string(Name) ++ ".sh"]),
+  ?INFO("* Create script ~s", [Dest]),
+  ok = filelib:ensure_dir(Dest),
+  case jorel_unix_script_dtl:render(
+         [jorel_config:get(State, relname),
+          {actions, [make_action(Action) || Action <- Actions]}]) of
+    {ok, Data} ->
+      case file:write_file(Dest, Data) of
+        ok -> 
+          case file:change_mode(Dest, 8#777) of
+            ok -> 
+              ok;
+            {error, Reason1} ->
+              ?HALT("!!! Can't set executable to ~s: ~p", [Dest, Reason1])
+          end;
+        {error, Reason1} ->
+          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
+      end;
+    {error, Reason} ->
+      ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
+  end.
+
+make_action({Type, Module, Function}) ->
+  [{type, Type}, 
+   {content, lists:flatten(io_lib:format("~p ~p", [Module, Function]))}];
+make_action({Type, Module, Function, Args}) ->
+  Args0 = string:join(["\"" ++ bucs:to_string(A) ++ "\"" || A <- Args], " "),
+  [{type, Type}, 
+   {content, lists:flatten(io_lib:format("~p ~p ~s", [Module, Function, Args0]))}];
+make_action({shell, Data}) ->
+  [{type, shell}, {content, Data}].
 
 % Private
 

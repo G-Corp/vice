@@ -1,0 +1,24 @@
+#!/bin/sh
+
+SCRIPT_DIR="$(cd ${0%/*} && pwd)"
+ROOT_DIR="$(realpath $SCRIPT_DIR/../..)"
+{{relname}}_SCRIPT="$ROOT_DIR/bin/{{relname}}"
+
+{% for cmd in actions %}
+{% if cmd.type == "command" %}
+${{relname}}_SCRIPT command {{cmd.content}}
+if [ "$?" != "0" ] ; then
+  echo "Error while running command {{cmd.content}}"
+  exit 1
+fi
+{% elif cmd.type == "exec" %}
+${{relname}}_SCRIPT exec {{cmd.content}}
+if [ "$?" != "0" ] ; then
+  echo "Error while running exec {{cmd.content}}"
+  exit 1
+fi
+{% else %}
+{{cmd.content}}
+{% endif %}
+{% endfor %}
+
