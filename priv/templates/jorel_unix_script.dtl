@@ -4,6 +4,26 @@ SCRIPT_DIR="$(cd ${0%/*} && pwd)"
 ROOT_DIR="$(cd $SCRIPT_DIR/../.. && pwd)"
 {{relname}}_SCRIPT="$ROOT_DIR/bin/{{relname}}"
 
+wait_for_app() {
+  if [ "$#" = "0" ] ; then
+    T=5
+  else
+    T=$1
+  fi
+
+  eval "$jorel_SCRIPT ping" > /dev/null
+  if [ "$?" = "1" ] ; then
+    if [ "$T" -le "0" ] ; then
+      echo "Application jorel not started!"
+      exit 1
+    else
+      echo "Wait for jorel to start... ($T)"
+      sleep 1
+      wait_for_app $(expr $T - 1)
+    fi
+  fi
+}
+
 {% for cmd in actions %}
 {% if cmd.type == "command" %}
 CMD="${{relname}}_SCRIPT command {{cmd.content}}"
@@ -13,6 +33,7 @@ if [ "$?" != "0" ] ; then
   exit 1
 fi
 {% elif cmd.type == "exec" %}
+wait_for_app
 CMD="${{relname}}_SCRIPT exec {{cmd.content}}"
 eval ${CMD}
 if [ "$?" != "0" ] ; then
