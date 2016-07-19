@@ -11,13 +11,13 @@ wait_for_app() {
     T=$1
   fi
 
-  eval "$jorel_SCRIPT ping" > /dev/null
+  eval "${{relname}}_SCRIPT ping" > /dev/null
   if [ "$?" = "1" ] ; then
     if [ "$T" -le "0" ] ; then
-      echo "Application jorel not started!"
+      echo "Application {{relname}} not started!"
       exit 1
     else
-      echo "Wait for jorel to start... ($T)"
+      echo "Wait for {{relname}} to start... ($T)"
       sleep 1
       wait_for_app $(expr $T - 1)
     fi
