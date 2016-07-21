@@ -1,0 +1,21 @@
+{application, evic,
+ [{description, ""},
+  {vsn, "0.0.0"},
+  {registered, []},
+  {mod, {evic_app, []}},
+  {applications,
+   [
+    kernel
+    , stdlib
+    , compiler
+    , poolgirl
+    , lager
+    , poolgirl
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, []},
+  {links, []}
+ ]}.
