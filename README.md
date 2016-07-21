@@ -44,5 +44,5 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR `AS IS` AND ANY EXPRESS OR IMPLIED WARRA
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/botsunit/emi/blob/master/doc/evic.md" class="module">evic</a></td></tr></table>
+<tr><td><a href="https://github.com/botsunit/evic/blob/master/doc/evic.md" class="module">evic</a></td></tr></table>
 
