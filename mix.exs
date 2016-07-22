@@ -14,7 +14,7 @@ defmodule Evic.Mixfile do
 
   def application do
     [
-       applications: [:compiler, :poolgirl, :lager, :poolgirl],
+       applications: [:compiler, :poolgirl, :lager],
        env: [],
        mod: {:evic_app, []}
     ]
