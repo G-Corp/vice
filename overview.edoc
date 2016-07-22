@@ -13,11 +13,278 @@ EVIC is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmp
 
 For video conversion, EVIC use ffmpeg.
 
-<h3>Image</h3>
+<h4>Main options</h4>
+
+<tt>{output_format, Format}</tt><br />
+<tt>{input_format, Format}</tt><br />
+: Force input or output file format. The format is normally auto detected for input files and guessed from the file extension for output files, so this option is not needed in most cases.
+
+<tt>{yes, true}</tt><br />
+: Overwrite output files without asking.
+
+<tt>{encoder, [Stream, Codec]}</tt> | <tt>{encoder, Codec}</tt><br />
+: Select and encoder for one or more output streams.
+
+<tt>{decoder, [Stream, Codec]}</tt> | <tt>{decoder, Codec}</tt><br />
+: Select a decoder for one or more input streams.
+
+<tt>{duration, Duration}</tt><br />
+: Stop writing the output after its duration reaches duration. Duration may be a number in seconds, or in "hh:mm:ss[.xxx]" form.
+
+<tt>{limit_size, Limit}</tt><br />
+: Set the file size limit. Limit expressed in bytes.
+
+<tt>{input_position, Position}</tt><br />
+: Seeks in the input file to position. Position may be either in seconds or in "hh:mm:ss[.xxx]" form.
+
+<tt>{output_position, Position}</tt><br />
+: Decodes but discards input until the timestamps reach position. Position may be either in seconds or in "hh:mm:ss[.xxx]" form.
+
+<tt>{itoffset, Offset}</tt><br />
+: Set the input time offset in seconds. "[-]hh:mm:ss[.xxx]" syntax is also supported. The offset is added to the timestamps of the input files.
+
+<tt>{timestamp, Time}</tt><br />
+: Set the recording timestamp in the container.  The syntax for time is: <tt>now|([(YYYY-MM-DD|YYYYMMDD)[T|t| ]]((HH:MM:SS[.m...])|(HHMMSS[.m...]))[Z|z])</tt>
+
+<tt>{target, Type}</tt><br />
+: Specify target file type ("vcd", "svcd", "dvd", "dv", "dv50"). Type may be prefixed with "pal-", "ntsc-" or "film-" to use the corresponding standard. 
+
+<tt>{dframes, Number}</tt><br />
+: Set the number of data frames to record.
+
+<tt>{frames, [Stream, Framecount]}</tt> | <tt>{frames, Framecount}</tt><br />
+: Stop writing to the Stream after Framecount frames.
+
+<tt>{qscale, [Stream, Quality]}</tt> | <tt>{qscale, Quality}</tt><br />
+: Use fixed quality scale (VBR).
+
+<tt>{filter, [Stream, Filtergraph]}</tt> | <tt>{filter, Filtergraph}</tt><br />
+: Create the filtergraph specified by Siltergraph and use it to filter the Stream. (see ffmpeg-filters manual for more information about the filtergraph syntax.)
+
+<tt>{filter_script, [Stream, Filename]}</tt> | <tt>{filter_script, Filename}</tt><br />
+: This option is similar to filter, the only difference is that its argument is the name of the file from which a filtergraph description is to be read.
+
+<tt>{pre, [Stream, PresetName]}</tt> | <tt>{pre, PresetName}</tt><br />
+: Specify the preset for matching stream(s).
+
+<h4>Video Options</h4>
+
+<tt>{vframes, Number}</tt><br />
+: Set the number of video frames to record. This is an alias for "-frames:v".
+
+<tt>{input_frame_rate, [Stream, Fps]}</tt> | <tt>{input_frame_rate, Fps}</tt><br />
+<tt>{output_frame_rate, [Stream, Fps]}</tt> | <tt>{output_frame_rate, Fps}</tt><br />
+: Set frame rate (Hz value, fraction or abbreviation).
+
+<tt>{input_frame_size, [Stream, Size]}</tt> | <tt>{input_frame_size, Size}</tt><br />
+<tt>{output_frame_size, [Stream, Size]}</tt> | <tt>{output_frame_size, Size}</tt><br />
+: Set frame size.
+
+<tt>{aspect, [Stream, Aspect]}</tt> | <tt>{aspect, Aspect}</tt><br />
+: Set the video display aspect ratio specified by aspect. Aspect can be a floating point number string, or a string of the form num:den, where num and den are the numerator and denominator of the aspect ratio. For example "4:3", "16:9", "1.3333", and "1.7777" are valid argument values.
+
+<tt>{no_video_recording, true}</tt><br />
+: Disable video recording.
+
+<tt>{vcodev, Codec}</tt><br />
+: Set the video codec.
+
+<tt>{pass, [Stream, N]}</tt> | <tt>{pass, N}</tt><br />
+: Select the pass number (1 or 2).
+
+<tt>{vlang, Code}</tt><br />
+: Set the ISO 639 language code (3 letters) of the current video stream.
+
+<tt>{video_filtergraph, Filter}</tt><br />
+: Create the filtergraph specified by filtergraph and use it to filter the stream.
+
+<h4>Advanced Video Options</h4>
+
+<tt>{input_pixel_format, [Stream, Format]}</tt> | <tt>{input_pixel_format, Format}</tt><br />
+<tt>{output_pixel_format, [Stream, Format]}</tt> | <tt>{output_pixel_format, Format}</tt><br />
+: Set pixel format. 
+
+<tt>{input_sws_flags, Flags}</tt><br />
+<tt>{output_sws_flags, Flags}</tt><br />
+: Set SwScaler flags.
+
+<tt>{rc_override, [Stream, Override]}</tt> | <tt>{rc_override, Override}</tt><br />
+: Rate control override for specific intervals
+
+<tt>{top, [Stream, N]}</tt> | <tt>{top, N}</tt><br />
+: top=1/bottom=0/auto=-1 field first
+
+<tt>‘force_key_frames, [Stream, KeyFrame]}</tt> | <tt>{force_key_frames, KeyFrame}</tt><br />
+: Force key frames at the specified timestamps, more precisely at the first frames after each specified time.
+
+<tt>{copyinkf, [Stream, true]}</tt> | <tt>{copyinkf, true}</tt><br />
+: When doing stream copy, copy also non-key frames found at the beginning.
+
+<h4>Audio Options</h4>
+
+<tt>{aframes, N}</tt><br />
+: Set the number of audio frames to record. 
+
+<tt>{input_audio_frequency, [Stream, Frequency]}</tt> | <tt>{input_audio_frequency, Frequency}</tt><br />
+<tt>{output_audio_frequency, [Stream, Frequency]}</tt> | <tt>{output_audio_frequency, Frequency}</tt><br />
+: Set the audio sampling frequency.
+
+<tt>{audio_quality, Quality}</tt><br />
+: Set the audio quality (codec-specific, VBR).
+
+<tt>{input_audio_channels, [Stream, N]}</tt> | <tt>{input_audio_channels, N}</tt><br />
+<tt>{output_audio_channels, [Stream, N]}</tt> | <tt>{output_audio_channels, N}</tt><br />
+: Set the number of audio channels.
+
+<tt>{no_audio_recording, true}</tt><br />
+: Disable audio recording.
+
+<tt>{input_acodec, Codec}</tt><br />
+<tt>{output_acodec, Codec}</tt><br />
+Set the audio codec.
+
+<tt>{sample_fmt, [Stream, AudioSampleFormat]}</tt> | <tt>{sample_fmt, AudioSampleFormat}</tt><br />
+Set the audio sample format.
+
+<tt>{audio_filtergraph, Filter}</tt><br />
+Create the filtergraph specified by filtergraph and use it to filter the stream.
+
+<h4>Advanced Audio options:</h4>
+
+<tt>{guess_layout_max, Channels}</tt><br />
+: If some input channel layout is not known, try to guess only if it corresponds to at most the specified number of channels. 
+
+<h4>Subtitle options:</h4>
+
+<tt>{input_scodec, Codec}</tt><br />
+<tt>{output_scodec, Codec}</tt><br />
+: Set the subtitle codec.
+
+<tt>{no_subtitle_recording, true}</tt><br />
+: Disable subtitle recording.
+
+<h4>Advanced Subtitle options:</h4>
+
+<tt>{fix_sub_duration, true}</tt><br />
+: Fix subtitles durations.
+
+<tt>{canvas_size, Size}</tt><br />
+: Set the size of the canvas used to render subtitles.
+
+<h4>Advanced options</h4>
+
+<tt>{map, Map}</tt><br />
+: Designate one or more input streams as a source for the output file.
+
+<tt>{map_channel, MapChannel}</tt><br />
+: Map an audio channel from a given input to an output.
+
+<tt>{map_chapters, InputFileIndex}</tt><br />
+: Copy chapters from input file with index input_file_index to the next output file.
+
+<tt>{vsync, Parameter}</tt><br />
+: Video sync method.
+
+<tt>{async, SamplePerSec}</tt><br />
+: Audio sync method.
+
+<tt>{copytb, Mode}</tt><br />
+: Specify how to set the encoder timebase when stream copying.
+
+<tt>{shortest, true}</tt><br />
+: Finish encoding when the shortest input stream ends.
+
+<tt>{dts_delta_threshold, true}</tt><br />
+: Timestamp discontinuity delta threshold.
+
+<tt>{muxdelay, Second}</tt><br />
+: Set the maximum demux-decode delay.
+
+<tt>{muxpreload, Second}</tt><br />
+: Set the initial demux-decode delay.
+
+<tt>{streamid, OSI_NV}</tt><br />
+: Assign a new stream-id value to an output stream.
+
+<tt>{bitstream_filters, [Stream, Filters]}</tt> | <tt>{bitstream_filters, Filters}</tt><br />
+: Set bitstream filters for matching streams.
+
+<tt>{timecode, Timecode}</tt><br />
+: Specify Timecode for writing.
+
+<tt>{filter_complex, Filtergraph}</tt><br />
+: Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or outputs. 
+
+<tt>{filter_complex_script, Filename}</tt><br />
+: This option is similar to filter_complex, the only difference is that its argument is the name of the file from which a complex filtergraph description is to be read.
+
+<tt>{accurate_seek, true}</tt><br />
+: This option enables or disables accurate seeking in input files with the input_position option.
+
+<h3>Image</h3><br />
 
 For image conversion, EVIC use ImageMagick.
 
-<h3>Licence</h3>
+<tt>{resize, P, percent}</tt> 
+<tt>{resize, P, pixels}</tt> |<br />
+<tt>{resize, W, H}</tt> |<br />
+<tt>{resize, W, H, percent}</tt> |<br />
+<tt>{resize, W, H, ignore_ration}</tt> |<br />
+<tt>{resize, W, H, no_enlarge}</tt> |<br />
+<tt>{resize, W, H, no_shrink}</tt> |<br />
+<tt>{resize, W, H, fill}</tt>
+: Resize an image 
+
+<tt>{thumbnail, P, percent}</tt> |<br />
+<tt>{thumbnail, P, pixels}</tt> |<br />
+<tt>{thumbnail, W, H}</tt> |<br />
+<tt>{thumbnail, W, H, percent}</tt> |<br />
+<tt>{thumbnail, W, H, ignore_ration}</tt> |<br />
+<tt>{thumbnail, W, H, no_enlarge}</tt> |<br />
+<tt>{thumbnail, W, H, no_shrink}</tt> |<br />
+<tt>{thumbnail, W, H, fill}</tt>
+: Create a thumbnail of the image. This is similar to <tt>resize</tt>, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size. 
+
+<tt>{crop, W, H, X, Y}</tt> |<br />
+<tt>{crop, W, H}</tt>
+: Cut out a rectangular region of the image
+
+<tt>{gravity, Gravity}</tt>
+: Sets the current gravity suggestion for various other settings and options. Choices include: <tt>NorthWest</tt>, <tt>North</tt>, <tt>NorthEast</tt>, <tt>West</tt>, <tt>Center</tt>, <tt>East</tt>, <tt>SouthWest</tt>, <tt>South</tt>, <tt>SouthEast</tt>.
+
+
+<tt>repage</tt> |<br />
+<tt>'+repage'</tt>
+: Adjust the canvas and offset information of the image
+
+<tt>flip</tt>
+: Create a mirror image
+
+<tt>trim</tt>
+: Trim an image
+
+<tt>magnify</tt>
+: Double the size of the image with pixel art scaling
+
+<tt>{rotate, Degrees}</tt>
+: Apply Paeth image rotation (using shear operations) to the image
+
+<tt>{blur, Radius}</tt> |<br />
+<tt>{blur, Radius, Sigma}</tt>
+: Reduce image noise and reduce detail levels
+
+<tt>{edge, Radius}</tt>
+: Detect edges within an image
+
+<tt>{size, Weight}</tt> |<br />
+<tt>{size, Weight, Height}</tt> |<br />
+<tt>{size, Weight, Height, Offset}</tt>
+: Set the width and height of the image
+
+<tt>{extent, W, H}</tt>
+: Set the image size and offset
+
+<h3>Licence</h3><br />
 
 <p>
 EVIC is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
@@ -41,6 +308,6 @@ Redistribution and use in source and binary forms, with or without modification,
 </p>
 
 <p>
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
 

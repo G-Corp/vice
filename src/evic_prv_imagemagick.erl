@@ -149,9 +149,47 @@ option([{thumbnail, W, H, fill}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~wx~w\\^", [W, H])|Acc]);
 
 option([{crop, W, H, X, Y}|Rest], Acc) ->
-  option(Rest, [format("-crop ~wx~w+~w+~w +repage", [W, H, X, Y])|Acc]);
+  option(Rest, [format("-crop ~wx~w+~w+~w", [W, H, X, Y])|Acc]);
 option([{crop, W, H}|Rest], Acc) ->
-  option(Rest, [format("-gravity center -crop ~wx~w+0+0 +repage", [W, H])|Acc]);
+  option(Rest, [format("-crop ~wx~w+0+0", [W, H])|Acc]);
+
+option([{gravity, Gravity}|Rest], Acc) ->
+  option(Rest, [format("-gravity ~s", [Gravity])|Acc]);
+
+option([repage|Rest], Acc) ->
+  option(Rest, ["-repage"|Acc]);
+option(['+repage'|Rest], Acc) ->
+  option(Rest, ["+repage"|Acc]);
+
+option([flip|Rest], Acc) ->
+  option(Rest, ["-flip"|Acc]);
+
+option([trim|Rest], Acc) ->
+  option(Rest, ["-trim"|Acc]);
+
+option([magnify|Rest], Acc) ->
+  option(Rest, ["-magnify"|Acc]);
+
+option([{rotate, Degrees}|Rest], Acc) ->
+  option(Rest, [format("-rotate ~w", [Degrees])|Acc]);
+
+option([{blur, Radius}|Rest], Acc) ->
+  option(Rest, [format("-blur ~w", [Radius])|Acc]);
+option([{blur, Radius, Sigma}|Rest], Acc) ->
+  option(Rest, [format("-blur ~wx~w", [Radius, Sigma])|Acc]);
+
+option([{edge, Radius}|Rest], Acc) ->
+  option(Rest, [format("-edge ~w", [Radius])|Acc]);
+
+option([{size, Weight}|Rest], Acc) ->
+  option(Rest, [format("-size ~w", [Weight])|Acc]);
+option([{size, Weight, Height}|Rest], Acc) ->
+  option(Rest, [format("-size ~wx~w", [Weight, Height])|Acc]);
+option([{size, Weight, Height, Offset}|Rest], Acc) ->
+  option(Rest, [format("-size ~wx~w+~w", [Weight, Height, Offset])|Acc]);
+
+option([{extent, W, H}|Rest], Acc) ->
+  option(Rest, [format("-extent ~wx~w", [W, H])|Acc]);
 
 option([_|Rest], Acc) ->
   option(Rest, Acc).
