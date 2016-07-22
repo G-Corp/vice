@@ -247,7 +247,7 @@ For image conversion, EVIC use ImageMagick.
 `{resize, W, H, ignore_ration}` |<br />
 `{resize, W, H, no_enlarge}` |<br />
 `{resize, W, H, no_shrink}` |<br />
-`{resize, W, H, fill}`
+`{resize, W, H, fill}`<br />
 : Resize an image
 
 `{thumbnail, P, percent}` |<br />
@@ -257,45 +257,45 @@ For image conversion, EVIC use ImageMagick.
 `{thumbnail, W, H, ignore_ration}` |<br />
 `{thumbnail, W, H, no_enlarge}` |<br />
 `{thumbnail, W, H, no_shrink}` |<br />
-`{thumbnail, W, H, fill}`
+`{thumbnail, W, H, fill}`<br />
 : Create a thumbnail of the image. This is similar to `resize`, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.
 
 `{crop, W, H, X, Y}` |<br />
-`{crop, W, H}`
+`{crop, W, H}`<br />
 : Cut out a rectangular region of the image
 
-`{gravity, Gravity}`
+`{gravity, Gravity}`<br />
 : Sets the current gravity suggestion for various other settings and options. Choices include: `NorthWest`, `North`, `NorthEast`, `West`, `Center`, `East`, `SouthWest`, `South`, `SouthEast`.
 
 `repage` |<br />
-`'+repage'`
+`'+repage'`<br />
 : Adjust the canvas and offset information of the image
 
-`flip`
+`flip`<br />
 : Create a mirror image
 
-`trim`
+`trim`<br />
 : Trim an image
 
-`magnify`
+`magnify`<br />
 : Double the size of the image with pixel art scaling
 
-`{rotate, Degrees}`
+`{rotate, Degrees}`<br />
 : Apply Paeth image rotation (using shear operations) to the image
 
 `{blur, Radius}` |<br />
-`{blur, Radius, Sigma}`
+`{blur, Radius, Sigma}`<br />
 : Reduce image noise and reduce detail levels
 
-`{edge, Radius}`
+`{edge, Radius}`<br />
 : Detect edges within an image
 
 `{size, Weight}` |<br />
 `{size, Weight, Height}` |<br />
-`{size, Weight, Height, Offset}`
+`{size, Weight, Height, Offset}`<br />
 : Set the width and height of the image
 
-`{extent, W, H}`
+`{extent, W, H}`<br />
 : Set the image size and offset
 
 

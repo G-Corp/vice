@@ -232,7 +232,7 @@ For image conversion, EVIC use ImageMagick.
 <tt>{resize, W, H, ignore_ration}</tt> |<br />
 <tt>{resize, W, H, no_enlarge}</tt> |<br />
 <tt>{resize, W, H, no_shrink}</tt> |<br />
-<tt>{resize, W, H, fill}</tt>
+<tt>{resize, W, H, fill}</tt><br />
 : Resize an image 
 
 <tt>{thumbnail, P, percent}</tt> |<br />
@@ -242,46 +242,46 @@ For image conversion, EVIC use ImageMagick.
 <tt>{thumbnail, W, H, ignore_ration}</tt> |<br />
 <tt>{thumbnail, W, H, no_enlarge}</tt> |<br />
 <tt>{thumbnail, W, H, no_shrink}</tt> |<br />
-<tt>{thumbnail, W, H, fill}</tt>
+<tt>{thumbnail, W, H, fill}</tt><br />
 : Create a thumbnail of the image. This is similar to <tt>resize</tt>, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size. 
 
 <tt>{crop, W, H, X, Y}</tt> |<br />
-<tt>{crop, W, H}</tt>
+<tt>{crop, W, H}</tt><br />
 : Cut out a rectangular region of the image
 
-<tt>{gravity, Gravity}</tt>
+<tt>{gravity, Gravity}</tt><br />
 : Sets the current gravity suggestion for various other settings and options. Choices include: <tt>NorthWest</tt>, <tt>North</tt>, <tt>NorthEast</tt>, <tt>West</tt>, <tt>Center</tt>, <tt>East</tt>, <tt>SouthWest</tt>, <tt>South</tt>, <tt>SouthEast</tt>.
 
 
 <tt>repage</tt> |<br />
-<tt>'+repage'</tt>
+<tt>'+repage'</tt><br />
 : Adjust the canvas and offset information of the image
 
-<tt>flip</tt>
+<tt>flip</tt><br />
 : Create a mirror image
 
-<tt>trim</tt>
+<tt>trim</tt><br />
 : Trim an image
 
-<tt>magnify</tt>
+<tt>magnify</tt><br />
 : Double the size of the image with pixel art scaling
 
-<tt>{rotate, Degrees}</tt>
+<tt>{rotate, Degrees}</tt><br />
 : Apply Paeth image rotation (using shear operations) to the image
 
 <tt>{blur, Radius}</tt> |<br />
-<tt>{blur, Radius, Sigma}</tt>
+<tt>{blur, Radius, Sigma}</tt><br />
 : Reduce image noise and reduce detail levels
 
-<tt>{edge, Radius}</tt>
+<tt>{edge, Radius}</tt><br />
 : Detect edges within an image
 
 <tt>{size, Weight}</tt> |<br />
 <tt>{size, Weight, Height}</tt> |<br />
-<tt>{size, Weight, Height, Offset}</tt>
+<tt>{size, Weight, Height, Offset}</tt><br />
 : Set the width and height of the image
 
-<tt>{extent, W, H}</tt>
+<tt>{extent, W, H}</tt><br />
 : Set the image size and offset
 
 <h3>Licence</h3><br />
