@@ -299,8 +299,6 @@ For image conversion, EVIC use ImageMagick.
 
 ### Licence ###
 
-<br />
-
 EVIC is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
 
 Copyright (c) 2014-2015 Grégoire Lejeune<br />

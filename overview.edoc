@@ -284,7 +284,7 @@ For image conversion, EVIC use ImageMagick.
 <tt>{extent, W, H}</tt><br />
 : Set the image size and offset
 
-<h3>Licence</h3><br />
+<h3>Licence</h3>
 
 <p>
 EVIC is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
