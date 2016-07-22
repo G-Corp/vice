@@ -237,8 +237,6 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 
 ### Image ###
 
-<br />
-
 For image conversion, EVIC use ImageMagick.
 
 `{resize, P, percent}``{resize, P, pixels}` |<br />

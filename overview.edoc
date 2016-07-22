@@ -221,7 +221,7 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 <tt>{accurate_seek, true}</tt><br />
 : This option enables or disables accurate seeking in input files with the input_position option.
 
-<h3>Image</h3><br />
+<h3>Image</h3>
 
 For image conversion, EVIC use ImageMagick.
 
