@@ -13,3 +13,5 @@ ext
 .rebar
 test/eunit/
 tags
+c_src/build/
+priv/evic_facedetect.so

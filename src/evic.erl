@@ -37,9 +37,13 @@
 
 -define(SERVER, ?MODULE).
 
+% @doc
+% Start evic application
+% @end
 start() ->
   application:ensure_all_started(evic).
 
+% @hidden
 start_link() ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 

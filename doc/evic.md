@@ -16,7 +16,8 @@ Convert a media.</td></tr><tr><td valign="top"><a href="#convert-4">convert/4</a
 Convert a media.</td></tr><tr><td valign="top"><a href="#info-2">info/2</a></td><td>
 Return the given media informations.</td></tr><tr><td valign="top"><a href="#infos-1">infos/1</a></td><td>
 Return the media informations.</td></tr><tr><td valign="top"><a href="#screenshot-2">screenshot/2</a></td><td>
-Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td></td></tr><tr><td valign="top"><a href="#start_link-0">start_link/0</a></td><td></td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
+Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
+Start evic application.</td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
 Return the conversion status.</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td>Equivalent to <a href="#to.md5_mp4-3"><tt>to_html5_mp4(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td>
 Convert the given movie for mp5 html5.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td>Equivalent to <a href="#to.md5_ogg-3"><tt>to_html5_ogg(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td>
 Convert the given movie for ogg html5.</td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td>Equivalent to <a href="#to.md5_webm-3"><tt>to_html5_webm(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td>
@@ -82,11 +83,7 @@ Create a screenshot for a movie
 
 `start() -> any()`
 
-<a name="start_link-0"></a>
-
-### start_link/0 ###
-
-`start_link() -> any()`
+Start evic application
 
 <a name="status-1"></a>
 

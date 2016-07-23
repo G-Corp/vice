@@ -35,7 +35,7 @@ distclean-ex:
 	$(verbose) rm -f mix.lock
 
 distclean: distclean-ex distclean-erl
-	$(verbose) rm -rf _build test/eunit deps ebin
+	$(verbose) rm -rf _build test/eunit deps ebin c_src/build priv/evic_facedetect.so
 
 dev: compile-erl
 	$(verbose) erl -pa _build/default/lib/*/ebin _build/default/lib/*/include -config config/evic.config

@@ -106,7 +106,27 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
   gen_server:cast(evic, {terminate, self()}).
 
 gen_command(Convert, In, Out, Options) ->
-  format("~s \"~ts\" ~s \"~ts\"", [Convert, In, options(Options), Out]).
+  Options1 = case lists:keyfind(face, 1, Options) of
+    {face, W, H} ->
+      get_face(In, W, H, Options);
+    _ ->
+      Options
+  end,
+  format("~s \"~ts\" ~s \"~ts\"", [Convert, In, options(Options1), Out]).
+
+get_face(In, W, H, Options) ->
+  case evic_facedetect:face(In) of
+    {ok, Position} ->
+      #{x := X,
+        y := Y,
+        width := Width,
+        height := Height} = maps:from_list(Position),
+      X1 = X + (Width/2) - (W / 2),
+      Y1 = Y + (Height/2) - (H / 2),
+      lists:keyreplace(face, 1, Options, {crop, W, H, X1, Y1});
+    _ ->
+      Options
+  end.
 
 options(Options) ->
   option(Options, []).
