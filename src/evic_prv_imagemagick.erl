@@ -81,17 +81,28 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
     _ ->
       gen_server:reply(From, {async, self()})
   end,
-  Cmd = gen_command(Convert, In, Out, Options),
-  lager:info("COMMAND : ~p", [Cmd]),
-  case bucos:run(Cmd) of
-    {ok, _} -> 
-      case Fun of
-        F when is_function(F, 1) ->
-          erlang:apply(Fun, [{ok, In, Out}]);
-        sync ->
-          gen_server:reply(From, {ok, In, Out});
-        _ ->
-          ok
+  case gen_command(Convert, In, Out, Options) of
+    {ok, Cmd} ->
+      lager:debug("COMMAND : ~p", [Cmd]),
+      case bucos:run(Cmd) of
+        {ok, _} -> 
+          case Fun of
+            F when is_function(F, 1) ->
+              erlang:apply(Fun, [{ok, In, Out}]);
+            sync ->
+              gen_server:reply(From, {ok, In, Out});
+            _ ->
+              ok
+          end;
+        Error ->
+          case Fun of
+            F when is_function(F, 1) ->
+              erlang:apply(Fun, [Error]);
+            sync ->
+              gen_server:reply(From, Error);
+            _ ->
+              ok
+          end
       end;
     Error ->
       case Fun of
@@ -107,15 +118,22 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
 
 gen_command(Convert, In, Out, Options) ->
   Options1 = case lists:keyfind(face, 1, Options) of
-    {face, W, H} ->
-      get_face(In, W, H, Options);
-    _ ->
-      Options
-  end,
-  format("~s \"~ts\" ~s \"~ts\"", [Convert, In, options(Options1), Out]).
+               {face, W, H} ->
+                 get_face(In, W, H, Options);
+               {face, W, H, eyes} ->
+                 get_face_on_eyes(In, W, H, Options);
+               _ ->
+                 {ok, Options}
+             end,
+  case Options1 of
+    {ok, Options2} ->
+      {ok, format("~s \"~ts\" ~s \"~ts\"", [Convert, In, options(Options2), Out])};
+    Error ->
+      Error
+  end.
 
 get_face(In, W, H, Options) ->
-  case evic_facedetect:face(In) of
+  case evic_facedetect:first_face(In) of
     {ok, Position} ->
       #{x := X,
         y := Y,
@@ -123,9 +141,55 @@ get_face(In, W, H, Options) ->
         height := Height} = maps:from_list(Position),
       X1 = X + (Width/2) - (W / 2),
       Y1 = Y + (Height/2) - (H / 2),
-      lists:keyreplace(face, 1, Options, {crop, W, H, X1, Y1});
-    _ ->
-      Options
+      {ok, lists:keyreplace(face, 1, Options, {crop, W, H, X1, Y1})};
+    Error ->
+      Error
+  end.
+
+get_face_on_eyes(In, W, H, Options) ->
+  case evic_facedetect:first_face(In) of
+    {ok, Position} ->
+      {X1, Y1} = case maps:from_list(Position) of
+                   #{x := X,
+                     y := Y,
+                     width := Width,
+                     height := _Height,
+                     eyes := [Eye]} ->
+                     #{x := _YX1, 
+                       y := YY1, 
+                       width := _YW1, 
+                       height := YH1} = maps:from_list(Eye),
+                     YY = YY1 + (YH1/2),
+                     {X + (Width/2) - (W / 2), Y + YY - (H / 2)};
+                   #{x := X,
+                     y := Y,
+                     width := _Width,
+                     height := _Height,
+                     eyes := [Eye1, Eye2]} ->
+                     #{x := YX1, 
+                       y := YY1, 
+                       width := YW1, 
+                       height := YH1} = maps:from_list(Eye1),
+                     YX11 = YX1 + (YW1/2),
+                     YY11 = YY1 + (YH1/2),
+                     #{x := YX2, 
+                       y := YY2, 
+                       width := YW2, 
+                       height := YH2} = maps:from_list(Eye2),
+                     YX21 = YX2 + (YW2/2),
+                     YY21 = YY2 + (YH2/2),
+                     YX = (min(YX11, YX21) + max(YX11, YX21))/2,
+                     YY = (min(YY11, YY21) + max(YY11, YY21))/2,
+                     {X + YX - (W / 2), Y + YY - (H / 2)};
+                   #{x := X,
+                     y := Y,
+                     width := Width,
+                     height := Height} ->
+                     {X + (Width/2) - (W / 2), Y + (Height/2) - (H / 2)}
+                 end,
+      {ok, lists:keyreplace(face, 1, Options, {crop, W, H, X1, Y1})};
+    Error ->
+      Error
   end.
 
 options(Options) ->
