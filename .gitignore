@@ -5,7 +5,6 @@ ebin
 log
 *.beam
 *.mnesia
-*.txt*
 *.swp*
 erl_crash.dump
 .eunit
