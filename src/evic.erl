@@ -88,12 +88,27 @@ convert(In, Out, Fun) when is_function(Fun) ->
 % @doc
 % Convert a media
 % @end
+-spec convert(In :: binary() | string(),
+              Out :: binary() | string(),
+              Options :: list(),
+              {fun(() -> term()) | fun((term()) -> term()) | fun((term(), term()) -> term()), term()}
+              | fun((term()) -> term())
+              | fun(() -> term())
+              | sync
+              | undefined) -> 
+  {async, term()} 
+  | {ok, In :: binary() | string(), Out :: binary() | string()}
+  | {error, term()}.
 convert(In, Out, Options, Fun) ->
   gen_server:call(?SERVER, {convert, In, Out, Options, Fun}, infinity).
 
 % @doc
 % Create a screenshot for a movie
 % @end
+-spec screenshot(Movie :: binary() | string(),
+                 Out :: binary() | string()) -> 
+  {ok, Movie :: binary() | string(), Out :: binary() | string()}
+  | {error, term()}.
 screenshot(Movie, Out) ->
   case info(Movie, duration) of
     {ok, Duration} ->

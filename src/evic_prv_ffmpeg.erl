@@ -66,23 +66,9 @@ convert(#state{converter = Converter}, In, Out, Options, Fun, From) ->
   lager:info("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
     {ok, _} -> 
-      case Fun of
-        F when is_function(F, 1) ->
-          erlang:apply(Fun, [{ok, In, Out}]);
-        sync ->
-          gen_server:reply(From, {ok, In, Out});
-        _ ->
-          ok
-      end;
+      evic_utils:reply(Fun, From, {ok, In, Out});
     Error ->
-      case Fun of
-        F when is_function(F, 1) ->
-          erlang:apply(Fun, [Error]);
-        sync ->
-          gen_server:reply(From, Error);
-        _ ->
-          ok
-      end
+      evic_utils:reply(Fun, From, Error)
   end,
   gen_server:cast(evic, {terminate, self()}).
 
