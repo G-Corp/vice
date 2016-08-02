@@ -7,11 +7,14 @@
 build(Source, Dest) ->
   case compile:file(Source, [binary, return_errors]) of
     {ok, ModuleName, Binary} ->
-      Beam = atom_to_list(ModuleName) ++ ".beam",
+      ModStr = atom_to_list(ModuleName),
+      Beam = filename:join([ModStr, "ebin", ModStr ++ ".beam"]),
       Script = filename:join(Dest, atom_to_list(ModuleName)),
       case escript:create(Script,
-                          [shebang,
-                           {archive, [{Beam, Binary}], []}]) of
+                          [shebang
+                           , {comment, ""}
+                           , {emu_args, "-escript main " ++ ModStr ++ " -pz " ++ ModStr ++ "/ebin"}
+                           , {archive, [{Beam, Binary}], []}]) of
         ok ->
           case file:change_mode(Script, 8#755) of
             ok -> Script;
