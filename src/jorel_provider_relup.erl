@@ -90,9 +90,9 @@ get_all_paths([Path|Rest], Name, Outdir, Acc) ->
             {ok, [{release, _, _, Deps}]} ->
               lists:foldl(fun({N, V}, Acc1) ->
                               P = bucs:to_string(
-                                    filename:join([Outdir, 
-                                                   "lib", 
-                                                   io_lib:format("~s-~s", [N, V]), 
+                                    filename:join([Outdir,
+                                                   "lib",
+                                                   io_lib:format("~s-~s", [N, V]),
                                                    "ebin"])),
                               case lists:member(P, Acc1) of
                                 true ->

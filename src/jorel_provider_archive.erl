@@ -38,9 +38,9 @@ do(State) ->
       % Add libs
       ?INFO("* Add libs", []),
       Lib = filename:join([Outdir, "lib"]),
-      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), []) 
-       || F <- lists:concat([filelib:wildcard(filename:join([L, "**", "*"])) 
-                             || L <- [filename:join([Lib, io_lib:format("~s-~s", [N, V])]) 
+      [add_to_tar(Tar, F, bucfile:relative_from(F, Outdir), [])
+       || F <- lists:concat([filelib:wildcard(filename:join([L, "**", "*"]))
+                             || L <- [filename:join([Lib, io_lib:format("~s-~s", [N, V])])
                                       || {N, V} <- Deps]])],
       % Add erts
       case jorel_config:get(State, include_erts, true) of
@@ -80,7 +80,7 @@ do(State) ->
   State.
 
 add_to_tar(Tar, File, NameInArchive, Opts) ->
-  case filelib:is_dir(File) andalso (not (file:list_dir(File) == {ok,[]})) of
+  case filelib:is_dir(File) andalso (not (file:list_dir(File) == {ok, []})) of
     true ->
       ok;
     false ->

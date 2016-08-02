@@ -50,11 +50,11 @@ dockerize(State, Data) ->
   {BuildPath, State1} = build_in_docker(State, Data),
   State2 = release_in_docker(State1, Data, BuildPath),
   CleanBuild = buclists:keyfind(clean_build, 1, Data, true),
-  _ = if 
+  _ = if
     CleanBuild ->
       ?DEBUG("* Remove ~s", [BuildPath]),
       case bucfile:remove_recursive(BuildPath) of
-        ok -> 
+        ok ->
           ok;
         {error, Reason} ->
           ?ERROR("! Faild to delete ~s: ~p", [BuildPath, Reason])
@@ -89,7 +89,7 @@ build_in_docker(State, Data) ->
   BuildPath = buclists:keyfind(output_dir, 1, Data, "_jorel_docker"),
   {output_dir, OutputDir} = jorel_config:get(State, output_dir),
   DockerAppPath = filename:join(["/app", RelName, OutputDir]),
-  case file:open(Dockerfile, [write,binary]) of
+  case file:open(Dockerfile, [write, binary]) of
     {ok, FD} ->
       ?INFO("* Create ~s", [Dockerfile]),
       DockerfileData = [{from, FromImageName}, Maintainer] ++
@@ -186,7 +186,7 @@ release_in_docker(State, Data, BuildPath) ->
                       From1
                   end,
   ?INFO("* Dockerize ~s", [BuildPath]),
-  case file:open(Dockerfile, [write,binary]) of
+  case file:open(Dockerfile, [write, binary]) of
     {ok, FD} ->
       ?INFO("* Create ~s", [Dockerfile]),
       DockerfileData = [{from, FromImageName}, Maintainer] ++
@@ -245,7 +245,7 @@ dockerfile(FD, [{expose, Ports}|Data]) ->
 dockerfile(FD, [{cmd, Cmd}|Data]) ->
   case is_list_of_list(Cmd) of
     true ->
-      file:write(FD, io_lib:format("CMD [~s]~n", 
+      file:write(FD, io_lib:format("CMD [~s]~n",
                                    [string:join(["\"" ++ bucs:to_string(P) ++ "\"" || P <- Cmd], ", ")])),
       dockerfile(FD, Data);
     false ->
@@ -253,7 +253,7 @@ dockerfile(FD, [{cmd, Cmd}|Data]) ->
       dockerfile(FD, Data)
   end;
 dockerfile(FD, [{Cmd, Paths}|Data]) when Cmd == add; Cmd == copy; Cmd == entrypoint, Cmd == volume ->
-  file:write(FD, io_lib:format("~s [~s]~n", 
+  file:write(FD, io_lib:format("~s [~s]~n",
                                [string:to_upper(bucs:to_string(Cmd)),
                                 string:join(["\"" ++ bucs:to_string(P) ++ "\"" || P <- Paths], ", ")])),
   dockerfile(FD, Data);

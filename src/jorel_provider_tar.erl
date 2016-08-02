@@ -31,7 +31,7 @@ do(State) ->
   TarSrc = filename:join([Outdir, TarFile]),
   TarDest = filename:join([Outdir, RelName, "releases", TarFile]),
   case file:rename(TarSrc, TarDest) of
-    ok -> 
+    ok ->
       ?INFO("* Move archive to ~s", [TarDest]);
     {error, Reason} ->
       ?HALT("! Can't move archive to ~s: ~p", [TarDest, Reason])

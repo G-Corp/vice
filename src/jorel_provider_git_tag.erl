@@ -43,7 +43,7 @@ do(State) ->
   ?REMARK("== Applications version...", []),
   AppFiles = create_app_release(),
   FileInTag = ["jorel.config"|AppFiles],
-  {RebarDepsVersion, 
+  {RebarDepsVersion,
    FileInTag1} = case filelib:is_file("rebar.config") of
                    true ->
                      {RebarFileForTag, DepsVersions} = create_rebar_release(TagVersion),
@@ -119,14 +119,14 @@ create_erlang_mk_release(Version, RebarDeps) ->
                                 {DepKey, [Git, GitURL, Branch]} ->
                                   case lists:keyfind(bucs:to_atom(Dep), 1, RebarDeps) of
                                     {_, _, {git, _, {_, RebarVersion}}} ->
-                                      lists:keyreplace(DepKey, 1, TmpMakefile, 
+                                      lists:keyreplace(DepKey, 1, TmpMakefile,
                                                        {DepKey, [Git, GitURL, RebarVersion]});
                                     _ ->
                                       AvailV = lists:foldl(fun({BType, BVersion}, Acc) ->
                                                                maps:put(BVersion, bucs:to_atom(BType), Acc)
                                                            end, #{}, remote_tags(GitURL)),
                                       UseVersion = deps_version(Dep, Branch, AvailV),
-                                      lists:keyreplace(DepKey, 1, TmpMakefile, 
+                                      lists:keyreplace(DepKey, 1, TmpMakefile,
                                                        {DepKey, [Git, GitURL, UseVersion]})
                                   end;
                                 _ ->

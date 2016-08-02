@@ -24,8 +24,8 @@ do(State) ->
   Config = filename:join([?JOREL_HOME, "jorel_in.config"]),
   Email = q("Email"),
   Password = q("Password", true),
-  case hackney:request(post, URL ++ "/api/user/register", 
-                      [{<<"Content-Type">>, <<"application/json">>}], 
+  case hackney:request(post, URL ++ "/api/user/register",
+                      [{<<"Content-Type">>, <<"application/json">>}],
                       jsx:encode(#{password => bucs:to_binary(Password),
                                    email => bucs:to_binary(Email)}), []) of
     {ok, 201, _, Ref} ->
@@ -59,14 +59,14 @@ q(What) ->
   q(What, false).
 q(What, Confirm) ->
   case ?ASK(What, [], ": ") of
-    [] -> 
+    [] ->
       ?HALT(What ++ " can not be empty!", []);
     U -> if
            Confirm ->
-             case q(What++ " (confirm)", false) of
-               U -> 
+             case q(What ++ " (confirm)", false) of
+               U ->
                  U;
-               _ -> 
+               _ ->
                  ?HALT(What ++ " does not match", [])
              end;
            true ->

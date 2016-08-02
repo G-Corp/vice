@@ -15,28 +15,31 @@ exist() ->
 
 version() ->
   case iex() of
-    false -> 
+    false ->
       {error, elixir_not_found};
-    IEX -> 
+    IEX ->
       [Version|_] = lists:reverse(
                       string:tokens(
                         string:strip(
                           jorel_cmd:run(
-                            IEX ++ " --version | tail -1"), 
-                          right, 
-                          10), 
+                            IEX ++ " --version | tail -1"),
+                          right,
+                          10),
                         " ")),
       {ok, Version}
   end.
 
 path() ->
   case iex() of
-    false -> 
+    false ->
       {error, elixir_not_found};
-    IEX -> 
+    IEX ->
       {ok, string:strip(
              jorel_cmd:run(
-               IEX ++ " --erl \"+A0\" -e '[elixir_lib_path, _] = String.split(\"#{:code.which(:elixir)}\", \"/elixir/ebin/elixir.beam\"); IO.puts elixir_lib_path |> Path.expand; System.halt' | tail -1"),
+               IEX ++
+               " --erl \"+A0\"" ++
+               " -e '[elixir_lib_path, _] = String.split(\"#{:code.which(:elixir)}\", \"/elixir/ebin/elixir.beam\");" ++
+               " IO.puts elixir_lib_path |> Path.expand; System.halt' | tail -1"),
              right,
              10)}
   end.
@@ -50,7 +53,7 @@ config_to_sys_config(Config, SysConfig, Env) ->
         {ok, Data} ->
           TmpFile = tempfile:name("jorel", [{ext, "ex"}]),
           case file:write_file(TmpFile, Data, [write, binary]) of
-            ok -> 
+            ok ->
               Cmd = string:join([ELIXIR, TmpFile, Config, SysConfig, bucs:to_list(Env)], " "),
               bucs:to_atom(
                 string:strip(
@@ -59,7 +62,7 @@ config_to_sys_config(Config, SysConfig, Env) ->
                   10));
             E -> E
           end;
-        E -> 
+        E ->
           E
       end
   end.

@@ -183,7 +183,7 @@ load_paths([], Acc) ->
   Acc;
 load_paths([Path|Rest], Acc) ->
   Ebins = case filelib:wildcard(Path) of
-            [Path] -> 
+            [Path] ->
               Ebin = filename:join([Path, "ebin"]),
               case filelib:is_dir(Ebin) of
                 true ->
@@ -199,8 +199,8 @@ load_paths([Path|Rest], Acc) ->
 version() ->
   application:load(?MODULE),
   {ok, Vsn} = application:get_key(?MODULE, vsn),
-  ?REMARK("~s ~s (Erlang/OTP ~s Erts ~s)", [?MODULE, Vsn, 
-                                             erlang:system_info(otp_release), 
+  ?REMARK("~s ~s (Erlang/OTP ~s Erts ~s)", [?MODULE, Vsn,
+                                             erlang:system_info(otp_release),
                                              erlang:system_info(version)]),
   init:stop().
 

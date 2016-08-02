@@ -1,42 +1,48 @@
+include bu.mk
+
 .PHONY: doc
 
-REBAR = ./rebar3
-
 compile:
-	@$(REBAR) escriptize
+	$(verbose) $(REBAR) escriptize
 
 tests: compile
-	@$(REBAR) eunit
+	$(verbose) $(REBAR) eunit
 
 doc:
-	@$(REBAR) as doc edoc
+	$(verbose) $(REBAR) as doc edoc
 
-dist: compile tests doc
+lint:
+	$(verbose) $(REBAR) lint
 
-distclean:
-	@rm -rf _build _jorel rebar.lock test/eunit
+dist: compile tests lint doc
+
+clean:
+	$(verbose) $(RM_RF) _build _jorel test/eunit
+
+distclean: clean
+	$(verbose) $(RM_F) rebar.lock
 
 dev: compile
-	@erl -pa _build/default/lib/*/ebin _build/default/lib/*/include
+	$(verbose) erl -pa _build/default/lib/*/ebin _build/default/lib/*/include
 
 VERSION = $(shell ./tag)
 release: compile
 ifeq ($(VERSION),ERROR)
-	@echo "**> Can't find version!"
+	$(verbose) echo "**> Can't find version!"
 else
-	@echo "==> Release version $(VERSION)"
+	$(verbose) echo "==> Release version $(VERSION)"
 	git clone git@github.com:emedia-project/jorel.wiki.git
-	cp _build/default/bin/jorel jorel.wiki/jorel
+	$(CP) _build/default/bin/jorel jorel.wiki/jorel
 	md5sum jorel.wiki/jorel | awk '{print $$1}' > jorel.wiki/jorel.md5
 	cd jorel.wiki; git add .; git commit -am "New release $(VERSION)"; git push origin master
-	rm -rf jorel.wiki
+	$(RM_RF) jorel.wiki
 endif
 
 release-master: compile
-	@echo "==> Release master"
+	$(version) echo "==> Release master"
 	git clone git@github.com:emedia-project/jorel.wiki.git
-	cp _build/default/bin/jorel jorel.wiki/jorel.master
+	$(CP) _build/default/bin/jorel jorel.wiki/jorel.master
 	md5sum jorel.wiki/jorel.master | awk '{print $$1}' > jorel.wiki/jorel.master.md5
 	cd jorel.wiki; git add .; git commit -am "New master"; git push origin master
-	rm -rf jorel.wiki
+	$(RM_RF) jorel.wiki
 

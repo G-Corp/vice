@@ -41,7 +41,7 @@ do(State) ->
               Parts = lists:append([{bucs:to_binary(K),
                                      bucs:to_binary(V)}
                                     || {K, V} <- [{name, RelName}|[{version, RelVsn}|Term]]], [{file, bucs:to_binary(RelArchive)}]),
-              case hackney:request(post, URL ++ "/api/app/add", 
+              case hackney:request(post, URL ++ "/api/app/add",
                                    [{<<"Content-Type">>, <<"multipart/form-data">>}],
                                    {multipart, Parts}, []) of
                 {ok, 201, _, _} ->

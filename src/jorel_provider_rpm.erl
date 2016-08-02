@@ -76,7 +76,7 @@ do(State) ->
   TarRpm = bucs:to_list(RelName) ++ "-" ++ bucstring:gsub(RelVsn, "-", ".") ++ ".tar.gz",
   SourceDest = filename:join([RPMBuildDir, "SOURCES", TarRpm]),
   case file:copy(SourceFile, SourceDest) of
-    {ok, _} -> 
+    {ok, _} ->
       ?INFO("* Copy source ~s to ~s", [SourceFile, SourceDest]);
     {error, Reason} ->
       ?HALT("! Faild to copy ~s to ~s: ~p", [SourceFile, SourceDest, Reason])

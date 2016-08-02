@@ -27,7 +27,7 @@ read_next_line(Device, Acc) ->
 parse_line(Line, Device, IsNextLine) ->
   case string:tokens(Line, "\r\n\t ") of
     [] -> [{raw, Line}];
-    Data -> 
+    Data ->
       case {Data, IsNextLine} of
         {["PROJECT", "="|_], false} -> parse_line1(Data, Device, IsNextLine);
         {["PROJECT_DESCRIPTION", "="|_], false} -> parse_line1(Data, Device, IsNextLine);
@@ -55,29 +55,29 @@ parse_line1(Data, Device, IsNextLine) ->
     IsNextLine -> Entry;
     true ->
       case Entry of
-        ["PROJECT", "="|Data1] -> 
+        ["PROJECT", "="|Data1] ->
           [{project, Data1}];
-        ["PROJECT_DESCRIPTION", "="|Data1] -> 
+        ["PROJECT_DESCRIPTION", "="|Data1] ->
           [{project_description, Data1}];
-        ["PROJECT_VERSION", "="|Data1] -> 
+        ["PROJECT_VERSION", "="|Data1] ->
           [{project_version, Data1}];
-        ["DEPS", "="|Data1] -> 
+        ["DEPS", "="|Data1] ->
           [{deps, Data1}];
-        ["BUILD_DEPS", "="|Data1] -> 
+        ["BUILD_DEPS", "="|Data1] ->
           [{build_deps, Data1}];
-        ["LOCAL_DEPS", "="|Data1] -> 
+        ["LOCAL_DEPS", "="|Data1] ->
           [{local_deps, Data1}];
-        ["TEST_DEPS", "="|Data1] -> 
+        ["TEST_DEPS", "="|Data1] ->
           [{test_deps, Data1}];
-        ["DOC_DEPS", "="|Data1] -> 
+        ["DOC_DEPS", "="|Data1] ->
           [{doc_deps, Data1}];
-        ["REL_DEPS", "="|Data1] -> 
+        ["REL_DEPS", "="|Data1] ->
           [{rel_deps, Data1}];
-        ["SHELL_DEPS", "="|Data1] -> 
+        ["SHELL_DEPS", "="|Data1] ->
           [{shell_deps, Data1}];
         [[$d, $e, $p, $_|_] = Dep, "="|Data1] ->
           [{list_to_atom(Dep), Data1}];
-        _ -> 
+        _ ->
           [{raw, string:join(Entry, " ")}]
       end
   end.

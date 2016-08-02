@@ -59,7 +59,7 @@ get_erts_from_url(URL) ->
                   case httpc:request(get, {URL, []}, [{autoredirect, true}], []) of
                     {ok, {{_, 200, _}, _, Body}} ->
                       case file:write_file(Archive, Body) of
-                        ok -> 
+                        ok ->
                           case erl_tar:extract(Archive, [compressed, {cwd, Install}]) of
                             ok ->
                               _ = file:delete(Archive),
@@ -68,7 +68,7 @@ get_erts_from_url(URL) ->
                             _ ->
                               ?HALT("!!! Faild to download ERTS", [])
                           end;
-                        {error, Reason1} -> 
+                        {error, Reason1} ->
                           ?HALT("!!! Faild to save ERTS: ~p", [Reason1])
                       end;
                     {error, Reason2} ->
@@ -88,15 +88,15 @@ find_erts_info(Path) ->
   case filelib:is_dir(Path) of
     true ->
       case filelib:wildcard(filename:join([Path, "erts-*"])) of
-        [ERTS|_] -> 
+        [ERTS|_] ->
           case re:run(ERTS, "^.*-(.*)$", [{capture, all_but_first, list}]) of
-            {match,[Version]} -> 
+            {match, [Version]} ->
               ?DEBUG("= Will use ERTS ~s from ~s", [Version, Path]),
               {ok, Version, Path};
             _ ->
               ?HALT("!!! Can't retrieve ERTS informations from ~p", [Path])
           end;
-        _ -> 
+        _ ->
           ?HALT("!!! No ERTS found at ~s", [Path])
       end;
     false ->
@@ -176,7 +176,7 @@ make_release(State, AllApps, BootApps) ->
                   {env, MixEnv} = jorel_config:get(State, env, prod),
                   ?INFO("* Create ~s from ~s (env ~s)", [Dest, Src, MixEnv]),
                   case jorel_elixir:config_to_sys_config(Src, Dest, MixEnv) of
-                    ok -> 
+                    ok ->
                       ok;
                     error ->
                       ?HALT("!!! Can't create ~s from ~s", [Dest, Src])
@@ -188,7 +188,7 @@ make_release(State, AllApps, BootApps) ->
       tempdir:mktmp(fun(TmpDir) ->
                         BootErl = make_rel_file(State, TmpDir, "extrel.erl", jorel_extrel),
                         BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
-                        case bucfile:copyfile(BootExe, 
+                        case bucfile:copyfile(BootExe,
                                               filename:join(RelDir, filename:basename(BootExe)),
                                               ?COPY_OPTIONS([])) of
                           ok -> ok;
@@ -271,7 +271,7 @@ make_bin(State) ->
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
   {relname, Name} = jorel_config:get(State, relname),
   {init_sources, InitSources} = jorel_config:get(State, init_sources, []),
-  InitSources1 = case {is_list(InitSources), 
+  InitSources1 = case {is_list(InitSources),
                        (bucs:is_string(InitSources) andalso length(InitSources) > 0)} of
                    {true, true} -> [InitSources];
                    _ -> InitSources
@@ -313,7 +313,7 @@ make_bin(State) ->
   case jorel_nodetool_dtl:render() of
     {ok, NodetoolData} ->
       case file:write_file(NodetoolDest, NodetoolData) of
-        ok -> 
+        ok ->
           ok;
         {error, Reason3} ->
           ?HALT("!!! Error while creating ~s: ~p", [NodetoolDest, Reason3])
@@ -330,7 +330,7 @@ make_upgrade_script(State) ->
   case jorel_upgrade_escript_dtl:render() of
     {ok, UpgradeData} ->
       case file:write_file(UpgradeEscriptDest, UpgradeData) of
-        ok -> 
+        ok ->
           ok;
         {error, Reason4} ->
           ?HALT("!!! Error while creating ~s: ~p", [UpgradeEscriptDest, Reason4])
@@ -385,9 +385,9 @@ make_custom_script(State, Name, Actions) ->
           {actions, [make_action(Action) || Action <- Actions]}]) of
     {ok, Data} ->
       case file:write_file(Dest, Data) of
-        ok -> 
+        ok ->
           case file:change_mode(Dest, 8#777) of
-            ok -> 
+            ok ->
               ok;
             {error, Reason1} ->
               ?HALT("!!! Can't set executable to ~s: ~p", [Dest, Reason1])
@@ -400,11 +400,11 @@ make_custom_script(State, Name, Actions) ->
   end.
 
 make_action({Type, Module, Function}) ->
-  [{type, Type}, 
+  [{type, Type},
    {content, lists:flatten(io_lib:format("~p ~p", [Module, Function]))}];
 make_action({Type, Module, Function, Args}) ->
   Args0 = string:join(["\"" ++ bucs:to_string(A) ++ "\"" || A <- Args], " "),
-  [{type, Type}, 
+  [{type, Type},
    {content, lists:flatten(io_lib:format("~p ~p ~s", [Module, Function, Args0]))}];
 make_action({shell, Data}) ->
   [{type, shell}, {content, Data}].
@@ -451,7 +451,7 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
                                              _ ->
                                                ?HALT("!!! (2) Can't find application ~s", [App])
                                            end;
-                                         false -> 
+                                         false ->
                                            ?HALT("!!! (1) Can't find application ~s", [App])
                                        end;
                                      R -> R
@@ -531,8 +531,8 @@ app_path(App, Vsn, Path) ->
 
 copy_deps(App, Vsn, Path, Dest, Extra) ->
   ?INFO("* Copy ~s version ~s (~s)", [App, Vsn, Path]),
-  bucfile:copy(Path, 
-               Dest, 
+  bucfile:copy(Path,
+               Dest,
                ?COPY_OPTIONS([recursive, {only, ["ebin", "priv"] ++ Extra}])),
   FinalDest = filename:join(Dest, bucs:to_list(App) ++ "-" ++ Vsn),
   CopyDest = filename:join(Dest, filename:basename(Path)),
@@ -687,13 +687,13 @@ build_config_compiler(State) ->
         ?DEBUG("* Extract ~s tp ~s", [escript:script_name(), TmpDir]),
         zip:extract(Archive, [{cwd, TmpDir}]),
         ?INFO("* Create ~s", [ConfigScript]),
-        ArchiveFiles = [read_file(File, TmpDir, "doteki") || File <- filelib:wildcard("*", filename:join([TmpDir, "doteki","ebin"]))],
-        case escript:create(ConfigScript, 
+        ArchiveFiles = [read_file(File, TmpDir, "doteki") || File <- filelib:wildcard("*", filename:join([TmpDir, "doteki", "ebin"]))],
+        case escript:create(ConfigScript,
                             [{shebang, "/usr/bin/env escript"}
                              , {comment, ""}
                              , {emu_args, " -escript main doteki -pz doteki/ebin"}
                              , {archive, ArchiveFiles, []}]) of
-          ok -> 
+          ok ->
             ?DEBUG("= config.escript ok", []),
             ok;
           {error, EscriptError} ->
@@ -706,7 +706,7 @@ read_file(Filename, Prefix, App) ->
   File = filename:join([Prefix, App, "ebin", Filename]),
   ArchiveFile = filename:join([App, "ebin", Filename]),
   case file:read_file(File) of
-    {ok, Bin} -> 
+    {ok, Bin} ->
       {ArchiveFile, Bin};
     {error, Reason} ->
       ?HALT("Failed to read ~s: ~p", [File, Reason])

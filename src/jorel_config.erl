@@ -27,7 +27,7 @@ get(State, outdir) ->
 
 get(State, relname) ->
   case get(State, relname, undefined) of
-    {relname, undefined} -> 
+    {relname, undefined} ->
       {release, {RelName, _}, _} = get(State, release),
       {relname, RelName};
     RelName1 -> RelName1
@@ -35,7 +35,7 @@ get(State, relname) ->
 
 get(State, relvsn) ->
   case get(State, relvsn, undefined) of
-    {relvsn, undefined} -> 
+    {relvsn, undefined} ->
       {release, {_, RelVsn}, _} = get(State, release),
       {relvsn, RelVsn};
     RelVsn1 -> RelVsn1

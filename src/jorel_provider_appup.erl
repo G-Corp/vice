@@ -54,7 +54,7 @@ do(State) ->
                                        ?ERROR("!!! Failed to read rel file ~s", [RelFile]),
                                        Acc
                                    end
-                               end, 
+                               end,
                                [{N, V, []} || {N, V} <- ReleaseDeps, no_appup(N, V, Outdir)],
                                filelib:wildcard(
                                  filename:join(
@@ -127,8 +127,8 @@ get_diffs([Old|Rest], Name, Vsn, Outdir, UpFrom, DownTo) ->
   DownToDeleted = [{delete_module, bucs:to_atom(filename(F))} || F <- DownToDeletedFiles],
   DownToChanged = [changed(F) || {F, _} <- DownToChangedFiles],
 
-  get_diffs(Rest, Name, Vsn, Outdir, 
-            [{Old, lists:append([UpFromAdded, UpFromDeleted, UpFromChanged])}|UpFrom], 
+  get_diffs(Rest, Name, Vsn, Outdir,
+            [{Old, lists:append([UpFromAdded, UpFromDeleted, UpFromChanged])}|UpFrom],
             [{Old, lists:append([DownToAdded, DownToDeleted, DownToChanged])}|DownTo]).
 
 changed(File) ->

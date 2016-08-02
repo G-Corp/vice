@@ -28,29 +28,29 @@ do(State) ->
   ?INFO("== Start provider ~p", [?PROVIDER]),
   ?INFO("= Elixir project: ~p", [jorel_elixir:exist()]),
   RelName = case lists:keyfind(relname, 1, State) of
-              {relname, R} -> 
+              {relname, R} ->
                 bucs:to_atom(R);
-              _ -> 
+              _ ->
                 case file:get_cwd() of
-                  {ok, D} -> 
+                  {ok, D} ->
                     case filename:basename(D) of
                       [] -> noname;
                       X -> bucs:to_atom(X)
                     end;
-                  _ -> 
+                  _ ->
                     noname
                 end
             end,
   ExApp = case jorel_elixir:exist() of
             true ->
-              [elixir, 
+              [elixir,
                bucs:to_atom(
                  string:strip(
                    jorel_cmd:run(
                      jorel_elixir:iex() ++ " --erl \"+A0\" -e " ++
                      "'Application.ensure_all_started(:mix); " ++
                      "Code.eval_file(\"mix.exs\"); " ++
-                     "IO.puts(Mix.Project.config[:app]); " ++ 
+                     "IO.puts(Mix.Project.config[:app]); " ++
                      "System.halt()' | tail -1"), right, 10))];
             false ->
               []
@@ -66,12 +66,12 @@ do(State) ->
   BootApps = lists:usort(
                lists:foldl(fun(App, Acc) ->
                                [bucs:to_atom(filename:basename(App, ".app"))|Acc]
-                           end, [sasl], 
+                           end, [sasl],
                            ExApp ++ filelib:wildcard("ebin/*.app") ++ filelib:wildcard("apps/*/ebin/*.app"))),
   AllApps = lists:usort(
               lists:foldl(fun(App, Acc) ->
                               [bucs:to_atom(filename:basename(App, ".app"))|Acc]
-                          end, [sasl], 
+                          end, [sasl],
                           ExApp ++ bucfile:wildcard("**/ebin/*.app", ?EXCLUDE, [expand_path]))),
   case erlconf:open('jorel.config', Output, [{save_on_close, false}]) of
     {ok, _} ->
@@ -88,7 +88,7 @@ do(State) ->
               {providers, [jorel_provider_tar, jorel_provider_zip, jorel_provider_deb, jorel_provider_git_tag]}
              ],
       Term1 = case filelib:wildcard("config/*.config") of
-                [Config] -> 
+                [Config] ->
                   Term ++ [{sys_config, Config}];
                 _ ->
                   case jorel_elixir:exist() andalso filelib:is_file("config/config.exs") of
