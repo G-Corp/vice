@@ -147,6 +147,26 @@ run_app() {
   fi
 }
 
+run_dev() {
+  compile_config
+  EXTRA_ARGS=""
+  if [ -f $VM_ARGS ] ; then
+    EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+    EXTRA_ARGS=$(eval echo $EXTRA)
+  fi
+  export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $REL_FILE $LIBDIR)
+  export ROOTDIR="$ROOT_DIR"
+  export EMU="beam"
+  export PROGNAME="erlexec"
+  export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
+  jorel_debug "Start "
+  jorel_debug "ROOTDIR = $ROOTDIR"
+  jorel_debug "ERL_LIBS = $ERL_LIBS"
+  jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
+  jorel_debug "BOOT_FILE = $BOOT_FILE"
+  $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $CLEAN_BOOT_FILE
+}
+
 start_app() {
   mkdir -p $PIPE_DIR
   mkdir -p $LOG_DIR
@@ -208,11 +228,11 @@ stop_app() {
 execute() {
   if [ $# = 0 ] ; then
     help "Missing module" ; exit 0
-  fi  
+  fi
   MODULE=$1 ; shift
   if [ $# = 0 ] ; then
     help "Missing function" ; exit 0
-  fi  
+  fi
   FUNCTION=$1 ; shift
   echo $@
   if output="$(jorel_nodetool rpcterms $MODULE $FUNCTION $@)"
@@ -230,11 +250,31 @@ help() {
   if [ "x$MESSAGE" != "x" ] ; then
     echo $MESSAGE
   fi
-  echo "Usage : $NAME [options] {start|stop|restart|restart-hard|reboot|console|attach|status|info|pid|ping|exec|upgrade|downgrade|install|unpack}"
+  echo "Usage : $NAME [options] {start|stop|restart|restart-hard|reboot|console|attach|status|info|pid|ping|exec|command|upgrade|downgrade|install|unpack}"
   echo ""
   echo "Options :"
   echo "  -h --help        : Display this message"
   echo "     --no-detach   : Do not detach"
+  echo ""
+  echo "Commands:"
+  echo "  start            : Start the application"
+  echo "  stop             : Stop the application"
+  echo "  restart          : Restart the application"
+  echo "  restart-hard     : Stop and start the application"
+  echo "  dev              : Open a console in dev mode"
+  echo "  reboot           : Reboot the application"
+  echo "  console          : Start the application in a console"
+  echo "  attach           : Attach a console to the running application"
+  echo "  status           : Return the application status"
+  echo "  info             : Return the application informations"
+  echo "  pid              : Return the application PID"
+  echo "  ping             : Ping the application"
+  echo "  exec             : Execute a command on a started application"
+  echo "  command          : Execute a command on a non started application"
+  echo "  upgrade          : Upgrade the application"
+  echo "  downgrade        : Downgrade the application"
+  echo "  install          : Install a new version of the application"
+  echo "  unpack           : Unpack a version"
 }
 
 NO_DETACH=false
@@ -246,8 +286,11 @@ while [ $# -ne 0 ] ; do
     --no-detach)
       NO_DETACH=true
       ;;
-    console) 
+    console)
       run_app ;;
+    dev)
+      run_dev
+      exit "$?" ;;
     start)
       start_app ;;
     attach)
@@ -320,7 +363,7 @@ while [ $# -ne 0 ] ; do
     -h|--help)
       help ; exit 0 ;;
     *)
-      help "Invalid option $1" ; exit 1 ;;  
+      help "Invalid option $1" ; exit 1 ;;
   esac
   shift
 done
