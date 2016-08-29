@@ -44,6 +44,7 @@ do(State) ->
   ExApp = case jorel_elixir:exist() of
             true ->
               [elixir,
+               iex,
                bucs:to_atom(
                  string:strip(
                    jorel_cmd:run(

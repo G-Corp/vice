@@ -143,7 +143,7 @@ run_app() {
     jorel_debug "ERL_LIBS = $ERL_LIBS"
     jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
     jorel_debug "BOOT_FILE = $BOOT_FILE"
-    $BINDIR/$PROGNAME $FOREGROUNDOPTIONS $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $1
+    $BINDIR/$PROGNAME $FOREGROUNDOPTIONS $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $1 $IEXOPTIONS
   fi
 }
 
@@ -237,6 +237,9 @@ help() {
   echo "  restart-hard     : Stop and start the application"
   echo "  reboot           : Reboot the application"
   echo "  console          : Start the application in a console"
+{% if is_elixir %}
+  echo "  console_iex      : Open an iex console"
+{% endif %}
   echo "  console_clean    : Open a console on clean boot"
   echo "  attach           : Attach a console to the running application"
   echo "  status           : Return the application status"
@@ -251,13 +254,19 @@ help() {
   echo "  unpack           : Unpack a version"
 }
 
-FOREGROUNDOPTIONS=
+FOREGROUNDOPTIONS=""
+IEXOPTIONS=""
 if [ "$#" = "0" ] ; then
   help
 fi
 case $1 in
   console)
     run_app $BOOT_FILE ;;
+{% if is_elixir %}
+  console_iex)
+    IEXOPTIONS="-user Elixir.IEx.CLI -extra --no-halt +iex"
+    run_app $BOOT_FILE ;;
+{% endif %}
   console_clean)
     run_app $CLEAN_BOOT_FILE ;;
   console_boot)

@@ -118,9 +118,15 @@ resolv_apps(State) ->
     [] ->
       ?HALT("!!! Missing apps in release", []);
     _ ->
+      Apps0 = case jorel_elixir:exist() of
+                true ->
+                  add_if_missing([elixir, iex], Apps);
+                false ->
+                  Apps
+              end,
       Apps1 = case jorel_config:get(State, all_deps, false) of
-                {all_deps, true} -> find_all_deps(State, Apps);
-                _ -> Apps
+                {all_deps, true} -> find_all_deps(State, Apps0);
+                _ -> Apps0
               end,
       resolv_apps(State, Apps1, [], [])
   end.
@@ -128,7 +134,14 @@ resolv_apps(State) ->
 resolv_boot(State, AllApps) ->
   case jorel_config:get(State, boot, all) of
     {boot, all} -> AllApps;
-    {boot, Apps} -> resolv_apps(State, Apps, [], [])
+    {boot, Apps} ->
+      Apps1 = case jorel_elixir:exist() of
+                true ->
+                  add_if_missing([elixir], Apps);
+                false ->
+                  Apps
+              end,
+      resolv_apps(State, Apps1, [], [])
   end.
 
 make_lib(State, Apps) ->
@@ -284,7 +297,11 @@ make_bin(State) ->
         {error, Reason} ->
           ?HALT("!!! Failed to create ~s: ~p", [BinFile, Reason])
       end,
-  case jorel_unix_start_dtl:render([{relvsn, Vsn}, {relname, Name}, {ertsvsn, ERTSVersion}, {sources, InitSources1}]) of
+  case jorel_unix_start_dtl:render([{relvsn, Vsn},
+                                    {relname, Name},
+                                    {ertsvsn, ERTSVersion},
+                                    {sources, InitSources1},
+                                    {is_elixir, jorel_elixir:exist()}]) of
     {ok, Data} ->
       case file:write_file(BinFile, Data) of
         ok ->
@@ -710,5 +727,15 @@ read_file(Filename, Prefix, App) ->
       {ArchiveFile, Bin};
     {error, Reason} ->
       ?HALT("Failed to read ~s: ~p", [File, Reason])
+  end.
+
+add_if_missing([], List) ->
+  List;
+add_if_missing([Missing|Rest], List) ->
+  case lists:member(Missing, List) of
+    true ->
+      add_if_missing(Rest, List);
+    false ->
+      add_if_missing(Rest, [Missing|List])
   end.
 
