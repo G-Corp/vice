@@ -143,40 +143,14 @@ run_app() {
     jorel_debug "ERL_LIBS = $ERL_LIBS"
     jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
     jorel_debug "BOOT_FILE = $BOOT_FILE"
-    $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $BOOT_FILE
+    $BINDIR/$PROGNAME $FOREGROUNDOPTIONS $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $1
   fi
-}
-
-run_dev() {
-  compile_config
-  EXTRA_ARGS=""
-  if [ -f $VM_ARGS ] ; then
-    EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
-    EXTRA_ARGS=$(eval echo $EXTRA)
-  fi
-  export ERL_LIBS=$($BINDIR/escript $REL_DIR/extrel get_erl_libs $REL_FILE $LIBDIR)
-  export ROOTDIR="$ROOT_DIR"
-  export EMU="beam"
-  export PROGNAME="erlexec"
-  export LD_LIBRARY_PATH="$ERTS_DIR/lib:$LD_LIBRARY_PATH"
-  jorel_debug "Start "
-  jorel_debug "ROOTDIR = $ROOTDIR"
-  jorel_debug "ERL_LIBS = $ERL_LIBS"
-  jorel_debug "LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
-  jorel_debug "BOOT_FILE = $BOOT_FILE"
-  $BINDIR/$PROGNAME $EXTRA_ARGS -pa $APP_DEPS -config $COMPILED_SYS_CONFIG -boot $CLEAN_BOOT_FILE
 }
 
 start_app() {
   mkdir -p $PIPE_DIR
   mkdir -p $LOG_DIR
   $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
-  # TODO: Find a better solution
-  if [ $NO_DETACH = true ] ; then
-    trap "$SCRIPT stop" 1 2 15
-    touch $LOG_DIR/erlang.log.1 $LOG_DIR/erlang.log.2 $LOG_DIR/erlang.log.3 $LOG_DIR/erlang.log.4 $LOG_DIR/erlang.log.5
-    tail -F $LOG_DIR/erlang.log.1 $LOG_DIR/erlang.log.2 $LOG_DIR/erlang.log.3 $LOG_DIR/erlang.log.4 $LOG_DIR/erlang.log.5
-  fi
 }
 
 exec_command() {
@@ -254,16 +228,16 @@ help() {
   echo ""
   echo "Options :"
   echo "  -h --help        : Display this message"
-  echo "     --no-detach   : Do not detach"
   echo ""
   echo "Commands:"
   echo "  start            : Start the application"
   echo "  stop             : Stop the application"
+  echo "  foreground       : Run in foreground"
   echo "  restart          : Restart the application"
   echo "  restart-hard     : Stop and start the application"
-  echo "  dev              : Open a console in dev mode"
   echo "  reboot           : Reboot the application"
   echo "  console          : Start the application in a console"
+  echo "  console_clean    : Open a console on clean boot"
   echo "  attach           : Attach a console to the running application"
   echo "  status           : Return the application status"
   echo "  info             : Return the application informations"
@@ -277,96 +251,99 @@ help() {
   echo "  unpack           : Unpack a version"
 }
 
-NO_DETACH=false
+FOREGROUNDOPTIONS=
 if [ "$#" = "0" ] ; then
   help
 fi
-while [ $# -ne 0 ] ; do
-  case $1 in
-    --no-detach)
-      NO_DETACH=true
-      ;;
-    console)
-      run_app ;;
-    dev)
-      run_dev
-      exit "$?" ;;
-    start)
-      start_app ;;
-    attach)
-      attach_app ;;
-    stop)
-      stop_app ;;
-    restart)
-      if ! jorel_nodetool "restart" >/dev/null; then
-        exit 1
-      fi
-      ;;
-    restart-hard)
-      stop_app ; sleep 2 ; start_app ;;
-    reboot)
-      if ! jorel_nodetool "reboot" >/dev/null; then
-        exit 1
-      fi
-      ;;
-    status)
-      print_status ;;
-    info)
-      print_info ;;
-    pid)
-      if [ "$PID" = "" ] ; then
-        exit 1
-      else
-        echo $PID
-      fi
-      ;;
-    ping)
-      if ! jorel_nodetool "ping"; then
-        exit 1
-      fi
-      ;;
-    exec)
-      shift ; execute "$@" ; exit 0 ;;
-    upgrade|downgrade|install)
-      if [ -z "$2" ]; then
-        echo "Missing package argument"
-        echo "Usage: $NAME $1 {version}"
-        exit 1
-      fi
-      # Make sure a node IS running
-      if ! jorel_nodetool "ping" > /dev/null; then
-        echo "$NAME is not running!"
-        exit 1
-      fi
-      exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
-        "install" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
-      ;;
-    unpack)
-      if [ -z "$2" ]; then
-        echo "Missing package argument"
-        echo "Usage: $NAME $1 {version}"
-        exit 1
-      fi
-      # Make sure a node IS running
-      if ! jorel_nodetool "ping" > /dev/null; then
-        echo "Node is not running!"
-        exit 1
-      fi
-      exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
-        "unpack" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
-      ;;
-    command)
-      shift
-      exec_command $@
-      exit "$?"
-      ;;
-    -h|--help)
-      help ; exit 0 ;;
-    *)
-      help "Invalid option $1" ; exit 1 ;;
-  esac
-  shift
-done
+case $1 in
+  console)
+    run_app $BOOT_FILE ;;
+  console_clean)
+    run_app $CLEAN_BOOT_FILE ;;
+  console_boot)
+    if [ "$#" = "1" ] ; then
+      help
+      exit 1
+    fi
+    shift
+    run_app "$1" ;;
+  foreground)
+    FOREGROUNDOPTIONS="-noshell -noinput +Bd"
+    run_app $BOOT_FILE ;;
+  start)
+    start_app ;;
+  attach)
+    attach_app ;;
+  stop)
+    stop_app ;;
+  restart)
+    if ! jorel_nodetool "restart" >/dev/null; then
+      exit 1
+    fi
+    ;;
+  restart-hard)
+    stop_app ; sleep 2 ; start_app ;;
+  reboot)
+    if ! jorel_nodetool "reboot" >/dev/null; then
+      exit 1
+    fi
+    ;;
+  status)
+    print_status ;;
+  info)
+    print_info ;;
+  pid)
+    if [ "$PID" = "" ] ; then
+      exit 1
+    else
+      echo $PID
+    fi
+    ;;
+  ping)
+    if ! jorel_nodetool "ping"; then
+      exit 1
+    fi
+    ;;
+  exec)
+    shift ; execute "$@" ; exit 0 ;;
+  upgrade|downgrade|install)
+    if [ -z "$2" ]; then
+      echo "Missing package argument"
+      echo "Usage: $NAME $1 {version}"
+      exit 1
+    fi
+    # Make sure a node IS running
+    if ! jorel_nodetool "ping" > /dev/null; then
+      echo "$NAME is not running!"
+      exit 1
+    fi
+    exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
+      "install" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
+    ;;
+  unpack)
+    if [ -z "$2" ]; then
+      echo "Missing package argument"
+      echo "Usage: $NAME $1 {version}"
+      exit 1
+    fi
+    # Make sure a node IS running
+    if ! jorel_nodetool "ping" > /dev/null; then
+      echo "Node is not running!"
+      exit 1
+    fi
+    exec "$BINDIR/escript" "$ROOT_DIR/bin/upgrade.escript" \
+      "unpack" "$REL_NAME" "$NODE_NAME" "$NODE_COOKIE" "$2"
+    ;;
+  command)
+    shift
+    exec_command $@
+    exit "$?"
+    ;;
+  -h|--help)
+    help ; exit 0 ;;
+  *)
+    help "Invalid option $1" ; exit 1 ;;
+esac
 
 exit 0
 
