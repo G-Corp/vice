@@ -230,28 +230,29 @@ help() {
   echo "  -h --help        : Display this message"
   echo ""
   echo "Commands:"
-  echo "  start            : Start the application"
-  echo "  stop             : Stop the application"
-  echo "  foreground       : Run in foreground"
-  echo "  restart          : Restart the application"
-  echo "  restart-hard     : Stop and start the application"
-  echo "  reboot           : Reboot the application"
-  echo "  console          : Start the application in a console"
+  echo "  start             : Start the application"
+  echo "  stop              : Stop the application"
+  echo "  foreground        : Run in foreground"
+  echo "  restart           : Restart the application"
+  echo "  restart-hard      : Stop and start the application"
+  echo "  reboot            : Reboot the application"
+  echo "  console           : Start the application in a console"
+  echo "  console_clean     : Open a console on clean boot"
 {% if is_elixir %}
-  echo "  console_iex      : Open an iex console"
+  echo "  console_iex       : Open an iex console"
+  echo "  console_iex_clean : Open an iex console"
 {% endif %}
-  echo "  console_clean    : Open a console on clean boot"
-  echo "  attach           : Attach a console to the running application"
-  echo "  status           : Return the application status"
-  echo "  info             : Return the application informations"
-  echo "  pid              : Return the application PID"
-  echo "  ping             : Ping the application"
-  echo "  exec             : Execute a command on a started application"
-  echo "  command          : Execute a command on a non started application"
-  echo "  upgrade          : Upgrade the application"
-  echo "  downgrade        : Downgrade the application"
-  echo "  install          : Install a new version of the application"
-  echo "  unpack           : Unpack a version"
+  echo "  attach            : Attach a console to the running application"
+  echo "  status            : Return the application status"
+  echo "  info              : Return the application informations"
+  echo "  pid               : Return the application PID"
+  echo "  ping              : Ping the application"
+  echo "  exec              : Execute a command on a started application"
+  echo "  command           : Execute a command on a non started application"
+  echo "  upgrade           : Upgrade the application"
+  echo "  downgrade         : Downgrade the application"
+  echo "  install           : Install a new version of the application"
+  echo "  unpack            : Unpack a version"
 }
 
 FOREGROUNDOPTIONS=""
@@ -262,13 +263,16 @@ fi
 case $1 in
   console)
     run_app $BOOT_FILE ;;
+  console_clean)
+    run_app $CLEAN_BOOT_FILE ;;
 {% if is_elixir %}
   console_iex)
     IEXOPTIONS="-user Elixir.IEx.CLI -extra --no-halt +iex"
     run_app $BOOT_FILE ;;
-{% endif %}
-  console_clean)
+  console_iex_clean)
+    IEXOPTIONS="-user Elixir.IEx.CLI -extra --no-halt +iex"
     run_app $CLEAN_BOOT_FILE ;;
+{% endif %}
   console_boot)
     if [ "$#" = "1" ] ; then
       help
