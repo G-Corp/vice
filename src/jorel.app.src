@@ -1,6 +1,6 @@
 {application, jorel,
  [{description, "Jorel is Just anOther RELease assembler for Erlang/OTP Releases"},
-  {vsn, "0.2.5-pre"},
+  {vsn, "0.3.0-pre"},
   {modules, []},
   {registered, []},
   {applications, [kernel, stdlib, ssl, inets, hackney]}]}.

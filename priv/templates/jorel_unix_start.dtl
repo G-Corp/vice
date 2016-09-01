@@ -147,6 +147,44 @@ run_app() {
   fi
 }
 
+rem_sh() {
+  if [ -f $VM_ARGS ] ; then
+    EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+    EXTRA_ARGS=$(eval echo $EXTRA)
+
+    NAME_TYPE=$(echo $EXTRA_ARGS | sed 's/.*\(-[s]*name\).*/\1/')
+    NAME=$(echo $EXTRA_ARGS | sed 's/.*-[s]*name \([^ ]*\).*/\1/')
+    COOKIE=$(echo $EXTRA_ARGS | sed 's/.*-setcookie \([^ ]*\).*/\1/')
+    REM_SH_NAME="jorel$(od -t x4 /dev/urandom | head -n1 | cut -d ' ' -f2)-${NAME}"
+
+    $BINDIR/erl -pa $APP_DEPS \
+      "$NAME_TYPE" "$REM_SH_NAME" \
+      -setcookie "$COOKIE" \
+      -boot $CLEAN_BOOT_FILE \
+      -remsh "$NAME"
+  fi
+}
+
+rem_sh_iex() {
+  if [ -f $VM_ARGS ] ; then
+    EXTRA=$(cat $VM_ARGS | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+    EXTRA_ARGS=$(eval echo $EXTRA)
+
+    NAME_TYPE=$(echo $EXTRA_ARGS | sed 's/.*\(-[s]*name\).*/\1/')
+    NAME=$(echo $EXTRA_ARGS | sed 's/.*-[s]*name \([^ ]*\).*/\1/')
+    COOKIE=$(echo $EXTRA_ARGS | sed 's/.*-setcookie \([^ ]*\).*/\1/')
+    REM_SH_NAME="jorel$(od -t x4 /dev/urandom | head -n1 | cut -d ' ' -f2)-${NAME}"
+
+    $BINDIR/erl -pa $APP_DEPS -hidden -noshell \
+      "$NAME_TYPE" "$REM_SH_NAME" \
+      -setcookie "$COOKIE" \
+      -boot $CLEAN_BOOT_FILE \
+      -user Elixir.IEx.CLI \
+      -extra --no-halt +iex \
+      --remsh "$NAME"
+  fi
+}
+
 start_app() {
   mkdir -p $PIPE_DIR
   mkdir -p $LOG_DIR
@@ -242,6 +280,10 @@ help() {
   echo "  console_iex       : Open an iex console"
   echo "  console_iex_clean : Open an iex console"
 {% endif %}
+  echo "  remsh             : Start a remote shell"
+{% if is_elixir %}
+  echo "  remsh_iex         : Start a remote iex shell"
+{% endif %}
   echo "  attach            : Attach a console to the running application"
   echo "  status            : Return the application status"
   echo "  info              : Return the application informations"
@@ -280,6 +322,22 @@ case $1 in
     fi
     shift
     run_app "$1" ;;
+  remsh)
+    # Make sure a node IS running
+    if ! jorel_nodetool "ping" > /dev/null; then
+      echo "Node is not running!"
+      exit 1
+    fi
+    rem_sh ;;
+{% if is_elixir %}
+  remsh_iex)
+    # Make sure a node IS running
+    if ! jorel_nodetool "ping" > /dev/null; then
+      echo "Node is not running!"
+      exit 1
+    fi
+    rem_sh_iex ;;
+{% endif %}
   foreground)
     FOREGROUNDOPTIONS="-noshell -noinput +Bd"
     run_app $BOOT_FILE ;;
