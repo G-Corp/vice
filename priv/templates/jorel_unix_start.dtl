@@ -45,7 +45,7 @@ fi
 
 # Extract the name type and name from the NODE_NAME_ARG for REMSH
 NODE_NAME_TYPE="$(echo "$NODE_NAME_ARG" | awk '{print $1}')"
-NODE_NAME="$(echo "$NODE_NAME_ARG" | awk '{print $2}')"
+NODE_NAME="$(eval echo "$NODE_NAME_ARG" | awk '{print $2}')"
 
 # Extract the target cookie
 NODE_COOKIE_ARG="$(grep '^-setcookie' "$VM_ARGS")"
@@ -55,7 +55,7 @@ if [ -z "$NODE_COOKIE_ARG" ]; then
 fi
 
 # Extract cookie name from NODE_COOKIE_ARG
-NODE_COOKIE="$(echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
+NODE_COOKIE="$(eval echo "$NODE_COOKIE_ARG" | awk '{print $2}')"
 
 # All deps ebin path
 APP_DEPS=$($BINDIR/escript $REL_DIR/extrel get_libs $REL_FILE $LIBDIR)
@@ -301,6 +301,7 @@ FOREGROUNDOPTIONS=""
 IEXOPTIONS=""
 if [ "$#" = "0" ] ; then
   help
+  exit 0
 fi
 case $1 in
   console)

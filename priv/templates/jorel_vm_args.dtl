@@ -2,7 +2,7 @@
 ## If you want to use a custom file, use the vm_args option
 
 ## Name of the node
--name {{ relname }}@127.0.0.1
+-name {{ relname }}@${NODE_HOST:-127.0.0.1}
 
 ## Cookie for distributed erlang
 -setcookie {{ relname }}
