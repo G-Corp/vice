@@ -1,2 +1,0 @@
--define(VIDEO_ENCODERS, [evic_prv_ffmpeg, evic_prv_libav]).
--define(PHOTO_ENCODERS, [evic_prv_imagemagick]).

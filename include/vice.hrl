@@ -1,0 +1,2 @@
+-define(VIDEO_ENCODERS, [vice_prv_ffmpeg, vice_prv_libav]).
+-define(PHOTO_ENCODERS, [vice_prv_imagemagick]).

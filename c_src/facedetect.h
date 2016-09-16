@@ -1,5 +1,5 @@
-#ifndef __EVIC_FACEDETECT__
-#define __EVIC_FACEDETECT__
+#ifndef __VICE_FACEDETECT__
+#define __VICE_FACEDETECT__
 
 #define OK 0
 #define EMPTY_IMAGE 1

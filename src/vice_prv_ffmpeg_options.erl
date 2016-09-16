@@ -1,5 +1,5 @@
 % @hidden
--module(evic_prv_ffmpeg_options).
+-module(vice_prv_ffmpeg_options).
 
 -export([options/1]).
 

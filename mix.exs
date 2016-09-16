@@ -1,9 +1,9 @@
-defmodule Evic.Mixfile do
+defmodule Vice.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :evic,
+      app: :vice,
       version: "0.0.1",
       elixir: "~> 1.2",
       build_embedded: Mix.env == :prod,
@@ -17,7 +17,7 @@ defmodule Evic.Mixfile do
     [
        applications: [:compiler, :poolgirl, :lager],
        env: [],
-       mod: {:evic_app, []}
+       mod: {:vice_app, []}
     ]
   end
 

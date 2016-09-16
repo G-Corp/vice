@@ -1,5 +1,5 @@
 % @hidden
--module(evic_prv_imagemagick).
+-module(vice_prv_imagemagick).
 -compile([{parse_transform, lager_transform}]).
 
 %% API
@@ -18,11 +18,11 @@
 -define(INFOS, "~s -format \"~s\" \"~ts\"").
 
 init() ->
-  case evic_utils:find_executable(["convert"], [evic, imagemagick, convert]) of
+  case vice_utils:find_executable(["convert"], [vice, imagemagick, convert]) of
     undefined ->
       {stop, convert_not_found};
     Convert ->
-      case evic_utils:find_executable(["identify"], [evic, imagemagick, identify]) of
+      case vice_utils:find_executable(["identify"], [vice, imagemagick, identify]) of
         undefined ->
           {stop, identify_not_found};
         Identify ->
@@ -86,14 +86,14 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
       lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, _} ->
-          evic_utils:reply(Fun, From, {ok, In, Out});
+          vice_utils:reply(Fun, From, {ok, In, Out});
         Error ->
-          evic_utils:reply(Fun, From, Error)
+          vice_utils:reply(Fun, From, Error)
       end;
     Error ->
-      evic_utils:reply(Fun, From, Error)
+      vice_utils:reply(Fun, From, Error)
   end,
-  gen_server:cast(evic, {terminate, self()}).
+  gen_server:cast(vice, {terminate, self()}).
 
 gen_command(Convert, In, Out, Options) ->
   Options1 = case lists:keyfind(face, 1, Options) of
@@ -112,7 +112,7 @@ gen_command(Convert, In, Out, Options) ->
   end.
 
 get_face(In, W, H, Options) ->
-  case evic_facedetect:first_face(In) of
+  case vice_facedetect:first_face(In) of
     {ok, Position} ->
       #{x := X,
         y := Y,
@@ -126,7 +126,7 @@ get_face(In, W, H, Options) ->
   end.
 
 get_face_on_eyes(In, W, H, Options) ->
-  case evic_facedetect:first_face(In) of
+  case vice_facedetect:first_face(In) of
     {ok, Position} ->
       {X1, Y1} = case maps:from_list(Position) of
                    #{x := X,

@@ -1,17 +1,16 @@
 @author Gregoire Lejeune <gregoire.lejeune@gmail.com>
-@author Gregoire Lejeune <gregoire.lejeune@botsunit.com>
-@copyright 2014-2015 Grégoire Lejeune, 2016 BotsUnit
+@copyright 2014-2016 Grégoire Lejeune
 @version 0.0.1
-@title EVIC - Erlang Video Image Converter
+@title VICE - Video and Image Converter for Erlang/Elixir
 @doc
 
-<h3>EVIC</h3>
+<h3>VICE</h3>
 
-EVIC is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmpeg">erlffmpeg</a>.
+VICE is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmpeg">erlffmpeg</a>.
 
 <h3>Video</h3>
 
-For video conversion, EVIC use ffmpeg.
+For video conversion, VICE use ffmpeg.
 
 <h4>Main options</h4>
 
@@ -47,7 +46,7 @@ For video conversion, EVIC use ffmpeg.
 : Set the recording timestamp in the container.  The syntax for time is: <tt>now|([(YYYY-MM-DD|YYYYMMDD)[T|t| ]]((HH:MM:SS[.m...])|(HHMMSS[.m...]))[Z|z])</tt>
 
 <tt>{target, Type}</tt><br />
-: Specify target file type ("vcd", "svcd", "dvd", "dv", "dv50"). Type may be prefixed with "pal-", "ntsc-" or "film-" to use the corresponding standard. 
+: Specify target file type ("vcd", "svcd", "dvd", "dv", "dv50"). Type may be prefixed with "pal-", "ntsc-" or "film-" to use the corresponding standard.
 
 <tt>{dframes, Number}</tt><br />
 : Set the number of data frames to record.
@@ -102,7 +101,7 @@ For video conversion, EVIC use ffmpeg.
 
 <tt>{input_pixel_format, [Stream, Format]}</tt> | <tt>{input_pixel_format, Format}</tt><br />
 <tt>{output_pixel_format, [Stream, Format]}</tt> | <tt>{output_pixel_format, Format}</tt><br />
-: Set pixel format. 
+: Set pixel format.
 
 <tt>{input_sws_flags, Flags}</tt><br />
 <tt>{output_sws_flags, Flags}</tt><br />
@@ -123,7 +122,7 @@ For video conversion, EVIC use ffmpeg.
 <h4>Audio Options</h4>
 
 <tt>{aframes, N}</tt><br />
-: Set the number of audio frames to record. 
+: Set the number of audio frames to record.
 
 <tt>{input_audio_frequency, [Stream, Frequency]}</tt> | <tt>{input_audio_frequency, Frequency}</tt><br />
 <tt>{output_audio_frequency, [Stream, Frequency]}</tt> | <tt>{output_audio_frequency, Frequency}</tt><br />
@@ -152,7 +151,7 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 <h4>Advanced Audio options:</h4>
 
 <tt>{guess_layout_max, Channels}</tt><br />
-: If some input channel layout is not known, try to guess only if it corresponds to at most the specified number of channels. 
+: If some input channel layout is not known, try to guess only if it corresponds to at most the specified number of channels.
 
 <h4>Subtitle options:</h4>
 
@@ -213,7 +212,7 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 : Specify Timecode for writing.
 
 <tt>{filter_complex, Filtergraph}</tt><br />
-: Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or outputs. 
+: Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or outputs.
 
 <tt>{filter_complex_script, Filename}</tt><br />
 : This option is similar to filter_complex, the only difference is that its argument is the name of the file from which a complex filtergraph description is to be read.
@@ -223,9 +222,9 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 
 <h3>Image</h3>
 
-For image conversion, EVIC use ImageMagick.
+For image conversion, VICE use ImageMagick.
 
-<tt>{resize, P, percent}</tt> 
+<tt>{resize, P, percent}</tt>
 <tt>{resize, P, pixels}</tt> |<br />
 <tt>{resize, W, H}</tt> |<br />
 <tt>{resize, W, H, percent}</tt> |<br />
@@ -233,7 +232,7 @@ For image conversion, EVIC use ImageMagick.
 <tt>{resize, W, H, no_enlarge}</tt> |<br />
 <tt>{resize, W, H, no_shrink}</tt> |<br />
 <tt>{resize, W, H, fill}</tt><br />
-: Resize an image 
+: Resize an image
 
 <tt>{thumbnail, P, percent}</tt> |<br />
 <tt>{thumbnail, P, pixels}</tt> |<br />
@@ -243,7 +242,7 @@ For image conversion, EVIC use ImageMagick.
 <tt>{thumbnail, W, H, no_enlarge}</tt> |<br />
 <tt>{thumbnail, W, H, no_shrink}</tt> |<br />
 <tt>{thumbnail, W, H, fill}</tt><br />
-: Create a thumbnail of the image. This is similar to <tt>resize</tt>, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size. 
+: Create a thumbnail of the image. This is similar to <tt>resize</tt>, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.
 
 <tt>{crop, W, H, X, Y}</tt> |<br />
 <tt>{crop, W, H}</tt><br />
@@ -287,7 +286,7 @@ For image conversion, EVIC use ImageMagick.
 <h3>Licence</h3>
 
 <p>
-EVIC is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
+VICE is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
 </p>
 
 <p>

@@ -1,5 +1,5 @@
 % @hidden
--module(evic_prv_ffmpeg).
+-module(vice_prv_ffmpeg).
 -compile([{parse_transform, lager_transform}]).
 
 -export([
@@ -17,11 +17,11 @@
 -define(PROBE, "~s -v quiet -of json -show_format -show_streams \"~ts\"").
 
 init() ->
-  case evic_utils:find_executable(["ffprobe"], [evic, ffmpeg, ffprobe]) of
+  case vice_utils:find_executable(["ffprobe"], [vice, ffmpeg, ffprobe]) of
     undefined ->
       {stop, ffprobe_not_found};
     FFProbe ->
-      case evic_utils:find_executable(["ffmpeg"], [evic, ffmpeg, ffmpeg]) of
+      case vice_utils:find_executable(["ffmpeg"], [vice, ffmpeg, ffmpeg]) of
         undefined ->
           {stop, ffmpeg_not_found};
         FFMpeg ->
@@ -66,11 +66,11 @@ convert(#state{converter = Converter}, In, Out, Options, Fun, From) ->
   lager:info("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
     {ok, _} ->
-      evic_utils:reply(Fun, From, {ok, In, Out});
+      vice_utils:reply(Fun, From, {ok, In, Out});
     Error ->
-      evic_utils:reply(Fun, From, Error)
+      vice_utils:reply(Fun, From, Error)
   end,
-  gen_server:cast(evic, {terminate, self()}).
+  gen_server:cast(vice, {terminate, self()}).
 
 gen_command(Converter, In, Out, Options, OverwriteOptions, MissingOptions) ->
   Options1 = buclists:merge_keylists(1, OverwriteOptions, Options),
@@ -82,7 +82,7 @@ gen_options(Converter, In, Out, Options) ->
     {input, InputOptions},
     {output, OutputOptions},
     {global, GlobalOptions}
-  ] = evic_prv_ffmpeg_options:options(Options),
+  ] = vice_prv_ffmpeg_options:options(Options),
   lists:flatten(
     io_lib:format(
       "~s~s~s -i \"~ts\"~s \"~ts\"",

@@ -1,7 +1,7 @@
--module(evic).
+-module(vice).
 -compile([{parse_transform, lager_transform}]).
 -behaviour(gen_server).
--include("../include/evic.hrl").
+-include("../include/vice.hrl").
 
 %% Common API
 -export([
@@ -38,10 +38,10 @@
 -define(SERVER, ?MODULE).
 
 % @doc
-% Start evic application
+% Start vice application
 % @end
 start() ->
-  application:ensure_all_started(evic).
+  application:ensure_all_started(vice).
 
 % @hidden
 start_link() ->
@@ -91,7 +91,7 @@ convert(In, Out, Fun) when is_function(Fun) ->
 -spec convert(In :: binary() | string(),
               Out :: binary() | string(),
               Options :: list(),
-              {fun(() -> term()) | fun((term()) -> term()) | fun((term(), term()) -> term()), term()}
+              {fun((term()) -> term()) | fun((term(), term()) -> term()), term()}
               | fun((term()) -> term())
               | fun(() -> term())
               | sync
@@ -112,7 +112,7 @@ convert(In, Out, Options, Fun) ->
 screenshot(Movie, Out) ->
   case info(Movie, duration) of
     {ok, Duration} ->
-      Position = evic_utils:to_hms(Duration/2),
+      Position = vice_utils:to_hms(Duration/2),
       convert(Movie, Out, [{duration, 1},
                            {output_format, "mjpeg"},
                            {input_position, Position}], sync);
@@ -231,9 +231,9 @@ code_change(_OldVsn, State, _Extra) ->
 
 start_encoders(Type, Default) ->
   lager:info("Start ~p encoders...", [Type]),
-  case poolgirl:add_pool(Type, {evic_prv_encoder,
+  case poolgirl:add_pool(Type, {vice_prv_encoder,
                                  start_link,
-                                 [doteki:get_env([evic, encoders, Type], Default)]}) of
+                                 [doteki:get_env([vice, encoders, Type], Default)]}) of
     {ok, N} ->
       lager:info("~p ~p encoder started!", [N, Type]),
       true;

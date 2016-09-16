@@ -1,8 +1,8 @@
-{application, evic,
- [{description, "Erlang/Elixir Video and Image Converter"}
+{application, vice,
+ [{description, "Video and Image Converter for Erlang/Elixir"}
   , {vsn, "0.0.1"}
   , {registered, []}
-  , {mod, {evic_app, []}}
+  , {mod, {vice_app, []}}
   , {applications,
      [kernel
       , stdlib
@@ -14,7 +14,7 @@
 
   , {maintainers, ["Gregoire Lejeune"]}
   , {licenses, ["BSD-3"]}
-  , {links, [{"Github", "https://github.com/botsunit/evic"}]}
+  , {links, [{"Github", "https://github.com/botsunit/vice"}]}
   , {files, ["src/*"
              , "lib/*"
              , "priv/*"

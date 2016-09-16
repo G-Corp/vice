@@ -25,9 +25,9 @@ char * bin2str(ErlNifBinary bin) {
 }
 
 ERL_NIF_TERM maps_put(
-    ErlNifEnv* env, 
-    ERL_NIF_TERM map, 
-    char *key, 
+    ErlNifEnv* env,
+    ERL_NIF_TERM map,
+    char *key,
     int value) {
   ERL_NIF_TERM out = enif_make_new_map(env);
   enif_make_map_put(env, map, mk_atom(env, key), enif_make_int(env, value), &out);
@@ -38,20 +38,20 @@ ERL_NIF_TERM mk_eyes(ErlNifEnv *env, int x, int y, int width, int height) {
   return enif_make_list4(
       env,
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "x"), 
+        env,
+        mk_atom(env, "x"),
         enif_make_int(env, x)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "y"), 
+        env,
+        mk_atom(env, "y"),
         enif_make_int(env, y)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "width"), 
+        env,
+        mk_atom(env, "width"),
         enif_make_int(env, width)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "height"), 
+        env,
+        mk_atom(env, "height"),
         enif_make_int(env, height)));
 }
 
@@ -59,24 +59,24 @@ ERL_NIF_TERM mk_face(ErlNifEnv *env, int x, int y, int width, int height, const 
   return enif_make_list5(
       env,
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "x"), 
+        env,
+        mk_atom(env, "x"),
         enif_make_int(env, x)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "y"), 
+        env,
+        mk_atom(env, "y"),
         enif_make_int(env, y)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "width"), 
+        env,
+        mk_atom(env, "width"),
         enif_make_int(env, width)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "height"), 
+        env,
+        mk_atom(env, "height"),
         enif_make_int(env, height)),
       enif_make_tuple2(
-        env, 
-        mk_atom(env, "eyes"), 
+        env,
+        mk_atom(env, "eyes"),
         enif_make_list_from_array(env, eyes, nb_eyes))
       );
 }
@@ -92,7 +92,7 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   char *ceyes_xml;
   ERL_NIF_TERM result;
 
-  if(argc != 3 
+  if(argc != 3
       || !enif_inspect_binary(env, argv[0], &img)
       || !enif_inspect_binary(env, argv[1], &face_xml)
       || !enif_inspect_binary(env, argv[2], &eyes_xml)) {
@@ -100,10 +100,10 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   }
 
   cimg = bin2str(img);
-  cface_xml = bin2str(face_xml); 
-  ceyes_xml = bin2str(eyes_xml); 
+  cface_xml = bin2str(face_xml);
+  ceyes_xml = bin2str(eyes_xml);
 
-  rcod = detect(cimg, cface_xml, ceyes_xml, &faces); 
+  rcod = detect(cimg, cface_xml, ceyes_xml, &faces);
   if(rcod == OK) {
     ERL_NIF_TERM *erl_faces = (ERL_NIF_TERM*)malloc(sizeof(ERL_NIF_TERM)*faces.nb_faces);
 
@@ -114,10 +114,10 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         erl_eyes = (ERL_NIF_TERM*)malloc(sizeof(ERL_NIF_TERM)*faces.faces[i].nb_eyes);
 
         for(size_t j = 0; j < faces.faces[i].nb_eyes; j++) {
-          erl_eyes[j] = mk_eyes(env, 
-              faces.faces[i].eyes[j].x, 
-              faces.faces[i].eyes[j].y, 
-              faces.faces[i].eyes[j].width, 
+          erl_eyes[j] = mk_eyes(env,
+              faces.faces[i].eyes[j].x,
+              faces.faces[i].eyes[j].y,
+              faces.faces[i].eyes[j].width,
               faces.faces[i].eyes[j].height);
         }
       }
@@ -130,7 +130,7 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
           faces.faces[i].nb_eyes);
     }
     result = enif_make_tuple2(
-        env, 
+        env,
         mk_atom(env, "ok"),
         enif_make_list_from_array(env, erl_faces, faces.nb_faces));
   } else if(rcod == EMPTY_IMAGE) {
@@ -153,4 +153,4 @@ static ErlNifFunc nif_funcs[] = {
   {"faces", 3, faces}
 };
 
-ERL_NIF_INIT(evic_facedetect, nif_funcs, NULL, NULL, NULL, NULL);
+ERL_NIF_INIT(vice_facedetect, nif_funcs, NULL, NULL, NULL, NULL);

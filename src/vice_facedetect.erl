@@ -1,5 +1,5 @@
 % @hidden
--module(evic_facedetect).
+-module(vice_facedetect).
 -export([
          faces/3,
          faces/1,
@@ -8,8 +8,8 @@
         ]).
 -on_load(init/0).
 
--define(APPNAME, evic).
--define(LIBNAME, evic_facedetect).
+-define(APPNAME, vice).
+-define(LIBNAME, vice_facedetect).
 -define(CASCADE_FACE_XML, "haarcascade_frontalface_alt2.xml").
 -define(CASCADE_EYES_XML, "haarcascade_eye_tree_eyeglasses.xml").
 

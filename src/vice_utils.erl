@@ -1,5 +1,5 @@
 % @hidden
--module(evic_utils).
+-module(vice_utils).
 
 -export([
          find_executable/2

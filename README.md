@@ -1,22 +1,22 @@
 
 
-# EVIC - Erlang Video Image Converter #
+# VICE - Video and Image Converter for Erlang/Elixir #
 
-Copyright (c) 2014-2015 Grégoire Lejeune, 2016 BotsUnit
+Copyright (c) 2014-2016 Grégoire Lejeune
 
 __Version:__ 0.0.1
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`gregoire.lejeune@botsunit.com`](mailto:gregoire.lejeune@botsunit.com)).
 
 
-### EVIC ###
+### VICE ###
 
-EVIC is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlffmpeg).
+VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlffmpeg).
 
 
 ### Video ###
 
-For video conversion, EVIC use ffmpeg.
+For video conversion, VICE use ffmpeg.
 
 
 #### Main options ####
@@ -237,9 +237,10 @@ Create the filtergraph specified by filtergraph and use it to filter the stream.
 
 ### Image ###
 
-For image conversion, EVIC use ImageMagick.
+For image conversion, VICE use ImageMagick.
 
-`{resize, P, percent}``{resize, P, pixels}` |<br />
+`{resize, P, percent}`
+`{resize, P, pixels}` |<br />
 `{resize, W, H}` |<br />
 `{resize, W, H, percent}` |<br />
 `{resize, W, H, ignore_ration}` |<br />
@@ -299,7 +300,7 @@ For image conversion, EVIC use ImageMagick.
 
 ### Licence ###
 
-EVIC is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
+VICE is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
 
 Copyright (c) 2014-2015 Grégoire Lejeune<br />
 Copyright (c) 2016 BotsUnit<br />
@@ -319,5 +320,5 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/botsunit/evic/blob/master/doc/evic.md" class="module">evic</a></td></tr></table>
+<tr><td><a href="https://github.com/botsunit/vice/blob/master/doc/vice.md" class="module">vice</a></td></tr></table>
 

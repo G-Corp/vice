@@ -1,5 +1,5 @@
 % @hidden
--module(evic_sup).
+-module(vice_sup).
 -behaviour(supervisor).
 
 -export([start_link/0]).
@@ -14,8 +14,8 @@ init([]) ->
       intensity => 1,
       period => 5},
     [
-      #{id => evic,
-        start => {evic, start_link, []},
+      #{id => vice,
+        start => {vice, start_link, []},
         type => worker,
         shutdown => 5000}
     ]
