@@ -1,5 +1,5 @@
 all:
-	mkdir -p build
-	cd build ; cmake ..
-	make -C build
+	mkdir -p ../.c_build
+	cd ../.c_build ; cmake ../c_src
+	make -C ../.c_build
 

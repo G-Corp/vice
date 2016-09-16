@@ -95,8 +95,8 @@ convert(In, Out, Fun) when is_function(Fun) ->
               | fun((term()) -> term())
               | fun(() -> term())
               | sync
-              | undefined) -> 
-  {async, term()} 
+              | undefined) ->
+  {async, term()}
   | {ok, In :: binary() | string(), Out :: binary() | string()}
   | {error, term()}.
 convert(In, Out, Options, Fun) ->
@@ -106,15 +106,15 @@ convert(In, Out, Options, Fun) ->
 % Create a screenshot for a movie
 % @end
 -spec screenshot(Movie :: binary() | string(),
-                 Out :: binary() | string()) -> 
+                 Out :: binary() | string()) ->
   {ok, Movie :: binary() | string(), Out :: binary() | string()}
   | {error, term()}.
 screenshot(Movie, Out) ->
   case info(Movie, duration) of
     {ok, Duration} ->
       Position = evic_utils:to_hms(Duration/2),
-      convert(Movie, Out, [{duration, 1}, 
-                           {output_format, "mjpeg"}, 
+      convert(Movie, Out, [{duration, 1},
+                           {output_format, "mjpeg"},
                            {input_position, Position}], sync);
     _ ->
       {error, invalid_media}
@@ -127,9 +127,9 @@ to_html5_webm(Input, Output) ->
 % Convert the given movie for webm html5
 % @end
 to_html5_webm(Input, Output, Fun) ->
-  convert(Input, Output, [{output_format, "webm"}, 
-                          {vcodec, "libvpx"}, 
-                          {output_acodec, "libvorbis"}, 
+  convert(Input, Output, [{output_format, "webm"},
+                          {vcodec, "libvpx"},
+                          {output_acodec, "libvorbis"},
                           {output_frame_size, "640x360"}], Fun).
 
 % @equiv to_html5_mp4(Input, Output, undefined)
@@ -139,9 +139,9 @@ to_html5_mp4(Input, Output) ->
 % Convert the given movie for mp5 html5
 % @end
 to_html5_mp4(Input, Output, Fun) ->
-  convert(Input, Output, [{output_format, "mp4"}, 
-                          {vcodec, "libx264"}, 
-                          {output_acodec, "libfaac"}, 
+  convert(Input, Output, [{output_format, "mp4"},
+                          {vcodec, "libx264"},
+                          {output_acodec, "libfaac"},
                           {output_frame_size, "640x360"}], Fun).
 
 % @equiv to_html5_ogg(Input, Output, undefined)
@@ -151,8 +151,8 @@ to_html5_ogg(Input, Output) ->
 % Convert the given movie for ogg html5
 % @end
 to_html5_ogg(Input, Output, Fun) ->
-  convert(Input, Output, [{vcodec, "libtheora"}, 
-                          {output_acodec, "libvorbis"}, 
+  convert(Input, Output, [{vcodec, "libtheora"},
+                          {output_acodec, "libvorbis"},
                           {output_frame_size, "640x360"}], Fun).
 
 % @hidden
@@ -190,7 +190,7 @@ handle_call({convert, In, Out, Options, Fun}, From, State) ->
       {reply, Error, State}
   end;
 handle_call({status, Worker}, _From, State) ->
-  case lists:member(Worker, 
+  case lists:member(Worker,
                     maps:fold(fun
                                 (Type, true, Acc) ->
                                   case poolgirl:assigned(Type) of

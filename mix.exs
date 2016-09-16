@@ -4,7 +4,7 @@ defmodule Evic.Mixfile do
   def project do
     [
       app: :evic,
-      version: "0.0.0",
+      version: "0.0.1",
       elixir: "~> 1.2",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -23,11 +23,11 @@ defmodule Evic.Mixfile do
 
   defp deps do
     [
-      {:lager, "~> 3.2"},
-      {:bucs, "~> 0.1.5"},
-      {:doteki, "~> 0.1"},
-      {:poolgirl, "~> 0.1"},
-      {:jsx, "~> 2.8"}    
+      {:lager, "~> 3.2.0"},
+      {:bucs, "~> 0.1.9"},
+      {:doteki, "~> 0.1.13"},
+      {:poolgirl, "~> 0.1.4"},
+      {:jsx, "~> 2.8.0"}    
     ]
   end
 

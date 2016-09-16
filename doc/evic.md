@@ -49,7 +49,10 @@ Convert a media
 
 ### convert/4 ###
 
-`convert(In, Out, Options, Fun) -> any()`
+<pre><code>
+convert(In::binary() | string(), Out::binary() | string(), Options::list(), Fun::{fun(() -&gt; term()) | fun((term()) -&gt; term()) | fun((term(), term()) -&gt; term()), term()} | fun((term()) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
+</code></pre>
+<br />
 
 Convert a media
 
@@ -73,7 +76,10 @@ Return the media informations
 
 ### screenshot/2 ###
 
-`screenshot(Movie, Out) -> any()`
+<pre><code>
+screenshot(Movie::binary() | string(), Out::binary() | string()) -&gt; {ok, Movie::binary() | string(), Out::binary() | string()} | {error, term()}
+</code></pre>
+<br />
 
 Create a screenshot for a movie
 

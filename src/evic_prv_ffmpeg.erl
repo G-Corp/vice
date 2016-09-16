@@ -35,7 +35,7 @@ init() ->
 infos(#state{prober = Prober}, File) ->
   Cmd = lists:flatten(io_lib:format(?PROBE, [Prober, File])),
   case bucos:run(Cmd) of
-    {ok, Output} -> 
+    {ok, Output} ->
       {ok, jsx:decode(bucs:to_binary(Output), [{labels, atom}, return_maps])};
     Error ->
       Error
@@ -57,7 +57,7 @@ get_info(_, _) ->
 
 convert(#state{converter = Converter}, In, Out, Options, Fun, From) ->
   case Fun of
-    sync -> 
+    sync ->
       ok;
     _ ->
       gen_server:reply(From, {async, self()})
@@ -65,7 +65,7 @@ convert(#state{converter = Converter}, In, Out, Options, Fun, From) ->
   Cmd = gen_command(Converter, In, Out, Options, [{yes, true}], []),
   lager:info("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
-    {ok, _} -> 
+    {ok, _} ->
       evic_utils:reply(Fun, From, {ok, In, Out});
     Error ->
       evic_utils:reply(Fun, From, Error)
@@ -79,12 +79,12 @@ gen_command(Converter, In, Out, Options, OverwriteOptions, MissingOptions) ->
 
 gen_options(Converter, In, Out, Options) ->
   [
-    {input, InputOptions}, 
-    {output, OutputOptions}, 
+    {input, InputOptions},
+    {output, OutputOptions},
     {global, GlobalOptions}
   ] = evic_prv_ffmpeg_options:options(Options),
   lists:flatten(
     io_lib:format(
-      "~s~s~s -i \"~ts\"~s \"~ts\"", 
+      "~s~s~s -i \"~ts\"~s \"~ts\"",
       [Converter, GlobalOptions, InputOptions, In, OutputOptions, Out])).
 

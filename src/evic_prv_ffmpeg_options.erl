@@ -4,7 +4,7 @@
 -export([options/1]).
 
 -export([
-    is_true/1, 
+    is_true/1,
     is_list_and_list/1,
     is_list_and_integer/1,
     is_list_and_float/1,
@@ -12,12 +12,12 @@
     is_integer_and_list/1,
     is_integer_and_integer/1,
     is_integer_and_float/1,
-    to_nothing/1, 
-    to_arg/1, 
+    to_nothing/1,
+    to_arg/1,
     to_dotargs/1
 ]).
 
--define(OPTIONS ,[
+-define(OPTIONS, [
   {yes,                    global, "-y",                     [{{?MODULE, is_true}, to_nothing}]},
   {fix_sub_duration,       global, "-fix_sub_duration",      [{{?MODULE, is_true}, to_nothing}]},
   {canvas_size,            global, "-canvas_size",           [{{erlang, is_integer}, to_arg}]},
@@ -58,7 +58,8 @@
   {vframes,                output, "-vframes",               [{{erlang, is_integer}, to_arg}]},
   {output_frame_rate,      output, "-r",                     [{{?MODULE, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
   {output_frame_size,      output, "-s",                     [{{?MODULE, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}]},
-  {aspect,                 output, "-aspect",                [{{?MODULE, is_list_and_list}, to_dotargs}, {{?MODULE, is_list_and_float}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_float}, to_arg}]},
+  {aspect,                 output, "-aspect",                [{{?MODULE, is_list_and_list}, to_dotargs},
+                                                              {{?MODULE, is_list_and_float}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_float}, to_arg}]},
   {no_video_recording,     output, "-vn",                    [{{?MODULE, is_true}, to_nothing}]},
   {vcodec,                 output, "-vcodec",                [{{erlang, is_list}, to_arg}]},
   {pass,                   output, "-pass",                  [{{?MODULE, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
@@ -97,15 +98,15 @@ options(Options) ->
   lists:foldl(fun({Option, Value}, [{input, Input}, {output, Output}, {global, Global}] = OptionStrings) ->
     case lists:keyfind(Option, 1, ?OPTIONS) of
       false ->
-        error_logger:error_msg("Invalid option ~p", [Option]), 
-        OptionStrings; 
+        error_logger:error_msg("Invalid option ~p", [Option]),
+        OptionStrings;
       {Option, Level, Param, Validators} ->
         Str = build_option_string(Param, Value, Validators),
         case Level of
           input -> [{input, Input ++ " " ++ Str}, {output, Output}, {global, Global}];
           output -> [{input, Input}, {output, Output ++ " " ++ Str}, {global, Global}];
           global -> [{input, Input}, {output, Output}, {global, Global ++ " " ++ Str}];
-          _ -> 
+          _ ->
             error_logger:error_msg("Invalid level ~p for option ~p", [Level, Option]),
             OptionStrings
         end

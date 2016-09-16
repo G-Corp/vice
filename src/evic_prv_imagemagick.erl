@@ -85,7 +85,7 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
     {ok, Cmd} ->
       lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
-        {ok, _} -> 
+        {ok, _} ->
           evic_utils:reply(Fun, From, {ok, In, Out});
         Error ->
           evic_utils:reply(Fun, From, Error)
@@ -134,9 +134,9 @@ get_face_on_eyes(In, W, H, Options) ->
                      width := Width,
                      height := _Height,
                      eyes := [Eye]} ->
-                     #{x := _YX1, 
-                       y := YY1, 
-                       width := _YW1, 
+                     #{x := _YX1,
+                       y := YY1,
+                       width := _YW1,
                        height := YH1} = maps:from_list(Eye),
                      YY = YY1 + (YH1/2),
                      {X + (Width/2) - (W / 2), Y + YY - (H / 2)};
@@ -145,15 +145,15 @@ get_face_on_eyes(In, W, H, Options) ->
                      width := _Width,
                      height := _Height,
                      eyes := [Eye1, Eye2]} ->
-                     #{x := YX1, 
-                       y := YY1, 
-                       width := YW1, 
+                     #{x := YX1,
+                       y := YY1,
+                       width := YW1,
                        height := YH1} = maps:from_list(Eye1),
                      YX11 = YX1 + (YW1/2),
                      YY11 = YY1 + (YH1/2),
-                     #{x := YX2, 
-                       y := YY2, 
-                       width := YW2, 
+                     #{x := YX2,
+                       y := YY2,
+                       width := YW2,
                        height := YH2} = maps:from_list(Eye2),
                      YX21 = YX2 + (YW2/2),
                      YY21 = YY2 + (YH2/2),
@@ -185,7 +185,7 @@ option([{resize, W, H}|Rest], Acc) ->
   option(Rest, [format("-resize ~wx~w", [W, H])|Acc]);
 option([{resize, W, H, percent}|Rest], Acc) ->
   option(Rest, [format("-resize ~w%x~w%", [W, H])|Acc]);
-option([{resize, W, H, ignore_ration}|Rest], Acc) ->
+option([{resize, W, H, ignore_ratio}|Rest], Acc) ->
   option(Rest, [format("-resize ~wx~w\\!", [W, H])|Acc]);
 option([{resize, W, H, no_enlarge}|Rest], Acc) ->
   option(Rest, [format("-resize ~wx~w\\<", [W, H])|Acc]);
@@ -202,7 +202,7 @@ option([{thumbnail, W, H}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~wx~w", [W, H])|Acc]);
 option([{thumbnail, W, H, percent}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~w%x~w%", [W, H])|Acc]);
-option([{thumbnail, W, H, ignore_ration}|Rest], Acc) ->
+option([{thumbnail, W, H, ignore_ratio}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~wx~w\\!", [W, H])|Acc]);
 option([{thumbnail, W, H, no_enlarge}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~wx~w\\<", [W, H])|Acc]);

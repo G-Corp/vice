@@ -1,20 +1,30 @@
 {application, evic,
- [{description, ""},
-  {vsn, "0.0.0"},
-  {registered, []},
-  {mod, {evic_app, []}},
-  {applications,
-   [
-    kernel
-    , stdlib
-    , compiler
-    , poolgirl
-    , lager
-   ]},
-  {env,[]},
-  {modules, []},
+ [{description, "Erlang/Elixir Video and Image Converter"}
+  , {vsn, "0.0.1"}
+  , {registered, []}
+  , {mod, {evic_app, []}}
+  , {applications,
+     [kernel
+      , stdlib
+      , compiler
+      , poolgirl
+      , lager]}
+  , {env,[]}
+  , {modules, []}
 
-  {maintainers, []},
-  {licenses, []},
-  {links, []}
+  , {maintainers, ["Gregoire Lejeune"]}
+  , {licenses, ["BSD-3"]}
+  , {links, [{"Github", "https://github.com/botsunit/evic"}]}
+  , {files, ["src/*"
+             , "lib/*"
+             , "priv/*"
+             , "c_src/*"
+             , "Makefile"
+             , "bu.mk"
+             , "README.md"
+             , "rebar.config"
+             , "rebar.lock"
+             , "mix.exs"
+             , "mix.lock"]}
+  , {build_tools, ["rebar3", "mix", "make"]}
  ]}.

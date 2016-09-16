@@ -1,7 +1,7 @@
 % @hidden
 -module(evic_facedetect).
 -export([
-         faces/3, 
+         faces/3,
          faces/1,
          faces_with_eyes/1,
          first_face/1
@@ -18,7 +18,7 @@ faces(Img) ->
     error ->
       error;
     Path ->
-      faces(bucs:to_binary(Img), 
+      faces(bucs:to_binary(Img),
             bucs:to_binary(filename:join([Path, ?CASCADE_FACE_XML])),
             bucs:to_binary(filename:join([Path, ?CASCADE_EYES_XML])))
   end.

@@ -44,7 +44,7 @@ reply({Fun, Extra}, _, Response) when is_function(Fun, 2) ->
 reply({Fun, Extra}, _, _) when is_function(Fun, 1) ->
   erlang:apply(Fun, [Extra]);
 reply(Fun, _, Response) when is_function(Fun, 1) ->
-  erlang:apply(Fun,[Response]);
+  erlang:apply(Fun, [Response]);
 reply(Fun, _, _) when is_function(Fun, 0) ->
   erlang:apply(Fun, []);
 reply(_, _, Response) ->
