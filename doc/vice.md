@@ -50,7 +50,7 @@ Convert a media
 ### convert/4 ###
 
 <pre><code>
-convert(In::binary() | string(), Out::binary() | string(), Options::list(), Fun::{fun(() -&gt; term()) | fun((term()) -&gt; term()) | fun((term(), term()) -&gt; term()), term()} | fun((term()) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
+convert(In::binary() | string(), Out::binary() | string(), Options::list(), Fun::{fun((term()) -&gt; term()) | fun((term(), term()) -&gt; term()), term()} | fun((term()) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
 </code></pre>
 <br />
 

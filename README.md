@@ -2,11 +2,11 @@
 
 # VICE - Video and Image Converter for Erlang/Elixir #
 
-Copyright (c) 2014-2016 Grégoire Lejeune
+Copyright (c) 2014-2016 Grégoire Lejeune, 2016 Botsunit
 
 __Version:__ 0.0.1
 
-__Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`gregoire.lejeune@botsunit.com`](mailto:gregoire.lejeune@botsunit.com)).
+__Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
 
 ### VICE ###
