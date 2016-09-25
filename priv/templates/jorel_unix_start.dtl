@@ -187,8 +187,9 @@ rem_sh_iex() {
 }
 
 start_app() {
-  mkdir -p $PIPE_DIR
-  $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
+  mkdir -p $LOG_DIR
+  mkdir -p "$PIPE_DIR"
+  $BINDIR/run_erl -daemon "$PIPE_DIR" "$LOG_DIR" "exec $SCRIPT_DIR/$NAME console"
 }
 
 exec_command() {
@@ -218,7 +219,7 @@ exec_command() {
 
 attach_app() {
   if [ $STARTED = true ] ; then
-    exec $BINDIR/to_erl $PIPE_DIR
+    exec $BINDIR/to_erl "$PIPE_DIR"
   else
     echo "$NAME is not started"
   fi
