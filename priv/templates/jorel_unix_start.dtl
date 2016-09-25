@@ -10,7 +10,7 @@ ERTS_VSN="{{ertsvsn}}"
 {% empty %}{% endfor %}
 SCRIPT=$0
 SCRIPT_DIR="$(cd ${0%/*} && pwd)"
-ROOT_DIR="$(dirname $SCRIPT_DIR)"
+export ROOT_DIR="$(dirname $SCRIPT_DIR)"
 NAME="$(basename $0)"
 
 REL_DIR="$ROOT_DIR/releases/$REL_VSN"
@@ -124,6 +124,7 @@ compile_config() {
 }
 
 run_app() {
+  mkdir -p $LOG_DIR
   if [ $STARTED = true ] ; then
     echo "$NAME is already running (PID $PID)"
   else
@@ -187,7 +188,6 @@ rem_sh_iex() {
 
 start_app() {
   mkdir -p $PIPE_DIR
-  mkdir -p $LOG_DIR
   $BINDIR/run_erl -daemon $PIPE_DIR $LOG_DIR "exec $SCRIPT_DIR/$NAME console"
 }
 

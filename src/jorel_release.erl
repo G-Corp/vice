@@ -169,12 +169,13 @@ make_release(State, AllApps, BootApps) ->
   ?INFO("* Create ~s", [RelDir]),
   case bucfile:make_dir(RelDir) of
     ok ->
-      _ = make_rel_file(State, RelDir, "vm.args", jorel_vm_args),
+      _ = make_rel_file(State, RelDir, "vm.args", jorel_vm_args_dtl, vm_args),
       _ = case jorel_elixir:exist() of
             true ->
               Dest = filename:join(RelDir, "sys.config"),
               case jorel_config:get(State, sys_config, false) of
                 {sys_config, false} ->
+                  ?INFO("Create default config file.", []),
                   case jorel_sys_config_dtl:render([{relname, RelName}]) of
                     {ok, Data} ->
                       case file:write_file(Dest, Data) of
@@ -196,10 +197,10 @@ make_release(State, AllApps, BootApps) ->
                   end
               end;
             false ->
-              make_rel_file(State, RelDir, "sys.config", jorel_sys_config)
+              make_rel_file(State, RelDir, "sys.config", jorel_sys_config_dtl, sys_config)
           end,
       tempdir:mktmp(fun(TmpDir) ->
-                        BootErl = make_rel_file(State, TmpDir, "extrel.erl", jorel_extrel),
+                        BootErl = make_rel_file(State, TmpDir, "extrel.erl", jorel_extrel_dtl),
                         BootExe = jorel_escript:build(BootErl, filename:dirname(BootErl)),
                         case bucfile:copyfile(BootExe,
                                               filename:join(RelDir, filename:basename(BootExe)),
@@ -491,15 +492,19 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
 resolv_local(State, App) ->
   case jorel_elixir:exist() of
     true ->
-      {env, MixEnv} = jorel_config:get(State, env, prod),
-      case resolv_app(State, filename:join(["_build", bucs:to_string(MixEnv), "lib", "**", "ebin"]), App) of
-        notfound ->
-          resolv_app(State, filename:join("**", "ebin"), App);
-        Else ->
-          Else
-      end;
+      {env, Env} = jorel_config:get(State, env, prod),
+      resolv_local(State, App, Env);
     false ->
-      resolv_app(State, filename:join("**", "ebin"), App)
+      {env, Env} = jorel_config:get(State, env, default),
+      resolv_local(State, App, Env)
+  end.
+
+resolv_local(State, App, Env) ->
+  case resolv_app(State, filename:join(["_build", bucs:to_string(Env), "lib", "**", "ebin"]), App) of
+    notfound ->
+      resolv_app(State, filename:join("**", "ebin"), App);
+    Else ->
+      Else
   end.
 
 resolv_app(State, Path, Name) ->
@@ -574,24 +579,28 @@ copy_deps(App, Vsn, Path, Dest, Extra) ->
       end
   end.
 
-make_rel_file(State, RelDir, File, Type) ->
+make_rel_file(State, RelDir, File, Template) ->
   Dest = filename:join(RelDir, File),
   ?INFO("* Create ~s", [Dest]),
+  {relname, RelName} = jorel_config:get(State, relname),
+  case Template:render([{relname, RelName}]) of
+    {ok, Data} ->
+      case file:write_file(Dest, Data) of
+        ok -> Dest;
+        {error, Reason1} ->
+          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
+      end;
+    {error, Reason} ->
+      ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
+  end.
+make_rel_file(State, RelDir, File, Template, Type) ->
+  Dest = filename:join(RelDir, File),
   case jorel_config:get(State, Type, false) of
     {Type, false} ->
-      Mod = bucs:to_atom(bucs:to_list(Type) ++ "_dtl"),
-      {relname, RelName} = jorel_config:get(State, relname),
-      case Mod:render([{relname, RelName}]) of
-        {ok, Data} ->
-          case file:write_file(Dest, Data) of
-            ok -> Dest;
-            {error, Reason1} ->
-              ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason1])
-          end;
-        {error, Reason} ->
-          ?HALT("!!! Error while creating ~s: ~p", [Dest, Reason])
-      end;
+      ?DEBUG("= Configuration ~p not found!", [Type]),
+      make_rel_file(State, RelDir, File, Template);
     {Type, Src} ->
+      ?INFO("* Create ~s from ~s", [Dest, Src]),
       case file:copy(Src, Dest) of
         {ok, _} -> Dest;
         {error, Reason} ->
