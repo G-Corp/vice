@@ -230,9 +230,15 @@ stop_app() {
     if ! jorel_nodetool "stop" >/dev/null ; then
       exit 1
     fi
-    while $(kill -s 0 "$PID" 2>/dev/null); do
+    local timeout=5
+    while [ $timeout -gt 0 ] && kill -s 0 "$PID" 2>/dev/null; do
       sleep 1
+      timeout=$(expr $timeout - 1)
     done
+    if kill -s 0 "$PID" 2>/dev/null; then
+      echo "$NAME failed to gracefully stop, killing it"
+      kill -9 "$PID"
+    fi
   else
     echo "$NAME is not started"
   fi
