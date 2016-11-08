@@ -26,20 +26,22 @@ init(State) ->
    ).
 
 do(State) ->
+  ets:new(jorel_release, [named_table, public]),
   ?INFO("== Start provider ~p", [?PROVIDER]),
   ?INFO("= Elixir project: ~p", [jorel_elixir:exist()]),
   ERTSInfo = jorel_release:get_erts(State),
   State1 = jorel_config:set(State, {erts_info, ERTSInfo}),
-  AllApps = jorel_release:resolv_apps(State1),
-  BootApps = jorel_release:resolv_boot(State1, AllApps),
-  _ = jorel_release:make_root(State1),
-  _ = jorel_release:make_lib(State1, AllApps),
-  _ = jorel_release:make_release(State1, AllApps, BootApps),
-  _ = jorel_release:build_config_compiler(State1),
-  _ = jorel_release:make_bin(State1),
-  _ = jorel_release:include_erts(State1),
-  _ = jorel_release:make_upgrade_script(State1),
-  _ = jorel_release:make_custom_scripts(State1),
+  jorel_release:resolv_apps(State1),
+  jorel_release:resolv_boot(State1),
+  jorel_release:make_root(State1),
+  jorel_release:make_lib(State1),
+  jorel_release:make_release(State1),
+  jorel_release:build_config_compiler(State1),
+  jorel_release:make_bin(State1),
+  jorel_release:include_erts(State1),
+  jorel_release:make_upgrade_script(State1),
+  jorel_release:make_custom_scripts(State1),
   ?INFO("== Provider ~p complete", [?PROVIDER]),
+  ets:delete(jorel_release),
   State1.
 

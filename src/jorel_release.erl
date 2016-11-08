@@ -6,9 +6,9 @@
          get_erts/1,
          make_root/1,
          resolv_apps/1,
-         resolv_boot/2,
-         make_lib/2,
-         make_release/3,
+         resolv_boot/1,
+         make_lib/1,
+         make_release/1,
          make_bin/1,
          make_upgrade_script/1,
          include_erts/1,
@@ -124,16 +124,20 @@ resolv_apps(State) ->
                 false ->
                   Apps
               end,
+      ?DEBUG("= APP0: ~p", [Apps0]),
       Apps1 = case jorel_config:get(State, all_deps, false) of
                 {all_deps, true} -> find_all_deps(State, Apps0);
                 _ -> Apps0
               end,
-      resolv_apps(State, Apps1, [], [])
+      ?DEBUG("= APP1: ~p", [Apps1]),
+      AllApps = resolv_apps(State, Apps1),
+      ets:insert(jorel_release, {all_apps, AllApps})
   end.
 
-resolv_boot(State, AllApps) ->
+resolv_boot(State) ->
   case jorel_config:get(State, boot, all) of
-    {boot, all} -> AllApps;
+    {boot, all} ->
+      ets:insert(jorel_release, {boot_apps, all_apps()});
     {boot, Apps} ->
       Apps1 = case jorel_elixir:exist() of
                 true ->
@@ -141,10 +145,11 @@ resolv_boot(State, AllApps) ->
                 false ->
                   Apps
               end,
-      resolv_apps(State, Apps1, [], [])
+      BootApps = resolv_apps(State, Apps1),
+      ets:insert(jorel_release, {boot_apps, BootApps})
   end.
 
-make_lib(State, Apps) ->
+make_lib(State) ->
   {outdir, Outdir} = jorel_config:get(State, outdir),
   LibDir = filename:join(Outdir, "lib"),
   Src = case jorel_config:get(State, include_src, false) of
@@ -155,12 +160,14 @@ make_lib(State, Apps) ->
     ok ->
       lists:foreach(fun(#{app := App, vsn := Vsn, path := Path}) ->
                         copy_deps(App, Vsn, Path, LibDir, Src)
-                    end, Apps);
+                    end, all_apps());
     {error, Reason} ->
       ?HALT("!!! Failed to create ~s: ~p", [LibDir, Reason])
   end.
 
-make_release(State, AllApps, BootApps) ->
+make_release(State) ->
+  AllApps = all_apps(),
+  BootApps = boot_apps(),
   {outdir, Outdir} = jorel_config:get(State, outdir),
   {relname, RelName} = jorel_config:get(State, relname),
   {relvsn, Vsn} = jorel_config:get(State, relvsn),
@@ -447,11 +454,16 @@ find_all_deps(State, Apps) ->
                   end, Apps, DepsApps)
   end.
 
-resolv_apps(_, [], _, Apps) -> Apps;
-resolv_apps(State, [App|Rest], Done, AllApps) ->
+resolv_apps(State, Apps) ->
+  ets:delete(jorel_release, resolved),
+  resolv_apps(State, Apps, []).
+
+resolv_apps(_, [], Apps) ->
+  Apps;
+resolv_apps(State, [App|Rest], AllApps) ->
   {_, _, ERTSPath} = get_erts(State),
   {ignore_deps, IgnoreDeps} = jorel_config:get(State, ignore_deps, []),
-  case lists:member(App, IgnoreDeps) of
+  case lists:member(App, IgnoreDeps) orelse resolved(App) of
     false ->
       {App, Vsn, Path, Deps} = case resolv_local(State, App) of
                                  notfound ->
@@ -476,17 +488,64 @@ resolv_apps(State, [App|Rest], Done, AllApps) ->
                                    end;
                                  R -> R
                                end,
-      Done1 = [App|Done],
-      Rest1 = buclists:delete_if(fun(A) ->
-                                     lists:member(A, Done1)
-                                 end, lists:umerge(lists:sort(Rest), lists:sort(Deps))),
+
+      resolve(App),
+      Deps1 = resolv_apps(State, Deps, []),
+      AppAndDeps = Deps1 ++ [#{app => App, vsn => Vsn, path => Path}],
+      Rest1 = merge(Rest, []),
       resolv_apps(
         State,
         Rest1,
-        Done1,
-        [#{app => App, vsn => Vsn, path => Path}| AllApps]);
+        AllApps ++ AppAndDeps);
     true ->
-      resolv_apps(State, Rest, Done, AllApps)
+      resolv_apps(State, Rest, AllApps)
+  end.
+
+merge([], Acc) ->
+  lists:reverse(Acc);
+merge([E|Rest], Acc) ->
+  case resolved(E) orelse lists:member(E, Acc) of
+    false ->
+      merge(Rest, [E|Acc]);
+    true ->
+      merge(Rest, Acc)
+  end.
+
+resolved(App) ->
+  case ets:lookup(jorel_release, resolved) of
+    [{resolved, Resolved}] ->
+      lists:member(App, Resolved);
+    _ ->
+      false
+  end.
+
+resolve(App) ->
+  case ets:lookup(jorel_release, resolved) of
+    [{resolved, Resolved}] ->
+      case lists:member(App, Resolved) of
+        true ->
+          ok;
+        false ->
+          ets:insert(jorel_release, {resolved, [App|Resolved]})
+      end;
+    _ ->
+      ets:insert(jorel_release, {resolved, [App]})
+  end.
+
+all_apps() ->
+  case ets:lookup(jorel_release, all_apps) of
+    [{all_apps, Apps}] ->
+      Apps;
+    _ ->
+      exit(missing_apps)
+  end.
+
+boot_apps() ->
+  case ets:lookup(jorel_release, boot_apps) of
+    [{boot_apps, Apps}] ->
+      Apps;
+    _ ->
+      exit(missing_boot_apps)
   end.
 
 resolv_local(State, App) ->
