@@ -1,3 +1,4 @@
+{"1.1.0",
 [{<<"bucs">>,{pkg,<<"bucs">>,<<"1.0.0">>},0},
  {<<"certifi">>,{pkg,<<"certifi">>,<<"0.7.0">>},1},
  {<<"color">>,
@@ -9,7 +10,7 @@
   {git,"https://github.com/emedia-project/erlconf.git",
        {ref,"fb636c482660d098cf351e25dd240b282af8291a"}},
   0},
- {<<"erlydtl">>,{pkg,<<"erlydtl">>,<<"0.11.1">>},0},
+ {<<"erlydtl">>,{pkg,<<"erlydtl">>,<<"0.12.1">>},0},
  {<<"getopt">>,{pkg,<<"getopt">>,<<"0.8.2">>},0},
  {<<"hackney">>,{pkg,<<"hackney">>,<<"1.6.3">>},0},
  {<<"idna">>,{pkg,<<"idna">>,<<"1.2.0">>},1},
@@ -25,4 +26,19 @@
   {git,"https://github.com/botsunit/tempfile.git",
        {ref,"377407fc448e41de88685186d01caf9440d7be9d"}},
   0},
- {<<"vsn">>,{pkg,<<"vsn">>,<<"1.1.0">>},0}].
+ {<<"vsn">>,{pkg,<<"vsn">>,<<"1.1.0">>},0}]}.
+[
+{pkg_hash,[
+ {<<"bucs">>, <<"851B1530F29C9A793F336D47D95967CD77388ED414D71E3C0BABD9253BA6AE3B">>},
+ {<<"certifi">>, <<"861A57F3808F7EB0C2D1802AFEAAE0FA5DE813B0DF0979153CBAFCD853ABABAF">>},
+ {<<"doteki">>, <<"52CFB4E8D92E85464C4434131215FA27D8B13C992AE3FBA572C2478ED55D68A2">>},
+ {<<"erlydtl">>, <<"3FDE3190D30340B10CFCFDB4135A828761D468DB4E4B34817C6B91D295F3142D">>},
+ {<<"getopt">>, <<"B17556DB683000BA50370B16C0619DF1337E7AF7ECBF7D64FBF8D1D6BCE3109B">>},
+ {<<"hackney">>, <<"D489D7CA2D4323E307BEDC4BFE684323A7BF773ECFD77938F3EE8074E488E140">>},
+ {<<"idna">>, <<"AC62EE99DA068F43C50DC69ACF700E03A62A348360126260E87F2B54ECED86B2">>},
+ {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>},
+ {<<"metrics">>, <<"25F094DEA2CDA98213CECC3AEFF09E940299D950904393B2A29D191C346A8486">>},
+ {<<"mimerl">>, <<"993F9B0E084083405ED8252B99460C4F0563E41729AB42D9074FD5E52439BE88">>},
+ {<<"ssl_verify_fun">>, <<"28A4D65B7F59893BC2C7DE786DEC1E1555BD742D336043FE644AE956C3497FBE">>},
+ {<<"vsn">>, <<"AA6DD9BF4B643400C11E9BB7348A1E7CB722733B41EF07EE8B919A77B44971BB">>}]}
+].
