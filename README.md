@@ -8,6 +8,8 @@ __Version:__ 0.2.0
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)), Gregoire Lejeune ([`greg@g-corp.io`](mailto:greg@g-corp.io)).
 
+[![Build Status](https://travis-ci.org/emedia-project/jorel.svg?branch=master)](https://travis-ci.org/emedia-project/jorel)
+
 ![Jorel](https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg)
 
 
@@ -42,6 +44,7 @@ To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to yo
 
 DEP_PLUGINS = jorel
 REL_DEPS = jorel
+
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 
 ```
@@ -55,6 +58,7 @@ If you prefer to compile Jorel, add the following lines to your `Makefile` :
 DEP_PLUGINS = jorel
 REL_DEPS = jorel
 JOREL_BUILD = true
+
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 
 ```

@@ -5,6 +5,8 @@
 @title Just anOther RELease assembler for Erlang/OTP Releases
 @doc
 
+[![Build Status](https://travis-ci.org/emedia-project/jorel.svg?branch=master)](https://travis-ci.org/emedia-project/jorel)
+
 <img src="https://raw.githubusercontent.com/emedia-project/jorel/master/Jor-El.jpeg" alt="Jorel"/>
 
 <h2>Documentation</h2>
@@ -35,7 +37,7 @@ To use the [erlang.mk](http://erlang.mk/) plugins, add the following lines to yo
 <pre>
 DEP_PLUGINS = jorel
 REL_DEPS = jorel
- 
+
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 </pre>
 
@@ -47,11 +49,11 @@ If you prefer to compile Jorel, add the following lines to your <tt>Makefile</tt
 DEP_PLUGINS = jorel
 REL_DEPS = jorel
 JOREL_BUILD = true
- 
+
 dep_jorel = git https://github.com/emedia-project/jorel.git master
 </pre>
 
-Then you can run <tt>make jorel.release</tt> to create a release with Jorel. 
+Then you can run <tt>make jorel.release</tt> to create a release with Jorel.
 
 See <tt>make help</tt> for more options.
 
