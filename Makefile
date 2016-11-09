@@ -9,7 +9,7 @@ tests: compile
 	$(verbose) $(REBAR) eunit
 
 doc:
-	$(verbose) $(REBAR) as doc edoc
+	$(verbose) $(REBAR) edoc
 
 lint:
 	$(verbose) $(REBAR) lint

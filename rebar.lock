@@ -10,10 +10,7 @@
        {ref,"fb636c482660d098cf351e25dd240b282af8291a"}},
   0},
  {<<"erlydtl">>,{pkg,<<"erlydtl">>,<<"0.11.1">>},0},
- {<<"getopt">>,
-  {git,"https://github.com/jcomellas/getopt.git",
-       {ref,"68fe326f2c7585eb32a5b136dffc75428a53fc02"}},
-  0},
+ {<<"getopt">>,{pkg,<<"getopt">>,<<"0.8.2">>},0},
  {<<"hackney">>,{pkg,<<"hackney">>,<<"1.6.3">>},0},
  {<<"idna">>,{pkg,<<"idna">>,<<"1.2.0">>},1},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
@@ -28,7 +25,4 @@
   {git,"https://github.com/botsunit/tempfile.git",
        {ref,"377407fc448e41de88685186d01caf9440d7be9d"}},
   0},
- {<<"vsn">>,
-  {git,"https://github.com/emedia-project/vsn.git",
-       {ref,"d25d13e9624a84eb8ca05f1388e0c858c577fbcf"}},
-  0}].
+ {<<"vsn">>,{pkg,<<"vsn">>,<<"1.1.0">>},0}].
