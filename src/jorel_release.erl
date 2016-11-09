@@ -273,7 +273,7 @@ make_boot_script(State, BootApps, BootFile) ->
     error ->
       ?HALT("!!! Can't generate boot script", []);
     {error, _, Error} ->
-      ?HALT("!!! Error while generating boot script : ~p", [Error]);
+      ?HALT("!!! Error while generating boot script with paths ~p: ~p", [Paths, Error]);
     {ok, _, []} ->
       ok;
     {ok, _, Warnings} ->
@@ -589,25 +589,10 @@ resolv_app(State, Path, Name) ->
                                    _ -> Acc
                                  end
                              end, [], [applications, included_applications]),
-          {Name, Vsn, app_path(Name, Vsn, AppPathFile), Deps};
+          {Name, Vsn, bucfile:normalize_path(filename:join([AppPathFile, "..", ".."])), Deps};
         E ->
           ?HALT("!!! Invalid ~p.app file ~s: ~p", [Name, AppPathFile, E])
       end
-  end.
-
-app_path(App, Vsn, Path) ->
-  Dirname = filename:dirname(Path),
-  AppName = bucs:to_list(App) ++ "-" ++ Vsn,
-  case string:rstr(Dirname, AppName) of
-    0 ->
-      case string:rstr(Dirname, bucs:to_list(App)) of
-        0 ->
-          ?HALT("!!! Can't find root path for ~s", [App]);
-        N ->
-          string:substr(Dirname, 1, N + length(bucs:to_list(App)))
-      end;
-    N ->
-      string:substr(Dirname, 1, N + length(AppName))
   end.
 
 copy_deps(App, Vsn, Path, Dest, Extra) ->
