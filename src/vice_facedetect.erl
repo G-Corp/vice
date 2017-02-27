@@ -6,6 +6,7 @@
          faces_with_eyes/1,
          first_face/1
         ]).
+-export([init/0]).
 -on_load(init/0).
 
 -define(APPNAME, vice).
