@@ -320,5 +320,5 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/botsunit/vice/blob/master/doc/vice.md" class="module">vice</a></td></tr></table>
+<tr><td><a href="https://github.com/emedia-project/vice/blob/master/doc/vice.md" class="module">vice</a></td></tr></table>
 
