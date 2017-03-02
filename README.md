@@ -259,6 +259,9 @@ For image conversion, VICE use ImageMagick.
 `{thumbnail, W, H, fill}`<br />
 : Create a thumbnail of the image. This is similar to `resize`, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.
 
+`{quality, Quality}`<br />
+: Sets the image output quality (1-100) 1 lowest quality 100 is highest. Higher quality means bigger image size.
+
 `{crop, W, H, X, Y}` |<br />
 `{crop, W, H}`<br />
 : Cut out a rectangular region of the image
