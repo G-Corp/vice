@@ -259,9 +259,6 @@ For image conversion, VICE use ImageMagick.
 `{thumbnail, W, H, fill}`<br />
 : Create a thumbnail of the image. This is similar to `resize`, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.
 
-`{quality, Quality}`<br />
-: Sets the image output quality (1-100) 1 lowest quality 100 is highest. Higher quality means bigger image size.
-
 `{crop, W, H, X, Y}` |<br />
 `{crop, W, H}`<br />
 : Cut out a rectangular region of the image
@@ -284,6 +281,12 @@ For image conversion, VICE use ImageMagick.
 
 `{rotate, Degrees}`<br />
 : Apply Paeth image rotation (using shear operations) to the image
+
+`'auto-orient'`<br />
+: Adjusts an image so that its orientation is suitable for viewing
+
+`strip`<br />
+: Strip the image of any profiles, comments or these PNG chunks: bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date.
 
 `{blur, Radius}` |<br />
 `{blur, Radius, Sigma}`<br />

@@ -211,7 +211,7 @@ option([{thumbnail, W, H, no_shrink}|Rest], Acc) ->
 option([{thumbnail, W, H, fill}|Rest], Acc) ->
   option(Rest, [format("-thumbnail ~wx~w\\^", [W, H])|Acc]);
 
-option([{quality, Q}|Rest],Acc) ->
+option([{quality, Q}|Rest], Acc) ->
   option(Rest, [format("-quality ~w", [Q]) | Acc]);
 
 option([{crop, W, H, X, Y}|Rest], Acc) ->
@@ -238,6 +238,12 @@ option([magnify|Rest], Acc) ->
 
 option([{rotate, Degrees}|Rest], Acc) ->
   option(Rest, [format("-rotate ~w", [Degrees])|Acc]);
+
+option(['auto-orient'|Rest], Acc) ->
+  option(Rest, ["-auto-orient"|Acc]);
+
+option([strip|Rest], Acc) ->
+  option(Rest, ["-strip"|Acc]);
 
 option([{blur, Radius}|Rest], Acc) ->
   option(Rest, [format("-blur ~w", [Radius])|Acc]);

@@ -282,6 +282,12 @@ For image conversion, VICE use ImageMagick.
 `{rotate, Degrees}`<br />
 : Apply Paeth image rotation (using shear operations) to the image
 
+`'auto-orient'`<br />
+: Adjusts an image so that its orientation is suitable for viewing
+
+`strip`<br />
+: Strip the image of any profiles, comments or these PNG chunks: bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date.
+
 `{blur, Radius}` |<br />
 `{blur, Radius, Sigma}`<br />
 : Reduce image noise and reduce detail levels
