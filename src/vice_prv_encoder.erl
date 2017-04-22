@@ -60,6 +60,10 @@ handle_call(_Request, _From, State) ->
   {reply, Reply, State}.
 
 % @hidden
+handle_cast({convert, In, undefined, Options, Fun, From}, #state{encoder = Encoder,
+                                                                 state = EncoderState} = State) ->
+  erlang:apply(Encoder, convert, [EncoderState, In, Options, Fun, From]),
+  {noreply, State};
 handle_cast({convert, In, Out, Options, Fun, From}, #state{encoder = Encoder,
                                                            state = EncoderState} = State) ->
   erlang:apply(Encoder, convert, [EncoderState, In, Out, Options, Fun, From]),

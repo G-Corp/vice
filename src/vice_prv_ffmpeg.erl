@@ -19,11 +19,11 @@
 init() ->
   case vice_utils:find_executable(["ffprobe"], [vice, ffmpeg, ffprobe]) of
     undefined ->
-      {stop, ffprobe_not_found};
+      {stop, {ffprobe, not_found}};
     FFProbe ->
       case vice_utils:find_executable(["ffmpeg"], [vice, ffmpeg, ffmpeg]) of
         undefined ->
-          {stop, ffmpeg_not_found};
+          {stop, {ffmpeg, not_found}};
         FFMpeg ->
           {ok, #state{
                   prober = FFProbe,

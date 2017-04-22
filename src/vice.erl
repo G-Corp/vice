@@ -19,6 +19,8 @@
 %% Video API
 -export([
          screenshot/2
+         , webvtt/2
+         , webvtt/3
          , to_html5_webm/2
          , to_html5_webm/3
          , to_html5_mp4/2
@@ -76,20 +78,25 @@ status(Worker) ->
   gen_server:call(?SERVER, {status, Worker}).
 
 % @equiv convert(In, Out, [], undefined)
+convert(In, [Opt|_] = Options) when is_tuple(Opt) orelse is_atom(Opt) ->
+  convert(In, undefined, Options, undefined);
 convert(In, Out) ->
   convert(In, Out, [], undefined).
 % @doc
 % Convert a media
 % @end
+convert(In, [Opt|_] = Options, Fun) when (is_tuple(Opt) orelse is_atom(Opt)),
+                                         (is_function(Fun) orelse Fun == sync) ->
+  convert(In, undefined, Options, Fun);
 convert(In, Out, Options) when is_list(Options) ->
   convert(In, Out, Options, undefined);
-convert(In, Out, Fun) when is_function(Fun) ->
+convert(In, Out, Fun) when is_function(Fun) orelse Fun == sync ->
   convert(In, Out, [], Fun).
 % @doc
 % Convert a media
 % @end
 -spec convert(In :: binary() | string(),
-              Out :: binary() | string(),
+              Out :: binary() | string() | undefined,
               Options :: list(),
               {fun((term()) -> term()) | fun((term(), term()) -> term()), term()}
               | fun((term()) -> term())
@@ -119,6 +126,53 @@ screenshot(Movie, Out) ->
     _ ->
       {error, invalid_media}
   end.
+
+% @doc
+% Generate a video thumbnails (.vtt + sprite)
+%
+% Options:
+% <ul>
+% <li><tt>every :: inetegr()</tt></li>
+% <li><tt>width :: integer()</tt></li>
+% <li><tt>out_path :: string()</tt></li>
+% <li><tt>sprite :: true | false</tt></li>
+% </ul>
+% @end
+-spec webvtt(Movie :: binary() | string(),
+       OutName :: binary() | string(),
+       Options :: list()) -> ok | {error, term()}.
+webvtt(Movie, OutName, Options) ->
+  Every = buclists:keyfind(every, 1, Options, 1),
+  OutPath = buclists:keyfind(out_path, 1, Options, "."),
+  Width = buclists:keyfind(width, 1, Options, 150),
+  SpritesPath = filename:join(OutPath, OutName),
+  case bucfile:make_dir(SpritesPath) of
+    ok ->
+      SpritesFiles = filename:join(SpritesPath, "%016d.png"),
+      convert(Movie, SpritesFiles, [{output_format, "image2"},
+                                    {video_filtergraph, "fps=1/" ++ bucs:to_string(Every)}],
+              sync),
+      AllSprites = filename:join(SpritesPath, "*.png"),
+      convert(AllSprites, [{geometry, Width}], sync),
+      [F|_] = Sprites = filelib:wildcard(AllSprites),
+      lager:info("==> ~p", [F]),
+      case vice:infos(F) of
+        {ok, #{page_width := _Width,
+               page_height := _Height,
+               page_x_offset := _X,
+               page_y_offset := _Y}} ->
+          {_Lines, _Columns} = vice_utils:tile(length(Sprites));
+          %convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]);
+        Error ->
+          bucfile:remove_recursive(SpritesPath),
+          Error
+      end;
+    Error ->
+      Error
+  end.
+
+webvtt(Movie, OutName) ->
+  webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}]).
 
 % @equiv to_html5_webm(Input, Output, undefined)
 to_html5_webm(Input, Output) ->

@@ -22,7 +22,8 @@ Return the conversion status.</td></tr><tr><td valign="top"><a href="#to.md5_mp4
 Convert the given movie for mp5 html5.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td>Equivalent to <a href="#to.md5_ogg-3"><tt>to_html5_ogg(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td>
 Convert the given movie for ogg html5.</td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td>Equivalent to <a href="#to.md5_webm-3"><tt>to_html5_webm(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td>
 Convert the given movie for webm html5.</td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
-Return the file type (image or video).</td></tr></table>
+Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td></td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
+Generate a video thumbnails (.vtt + sprite).</td></tr></table>
 
 
 <a name="functions"></a>
@@ -33,7 +34,7 @@ Return the file type (image or video).</td></tr></table>
 
 ### convert/2 ###
 
-`convert(In, Out) -> any()`
+`convert(In, Options) -> any()`
 
 Equivalent to [`convert(In, Out, [], undefined)`](#convert-4).
 
@@ -41,7 +42,7 @@ Equivalent to [`convert(In, Out, [], undefined)`](#convert-4).
 
 ### convert/3 ###
 
-`convert(In, Out, Options) -> any()`
+`convert(In, Options, Fun) -> any()`
 
 Convert a media
 
@@ -50,7 +51,7 @@ Convert a media
 ### convert/4 ###
 
 <pre><code>
-convert(In::binary() | string(), Out::binary() | string(), Options::list(), Fun::{fun((term()) -&gt; term()) | fun((term(), term()) -&gt; term()), term()} | fun((term()) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
+convert(In::binary() | string(), Out::binary() | string() | undefined, Options::list(), Fun::{fun((term()) -&gt; term()) | fun((term(), term()) -&gt; term()), term()} | fun((term()) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
 </code></pre>
 <br />
 
@@ -154,4 +155,33 @@ Convert the given movie for webm html5
 `type(File) -> any()`
 
 Return the file type (image or video)
+
+<a name="webvtt-2"></a>
+
+### webvtt/2 ###
+
+`webvtt(Movie, OutName) -> any()`
+
+<a name="webvtt-3"></a>
+
+### webvtt/3 ###
+
+<pre><code>
+webvtt(Movie::binary() | string(), OutName::binary() | string(), Options::list()) -&gt; ok | {error, term()}
+</code></pre>
+<br />
+
+
+Generate a video thumbnails (.vtt + sprite)
+
+Options:
+
+* `every :: inetegr()`
+
+* `width :: integer()`
+
+* `out_path :: string()`
+
+* `sprite :: true | false`
+
 
