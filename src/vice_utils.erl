@@ -5,6 +5,7 @@
          find_executable/2
          , to_hms/1
          , reply/3
+         , tile/1
         ]).
 
 -define(DEC(X), $0 + X div 10, $0 + X rem 10).
@@ -49,4 +50,36 @@ reply(Fun, _, _) when is_function(Fun, 0) ->
   erlang:apply(Fun, []);
 reply(_, _, Response) ->
   Response.
+
+tile(Number) ->
+  {NNumber, Plus} = renum(Number),
+  Lines = lines(NNumber, round(math:sqrt(NNumber))),
+  {Lines, columns(NNumber, Plus, Lines)}.
+
+lines(_Number, N) when N =< 0 ->
+  1;
+lines(Number, N) when Number rem N == 0, Number / N == N ->
+  N;
+lines(Number, N) when Number rem N == 0 ->
+  N;
+lines(Number, N) ->
+  lines(Number, N - 1).
+
+renum(Number) ->
+  renum(Number, 0).
+
+renum(Number, Plus) ->
+  SQRT = math:sqrt(Number),
+  case round(SQRT) == SQRT of
+    true ->
+      {Number, Plus};
+    false ->
+      renum(Number - 1, Plus + 1)
+  end.
+
+columns(Number, Plus, Lines) ->
+  Extra = Plus div Lines,
+  round(Number / Lines) + Extra + if Lines * Extra == Plus -> 0;
+                                     true -> 1
+                                  end.
 

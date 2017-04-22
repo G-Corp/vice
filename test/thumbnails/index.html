@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <link href="http://vjs.zencdn.net/5.19.2/video-js.css" rel="stylesheet">
+
+    <link href="videojs.thumbnails.css" rel="stylesheet">
+    <style>
+      p {
+        background-color: #eee;
+        border: thin solid #777;
+        padding: 10px;
+      }
+    </style>
+    <script src="http://vjs.zencdn.net/5.19.2/video.js"></script>
+    <script src='videojs.thumbnails.js'></script>
+  </head>
+  <body>
+    <p>With thumbnails (see <a href="https://github.com/MASHtm/videojs-vtt-thumbnails">https://github.com/MASHtm/videojs-vtt-thumbnails</a>)</p>
+
+    <video id="my-video"
+           class="video-js vjs-default-skin"
+           controls
+           preload="auto"
+           width="640"
+           height="264"
+           poster="webvtttest/0000000000000017.png"
+           data-setup="{}">
+      <source src="big_buck_bunny.mp4" type='video/mp4' />
+      <p class="vjs-no-js">
+        To view this video please enable JavaScript, and consider upgrading to a web browser that
+        <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+      </p>
+    </video>
+
+    <script>
+      var video = videojs('my-video',{plugins:{thumbnails:{vtt:"webvtttest.vtt"}}});
+    </script>
+  </body>
+</html>

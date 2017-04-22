@@ -1,6 +1,7 @@
 % @hidden
 -module(vice_prv_imagemagick).
 -compile([{parse_transform, lager_transform}]).
+-include_lib("bucs/include/bucs.hrl").
 
 %% API
 -export([
@@ -8,29 +9,36 @@
          , infos/2
          , info/3
          , convert/6
+         , convert/5
         ]).
 
 -record(state, {
           convert,
-          identify
+          identify,
+          mogrify,
+          montage
          }).
 
 -define(INFOS, "~s -format \"~s\" \"~ts\"").
 
 init() ->
-  case vice_utils:find_executable(["convert"], [vice, imagemagick, convert]) of
-    undefined ->
-      {stop, convert_not_found};
-    Convert ->
-      case vice_utils:find_executable(["identify"], [vice, imagemagick, identify]) of
-        undefined ->
-          {stop, identify_not_found};
-        Identify ->
-          {ok, #state{
-                  convert = Convert,
-                  identify = Identify
-                 }}
-      end
+  case lists:foldl(fun
+                     (App, {state, AppList}) ->
+                       case vice_utils:find_executable([bucs:to_string(App)],
+                                                       [vice, imagemagick, App]) of
+                         undefined ->
+                           {error, {App, not_found}};
+                         AppPath ->
+                           {state, [{App, AppPath}|AppList]}
+                       end;
+                     (_, Acc) -> Acc
+                   end,
+                   {state, []},
+                   [convert, identify, mogrify, montage]) of
+    {error, Reason} ->
+      {stop, Reason};
+    {state, Data} ->
+      {ok, ?list_to_record(state, Data)}
   end.
 
 infos(#state{identify = Identify}, File) ->
@@ -59,8 +67,13 @@ infos(#state{identify = Identify}, File) ->
      page_y_offset => get_info(Identify, "%Y", File, fun bucs:to_integer/1)
     }}.
 
-info(_, _, _) ->
-  {error, unavailable}.
+info(State, File, Info) ->
+  case infos(State, File) of
+    {ok, #{Info := Value}} ->
+      {ok, Value};
+    _ ->
+      {error, unavailable}
+  end.
 
 get_info(Identify, Attr, File, Fun) ->
   Cmd = lists:flatten(io_lib:format(?INFOS, [Identify, Attr, File])),
@@ -81,9 +94,9 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
     _ ->
       gen_server:reply(From, {async, self()})
   end,
-  case gen_command(Convert, In, Out, Options) of
+  case gen_convert_command(Convert, In, Out, Options) of
     {ok, Cmd} ->
-      lager:debug("COMMAND : ~p", [Cmd]),
+      lager:info("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, _} ->
           vice_utils:reply(Fun, From, {ok, In, Out});
@@ -95,7 +108,7 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
   end,
   gen_server:cast(vice, {terminate, self()}).
 
-gen_command(Convert, In, Out, Options) ->
+gen_convert_command(Convert, In, Out, Options) ->
   Options1 = case lists:keyfind(face, 1, Options) of
                {face, W, H} ->
                  get_face(In, W, H, Options);
@@ -106,10 +119,35 @@ gen_command(Convert, In, Out, Options) ->
              end,
   case Options1 of
     {ok, Options2} ->
-      {ok, format("~s \"~ts\" ~s \"~ts\"", [Convert, In, options(Options2), Out])};
+      {ok, format("~s \"~ts\" ~s \"~ts\"", [Convert, In, convert_options(Options2), Out])};
     Error ->
       Error
   end.
+
+convert(#state{mogrify = Mogrify}, In, Options, Fun, From) ->
+  lager:info("====== WILL MOGRIFY ====="),
+  case Fun of
+    sync ->
+      ok;
+    _ ->
+      gen_server:reply(From, {async, self()})
+  end,
+  case gen_mogrify_command(Mogrify, In, Options) of
+    {ok, Cmd} ->
+      lager:info("COMMAND : ~p", [Cmd]),
+      case bucos:run(Cmd) of
+        {ok, _} ->
+          vice_utils:reply(Fun, From, {ok, In});
+        Error ->
+          vice_utils:reply(Fun, From, Error)
+      end;
+    Error ->
+      vice_utils:reply(Fun, From, Error)
+  end,
+  gen_server:cast(vice, {terminate, self()}).
+
+gen_mogrify_command(Mogrify, In, Options) ->
+  {ok, format("~s ~s \"~ts\"", [Mogrify, mogrify_options(Options), In])}.
 
 get_face(In, W, H, Options) ->
   case vice_facedetect:first_face(In) of
@@ -171,100 +209,148 @@ get_face_on_eyes(In, W, H, Options) ->
       Error
   end.
 
-options(Options) ->
-  option(Options, []).
+% convert options
 
-option([], Acc) ->
+convert_options(Options) ->
+  convert_option(Options, []).
+
+convert_option([], Acc) ->
   string:join(lists:reverse(Acc), " ");
 
-option([{resize, P, percent}|Rest], Acc) ->
-  option(Rest, [format("-resize ~w%", [P])|Acc]);
-option([{resize, P, pixels}|Rest], Acc) ->
-  option(Rest, [format("-resize ~w@", [P])|Acc]);
-option([{resize, W, H}|Rest], Acc) ->
-  option(Rest, [format("-resize ~wx~w", [W, H])|Acc]);
-option([{resize, W, H, percent}|Rest], Acc) ->
-  option(Rest, [format("-resize ~w%x~w%", [W, H])|Acc]);
-option([{resize, W, H, ignore_ratio}|Rest], Acc) ->
-  option(Rest, [format("-resize ~wx~w\\!", [W, H])|Acc]);
-option([{resize, W, H, no_enlarge}|Rest], Acc) ->
-  option(Rest, [format("-resize ~wx~w\\<", [W, H])|Acc]);
-option([{resize, W, H, no_shrink}|Rest], Acc) ->
-  option(Rest, [format("-resize ~wx~w\\>", [W, H])|Acc]);
-option([{resize, W, H, fill}|Rest], Acc) ->
-  option(Rest, [format("-resize ~wx~w\\^", [W, H])|Acc]);
+convert_option([{resize, P, percent}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~w%", [P])|Acc]);
+convert_option([{resize, P, pixels}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~w@", [P])|Acc]);
+convert_option([{resize, W, H}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~wx~w", [W, H])|Acc]);
+convert_option([{resize, W, H, percent}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~w%x~w%", [W, H])|Acc]);
+convert_option([{resize, W, H, ignore_ratio}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~wx~w\\!", [W, H])|Acc]);
+convert_option([{resize, W, H, no_enlarge}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~wx~w\\<", [W, H])|Acc]);
+convert_option([{resize, W, H, no_shrink}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~wx~w\\>", [W, H])|Acc]);
+convert_option([{resize, W, H, fill}|Rest], Acc) ->
+  convert_option(Rest, [format("-resize ~wx~w\\^", [W, H])|Acc]);
 
-option([{thumbnail, P, percent}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~w%", [P])|Acc]);
-option([{thumbnail, P, pixels}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~w@", [P])|Acc]);
-option([{thumbnail, W, H}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~wx~w", [W, H])|Acc]);
-option([{thumbnail, W, H, percent}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~w%x~w%", [W, H])|Acc]);
-option([{thumbnail, W, H, ignore_ratio}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~wx~w\\!", [W, H])|Acc]);
-option([{thumbnail, W, H, no_enlarge}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~wx~w\\<", [W, H])|Acc]);
-option([{thumbnail, W, H, no_shrink}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~wx~w\\>", [W, H])|Acc]);
-option([{thumbnail, W, H, fill}|Rest], Acc) ->
-  option(Rest, [format("-thumbnail ~wx~w\\^", [W, H])|Acc]);
+convert_option([{thumbnail, P, percent}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~w%", [P])|Acc]);
+convert_option([{thumbnail, P, pixels}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~w@", [P])|Acc]);
+convert_option([{thumbnail, W, H}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~wx~w", [W, H])|Acc]);
+convert_option([{thumbnail, W, H, percent}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~w%x~w%", [W, H])|Acc]);
+convert_option([{thumbnail, W, H, ignore_ratio}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~wx~w\\!", [W, H])|Acc]);
+convert_option([{thumbnail, W, H, no_enlarge}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~wx~w\\<", [W, H])|Acc]);
+convert_option([{thumbnail, W, H, no_shrink}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~wx~w\\>", [W, H])|Acc]);
+convert_option([{thumbnail, W, H, fill}|Rest], Acc) ->
+  convert_option(Rest, [format("-thumbnail ~wx~w\\^", [W, H])|Acc]);
 
-option([{quality, Q}|Rest], Acc) ->
-  option(Rest, [format("-quality ~w", [Q]) | Acc]);
+convert_option([{quality, Q}|Rest], Acc) ->
+  convert_option(Rest, [format("-quality ~w", [Q]) | Acc]);
 
-option([{crop, W, H, X, Y}|Rest], Acc) ->
-  option(Rest, [format("-crop ~wx~w+~w+~w", [W, H, X, Y])|Acc]);
-option([{crop, W, H}|Rest], Acc) ->
-  option(Rest, [format("-crop ~wx~w+0+0", [W, H])|Acc]);
+convert_option([{crop, W, H, X, Y}|Rest], Acc) ->
+  convert_option(Rest, [format("-crop ~wx~w+~w+~w", [W, H, X, Y])|Acc]);
+convert_option([{crop, W, H}|Rest], Acc) ->
+  convert_option(Rest, [format("-crop ~wx~w+0+0", [W, H])|Acc]);
 
-option([{gravity, Gravity}|Rest], Acc) ->
-  option(Rest, [format("-gravity ~s", [Gravity])|Acc]);
+convert_option([{gravity, Gravity}|Rest], Acc) ->
+  convert_option(Rest, [format("-gravity ~s", [Gravity])|Acc]);
 
-option([repage|Rest], Acc) ->
-  option(Rest, ["-repage"|Acc]);
-option(['+repage'|Rest], Acc) ->
-  option(Rest, ["+repage"|Acc]);
+convert_option([repage|Rest], Acc) ->
+  convert_option(Rest, ["-repage"|Acc]);
+convert_option(['+repage'|Rest], Acc) ->
+  convert_option(Rest, ["+repage"|Acc]);
 
-option([flip|Rest], Acc) ->
-  option(Rest, ["-flip"|Acc]);
+convert_option([flip|Rest], Acc) ->
+  convert_option(Rest, ["-flip"|Acc]);
 
-option([trim|Rest], Acc) ->
-  option(Rest, ["-trim"|Acc]);
+convert_option([trim|Rest], Acc) ->
+  convert_option(Rest, ["-trim"|Acc]);
 
-option([magnify|Rest], Acc) ->
-  option(Rest, ["-magnify"|Acc]);
+convert_option([magnify|Rest], Acc) ->
+  convert_option(Rest, ["-magnify"|Acc]);
 
-option([{rotate, Degrees}|Rest], Acc) ->
-  option(Rest, [format("-rotate ~w", [Degrees])|Acc]);
+convert_option([{rotate, Degrees}|Rest], Acc) ->
+  convert_option(Rest, [format("-rotate ~w", [Degrees])|Acc]);
 
-option(['auto-orient'|Rest], Acc) ->
-  option(Rest, ["-auto-orient"|Acc]);
+convert_option(['auto-orient'|Rest], Acc) ->
+  convert_option(Rest, ["-auto-orient"|Acc]);
 
-option([strip|Rest], Acc) ->
-  option(Rest, ["-strip"|Acc]);
+convert_option([strip|Rest], Acc) ->
+  convert_option(Rest, ["-strip"|Acc]);
 
-option([{blur, Radius}|Rest], Acc) ->
-  option(Rest, [format("-blur ~w", [Radius])|Acc]);
-option([{blur, Radius, Sigma}|Rest], Acc) ->
-  option(Rest, [format("-blur ~wx~w", [Radius, Sigma])|Acc]);
+convert_option([{blur, Radius}|Rest], Acc) ->
+  convert_option(Rest, [format("-blur ~w", [Radius])|Acc]);
+convert_option([{blur, Radius, Sigma}|Rest], Acc) ->
+  convert_option(Rest, [format("-blur ~wx~w", [Radius, Sigma])|Acc]);
 
-option([{edge, Radius}|Rest], Acc) ->
-  option(Rest, [format("-edge ~w", [Radius])|Acc]);
+convert_option([{edge, Radius}|Rest], Acc) ->
+  convert_option(Rest, [format("-edge ~w", [Radius])|Acc]);
 
-option([{size, Weight}|Rest], Acc) ->
-  option(Rest, [format("-size ~w", [Weight])|Acc]);
-option([{size, Weight, Height}|Rest], Acc) ->
-  option(Rest, [format("-size ~wx~w", [Weight, Height])|Acc]);
-option([{size, Weight, Height, Offset}|Rest], Acc) ->
-  option(Rest, [format("-size ~wx~w+~w", [Weight, Height, Offset])|Acc]);
+convert_option([{size, Weight}|Rest], Acc) ->
+  convert_option(Rest, [format("-size ~w", [Weight])|Acc]);
+convert_option([{size, Weight, Height}|Rest], Acc) ->
+  convert_option(Rest, [format("-size ~wx~w", [Weight, Height])|Acc]);
+convert_option([{size, Weight, Height, Offset}|Rest], Acc) ->
+  convert_option(Rest, [format("-size ~wx~w+~w", [Weight, Height, Offset])|Acc]);
 
-option([{extent, W, H}|Rest], Acc) ->
-  option(Rest, [format("-extent ~wx~w", [W, H])|Acc]);
+convert_option([{extent, W, H}|Rest], Acc) ->
+  convert_option(Rest, [format("-extent ~wx~w", [W, H])|Acc]);
 
-option([_|Rest], Acc) ->
-  option(Rest, Acc).
+convert_option([_|Rest], Acc) ->
+  convert_option(Rest, Acc).
+
+% mogrify options
+
+mogrify_options(Options) ->
+  mogrify_option(Options, []).
+
+mogrify_option([], Acc) ->
+  string:join(lists:reverse(Acc), " ");
+
+mogrify_option([Option|Rest], Acc) when element(1, Option) == geometry ->
+  convert_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]).
+
+% Common geometry
+
+geometry({_, Scale, percent}) ->
+  format("~w%", [Scale]);
+geometry({_, Area, pixels}) ->
+  format("~w@", [Area]);
+geometry({_, ScaleX, ScaleY, percent}) ->
+  format("~w%x~w%", [ScaleX, ScaleY]);
+geometry({_, Width}) ->
+  format("~w", [Width]);
+geometry({_, Width, undefined}) ->
+  format("~w", [Width]);
+geometry({_, undefined, Height}) ->
+  format("x~w", [Height]);
+geometry({_, Width, Height}) ->
+  format("~wx~w", [Width, Height]);
+geometry({_, Width, Height, ignore_ratio}) ->
+  format("~wx~w\\!", [Width, Height]);
+geometry({_, Width, Height, no_enlarge}) ->
+  format("~wx~w\\<", [Width, Height]);
+geometry({_, Width, Height, no_shrink}) ->
+  format("~wx~w\\>", [Width, Height]);
+geometry({_, Width, Height, fill}) ->
+  format("~wx~w\\^", [Width, Height]);
+geometry({_, Width, Height, X, Y}) when X >= 0, Y >= 0->
+  format("\"~wx~w+~w+~w\"", [Width, Height, X, Y]);
+geometry({_, Width, Height, X, Y}) when X < 0, Y >= 0->
+  format("\"~wx~w~w+~w\"", [Width, Height, X, Y]);
+geometry({_, Width, Height, X, Y}) when X >= 0, Y < 0->
+  format("\"~wx~w+~w~w\"", [Width, Height, X, Y]);
+geometry({_, Width, Height, X, Y}) when X < 0, Y < 0->
+  format("\"~wx~w~w~w\"", [Width, Height, X, Y]).
+
+% format option
 
 format(FMT, Args) ->
   lists:flatten(io_lib:format(FMT, Args)).

@@ -14,3 +14,5 @@ test/eunit/
 tags
 .c_build/
 priv/vice_facedetect.so
+test/thumbnails/webvtttest/
+test/thumbnails/webvtttest.vtt

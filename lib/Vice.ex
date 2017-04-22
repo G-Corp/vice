@@ -33,6 +33,12 @@ defmodule Vice do
   def unquote(:"screenshot")(arg1, arg2) do
     :erlang.apply(:"vice", :"screenshot", [arg1, arg2])
   end
+  def unquote(:"webvtt")(arg1, arg2, arg3) do
+    :erlang.apply(:"vice", :"webvtt", [arg1, arg2, arg3])
+  end
+  def unquote(:"webvtt")(arg1, arg2) do
+    :erlang.apply(:"vice", :"webvtt", [arg1, arg2])
+  end
   def unquote(:"to_html5_webm")(arg1, arg2) do
     :erlang.apply(:"vice", :"to_html5_webm", [arg1, arg2])
   end
