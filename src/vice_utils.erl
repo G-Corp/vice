@@ -4,6 +4,7 @@
 -export([
          find_executable/2
          , to_hms/1
+         , to_full_hms/1
          , reply/3
          , tile/1
         ]).
@@ -37,6 +38,15 @@ to_hms(Duration) ->
   MM = trunc(SS1 / 60),
   SS2 = SS1 - (MM * 60),
   [?DEC(HH), $:, ?DEC(MM), $:, ?DEC(SS2)].
+
+to_full_hms(Duration) ->
+  SS = trunc(Duration),
+  HH = trunc(SS / 3600),
+  SS1 = SS - (HH * 3600),
+  MM = trunc(SS1 / 60),
+  SS2 = (Duration - (HH * 3600)) - (MM * 60),
+  lists:flatten([?DEC(HH), $:, ?DEC(MM), $: | io_lib:format("~6.3.0f", [bucs:to_float(SS2)])]).
+
 
 reply(sync, From, Response) ->
   gen_server:reply(From, Response);

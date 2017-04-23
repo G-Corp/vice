@@ -145,6 +145,7 @@ webvtt(Movie, OutName, Options) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   Width = buclists:keyfind(width, 1, Options, 150),
+  Sprite = buclists:keyfind(width, 1, Options, true),
   SpritesPath = filename:join(OutPath, OutName),
   case bucfile:make_dir(SpritesPath) of
     ok ->
@@ -155,15 +156,26 @@ webvtt(Movie, OutName, Options) ->
       AllSprites = filename:join(SpritesPath, "*.png"),
       convert(AllSprites, [{geometry, Width}], sync),
       [F|_] = Sprites = filelib:wildcard(AllSprites),
-      lager:info("==> ~p", [F]),
-      case vice:infos(F) of
-        {ok, #{page_width := _Width,
-               page_height := _Height,
-               page_x_offset := _X,
-               page_y_offset := _Y}} ->
-          {_Lines, _Columns} = vice_utils:tile(length(Sprites));
-          %convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]);
-        Error ->
+      case {vice:infos(F), vice:info(Movie, duration)} of
+        {{ok, #{page_width := Width,
+               page_height := Height,
+               page_x_offset := X,
+               page_y_offset := Y}},
+         {ok, Duration}} ->
+          {Lines, Columns} = vice_utils:tile(length(Sprites)),
+          case generate_vtt(OutName, OutPath, Sprites, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
+            ok -> ok;
+            Error ->
+              bucfile:remove_recursive(SpritesPath),
+              Error
+          end;
+        {{ok, _}, Error} ->
+          bucfile:remove_recursive(SpritesPath),
+          Error;
+        {Error, {ok, _}} ->
+          bucfile:remove_recursive(SpritesPath),
+          Error;
+        {Error, _} ->
           bucfile:remove_recursive(SpritesPath),
           Error
       end;
@@ -171,6 +183,7 @@ webvtt(Movie, OutName, Options) ->
       Error
   end.
 
+% @equiv webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}])
 webvtt(Movie, OutName) ->
   webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}]).
 
@@ -312,4 +325,26 @@ get_encoder(File, State) ->
 release_encoder(?MODULE) -> ok;
 release_encoder(Encoder) ->
   poolgirl:checkin(Encoder).
+
+generate_vtt(OutName, OutPath, AllSprites, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, _Sprite) ->
+  VttFile = filename:join(OutPath, OutName ++ ".vtt"),
+  case file:open(VttFile, [write]) of
+    {ok, IO} ->
+      io:format(IO, "WEBVTT~n", []),
+      vvtline(AllSprites, 0, Every, Duration, Width, Height, IO),
+      file:close(IO);
+    Error ->
+      Error
+  end.
+  %convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]);
+
+
+vvtline([Sprite], Start, _Every, Duration, Width, Height, IO) ->
+  io:format(IO, "~n~s --> ~s~n", [vice_utils:to_full_hms(Start), vice_utils:to_full_hms(Duration)]),
+  io:format(IO, "~s#xywh=0,0,~p,~p~n", [Sprite, Width, Height]);
+vvtline([Sprite|AllSprites], Start, Every, Duration, Width, Height, IO) ->
+  End = Start + Every,
+  io:format(IO, "~n~s --> ~s~n", [vice_utils:to_full_hms(Start), vice_utils:to_full_hms(End)]),
+  io:format(IO, "~s#xywh=0,0,~p,~p~n", [Sprite, Width, Height]),
+  vvtline(AllSprites, End, Every, Duration, Width, Height, IO).
 
