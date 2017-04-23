@@ -24,7 +24,7 @@ Convert the given movie for ogg html5.</td></tr><tr><td valign="top"><a href="#t
 Convert the given movie for webm html5.</td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
 Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>Equivalent to <a href="#webvtt-3"><tt>webvtt(Movie, OutName,
 [{every, 1}, {width, 100}, {out_path, "."},
-{sprite, true}])</tt></a>.</td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
+{sprite, true}, {assets_path, ""}])</tt></a>.</td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
 Generate a video thumbnails (.vtt + sprite).</td></tr></table>
 
 
@@ -164,7 +164,7 @@ Return the file type (image or video)
 
 `webvtt(Movie, OutName) -> any()`
 
-Equivalent to [`webvtt(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}])`](#webvtt-3).
+Equivalent to [`webvtt(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}, {assets_path, ""}])`](#webvtt-3).
 
 <a name="webvtt-3"></a>
 

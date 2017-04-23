@@ -4,7 +4,7 @@
 make dev
 
 1> vice:start().
-2> vice:webvtt("test/thumbnails/big_buck_bunny.mp4", "webvtttest", [{out_path, "test/thumbnails"}]).
+2> vice:webvtt("test/thumbnails/big_buck_bunny.mp4", "webvtttest", [{out_path, "test/thumbnails"}, {assets_path, ""}]).
 ```
 
 ## Test
