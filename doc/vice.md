@@ -22,7 +22,9 @@ Return the conversion status.</td></tr><tr><td valign="top"><a href="#to.md5_mp4
 Convert the given movie for mp5 html5.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td>Equivalent to <a href="#to.md5_ogg-3"><tt>to_html5_ogg(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td>
 Convert the given movie for ogg html5.</td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td>Equivalent to <a href="#to.md5_webm-3"><tt>to_html5_webm(Input, Output, undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td>
 Convert the given movie for webm html5.</td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
-Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td></td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
+Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>Equivalent to <a href="#webvtt-3"><tt>webvtt(Movie, OutName,
+[{every, 1}, {width, 100}, {out_path, "."},
+{sprite, true}])</tt></a>.</td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
 Generate a video thumbnails (.vtt + sprite).</td></tr></table>
 
 
@@ -161,6 +163,8 @@ Return the file type (image or video)
 ### webvtt/2 ###
 
 `webvtt(Movie, OutName) -> any()`
+
+Equivalent to [`webvtt(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}])`](#webvtt-3).
 
 <a name="webvtt-3"></a>
 
