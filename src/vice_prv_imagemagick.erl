@@ -96,7 +96,7 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From, false) ->
   end,
   case gen_convert_command(Convert, In, Out, Options) of
     {ok, Cmd} ->
-      lager:info("COMMAND : ~p", [Cmd]),
+      lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, _} ->
           vice_utils:reply(Fun, From, {ok, In, Out});
@@ -117,7 +117,7 @@ convert(#state{montage = Montage}, In, Out, Options, Fun, From, true) ->
   end,
   case gen_montage_command(Montage, In, Out, Options) of
     {ok, Cmd} ->
-      lager:info("COMMAND : ~p", [Cmd]),
+      lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, _} ->
           vice_utils:reply(Fun, From, {ok, In, Out});
@@ -138,7 +138,7 @@ convert(#state{mogrify = Mogrify}, In, Options, Fun, From, _Multi) ->
   end,
   case gen_mogrify_command(Mogrify, In, Options) of
     {ok, Cmd} ->
-      lager:info("COMMAND : ~p", [Cmd]),
+      lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, _} ->
           vice_utils:reply(Fun, From, {ok, In});

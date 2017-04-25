@@ -54,7 +54,6 @@ get_info(#{format := #{duration := Duration}}, duration) ->
 get_info(_, _) ->
   {error, unavailable}.
 
-
 convert(#state{converter = Converter}, In, Out, Options, Fun, From, _Multi) ->
   case Fun of
     sync ->
@@ -63,7 +62,7 @@ convert(#state{converter = Converter}, In, Out, Options, Fun, From, _Multi) ->
       gen_server:reply(From, {async, self()})
   end,
   Cmd = gen_command(Converter, In, Out, Options, [{yes, true}], []),
-  lager:info("COMMAND : ~p", [Cmd]),
+  lager:debug("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
     {ok, _} ->
       vice_utils:reply(Fun, From, {ok, In, Out});
