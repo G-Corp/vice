@@ -16,3 +16,4 @@ tags
 priv/vice_facedetect.so
 test/thumbnails/webvtttest/
 test/thumbnails/webvtttest.vtt
+test/thumbnails/webvtttest.png

@@ -6,7 +6,7 @@
          init/0,
          infos/2,
          info/3,
-         convert/6
+         convert/7
         ]).
 
 -record(state, {
@@ -55,7 +55,7 @@ get_info(_, _) ->
   {error, unavailable}.
 
 
-convert(#state{converter = Converter}, In, Out, Options, Fun, From) ->
+convert(#state{converter = Converter}, In, Out, Options, Fun, From, _Multi) ->
   case Fun of
     sync ->
       ok;

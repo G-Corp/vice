@@ -52,12 +52,12 @@
       hashindex = imglocation.indexOf('#');
       if (hashindex === -1) {
         return {src:imglocation,w:0,h:0,x:0,y:0};
-      } 
+      }
       lsrc = imglocation.substring(0,hashindex);
       hashstring = imglocation.substring(hashindex+1);
       if (hashstring.substring(0,5) !== 'xywh=') {
         return {src:defaults.basePath + lsrc,w:0,h:0,x:0,y:0};
-      } 
+      }
       var data = hashstring.substring(5).split(',');
       return {src:defaults.basePath + lsrc,w:parseInt(data[2]),h:parseInt(data[3]),x:parseInt(data[0]),y:parseInt(data[1])};
     };
@@ -104,7 +104,7 @@
       //None found, so show nothing
       if (typeof setting === 'undefined') {
         return;
-      } 
+      }
 
       //Changed image?
       if (setting.src && img.src != setting.src) {
@@ -137,9 +137,11 @@
         span.style.left = (setting.w/2 - textwidth/2) + 'px';
       }
       //Set the image cropping
+      img.style.position = 'absolute';
       img.style.left = -(setting.x) + 'px';
       img.style.top  = -(setting.y) + 'px';
       img.style.clip = 'rect('+setting.y+'px,'+(setting.w+setting.x)+'px,'+(setting.y+setting.h)+'px,'+setting.x+'px)';
+      console.log(img);
 
       var timeStr = new Date(1000 * mouseTime).toISOString().substr(11, 8);
       span.innerHTML = timeStr;
@@ -165,7 +167,7 @@
       if (event.explicitOriginalTarget) {
           console.log(event.explicitOriginalTarget.className); }
 
-      if ((! event.explicitOriginalTarget) || 
+      if ((! event.explicitOriginalTarget) ||
           ((event.explicitOriginalTarget.ClassName !== 'vjs-mouse-display') &&
           (event.explicitOriginalTarget.ClassName !== 'vjs-progress-holder vjs-slider vjs-slider-horizontal')))  {
       console.log("done");
@@ -216,7 +218,7 @@
 
     // keep track of the duration to calculate correct thumbnail to display
     duration = player.duration();
-    
+
     // add the thumbnail to the player
     progressControl = player.controlBar.progressControl;
     //progressControl.el().appendChild(div);

@@ -1,0 +1,17 @@
+% Usage: {vice_preset, hls360p}
+[
+  {name, "HLS 360p"},
+  {description, "Transcoding preset for HLS 360p"},
+  {options, [
+    {video_filtergraph, "scale=\"trunc(oh*a/2)*2:360\""},
+    {output_frame_rate, 25},
+    {bitrate, "v", "400k"},
+    {bitrate, "a", "128k"},
+    {vcodec, "libx264"},
+    {output_acodec, "libfdk_aac"},
+    {x264_profile, "v", "high"},
+    {x264_level, 4.1},
+    {x264_refs, 1}
+  ]}
+].
+
