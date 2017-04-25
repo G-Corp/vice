@@ -16,6 +16,8 @@
          , convert/4
         ]).
 
+-export([webvtt_finalize/2]).
+
 %% Video API
 -export([
          screenshot/2
@@ -144,43 +146,50 @@ screenshot(Movie, Out) ->
 webvtt(Movie, OutName, Options) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
-  AssetsPath = buclists:keyfind(assets_path, 1, Options, ""),
-  Width = buclists:keyfind(width, 1, Options, 150),
-  Sprite = buclists:keyfind(width, 1, Options, true),
   SpritesPath = filename:join(OutPath, OutName),
   case bucfile:make_dir(SpritesPath) of
     ok ->
       SpritesFiles = filename:join(SpritesPath, "%016d.png"),
       convert(Movie, SpritesFiles, [{output_format, "image2"},
                                     {video_filtergraph, "fps=1/" ++ bucs:to_string(Every)}],
-              sync),
-      AllSprites = filename:join(SpritesPath, "*.png"),
-      convert(AllSprites, [{geometry, Width}], sync),
-      [F|_] = Sprites = filelib:wildcard(AllSprites),
-      case {vice:infos(F), vice:info(Movie, duration)} of
-        {{ok, #{page_width := Width,
-               page_height := Height,
-               page_x_offset := X,
-               page_y_offset := Y}},
-         {ok, Duration}} ->
-          {Lines, Columns} = vice_utils:tile(length(Sprites)),
-          case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
-            ok -> ok;
-            Error ->
-              bucfile:remove_recursive(SpritesPath),
-              Error
-          end;
-        {{ok, _}, Error} ->
-          bucfile:remove_recursive(SpritesPath),
-          Error;
-        {Error, {ok, _}} ->
-          bucfile:remove_recursive(SpritesPath),
-          Error;
-        {Error, _} ->
+              {fun ?MODULE:webvtt_finalize/2, {Movie, OutName, Options}});
+
+    Error ->
+      Error
+  end.
+
+% @hidden
+webvtt_finalize({ok, _, _}, {Movie, OutName, Options}) ->
+  Every = buclists:keyfind(every, 1, Options, 1),
+  OutPath = buclists:keyfind(out_path, 1, Options, "."),
+  AssetsPath = buclists:keyfind(assets_path, 1, Options, ""),
+  Width = buclists:keyfind(width, 1, Options, 150),
+  Sprite = buclists:keyfind(width, 1, Options, true),
+  SpritesPath = filename:join(OutPath, OutName),
+  AllSprites = filename:join(SpritesPath, "*.png"),
+  convert(AllSprites, [{geometry, Width}], sync),
+  [F|_] = Sprites = filelib:wildcard(AllSprites),
+  case {vice:infos(F), vice:info(Movie, duration)} of
+    {{ok, #{page_width := Width,
+            page_height := Height,
+            page_x_offset := X,
+            page_y_offset := Y}},
+     {ok, Duration}} ->
+      {Lines, Columns} = vice_utils:tile(length(Sprites)),
+      case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
+        ok -> ok;
+        Error ->
           bucfile:remove_recursive(SpritesPath),
           Error
       end;
-    Error ->
+    {{ok, _}, Error} ->
+      bucfile:remove_recursive(SpritesPath),
+      Error;
+    {Error, {ok, _}} ->
+      bucfile:remove_recursive(SpritesPath),
+      Error;
+    {Error, _} ->
+      bucfile:remove_recursive(SpritesPath),
       Error
   end.
 
@@ -304,15 +313,15 @@ code_change(_OldVsn, State, _Extra) ->
 % Private
 
 start_encoders(Type, Default) ->
-  lager:info("Start ~p encoders...", [Type]),
+  lager:debug("Start ~p encoders...", [Type]),
   case poolgirl:add_pool(Type, {vice_prv_encoder,
                                  start_link,
                                  [doteki:get_env([vice, encoders, Type], Default)]}) of
     {ok, N} ->
-      lager:info("~p ~p encoder started!", [N, Type]),
+      lager:debug("~p ~p encoder started!", [N, Type]),
       true;
     {error, Reason} ->
-      lager:info("Faild to start ~p encoder: ~p", [Type, Reason]),
+      lager:error("Faild to start ~p encoder: ~p", [Type, Reason]),
       false
   end.
 
@@ -348,7 +357,7 @@ generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, 
   end;
 
 generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, true) ->
-  convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]),
+  convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync),
   VttFile = filename:join(OutPath, OutName ++ ".vtt"),
   SpritesPath = filename:join(OutPath, OutName),
   bucfile:remove_recursive(SpritesPath),
