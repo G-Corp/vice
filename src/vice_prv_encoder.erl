@@ -47,7 +47,7 @@ handle_call({infos, File}, _, #state{encoder = Encoder,
   end;
 % @hidden
 handle_call({info, File, Info}, _, #state{encoder = Encoder,
-                                           state = EncoderState} = State) ->
+                                          state = EncoderState} = State) ->
   try
     Reply = erlang:apply(Encoder, info, [EncoderState, File, Info]),
     {reply, Reply, State}
@@ -60,13 +60,13 @@ handle_call(_Request, _From, State) ->
   {reply, Reply, State}.
 
 % @hidden
-handle_cast({convert, In, undefined, Options, Fun, From}, #state{encoder = Encoder,
-                                                                 state = EncoderState} = State) ->
-  erlang:apply(Encoder, convert, [EncoderState, In, Options, Fun, From]),
+handle_cast({convert, In, undefined, Options, Multi, Fun, From}, #state{encoder = Encoder,
+                                                                        state = EncoderState} = State) ->
+  erlang:apply(Encoder, convert, [EncoderState, In, Options, Fun, From, Multi]),
   {noreply, State};
-handle_cast({convert, In, Out, Options, Fun, From}, #state{encoder = Encoder,
-                                                           state = EncoderState} = State) ->
-  erlang:apply(Encoder, convert, [EncoderState, In, Out, Options, Fun, From]),
+handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{encoder = Encoder,
+                                                                  state = EncoderState} = State) ->
+  erlang:apply(Encoder, convert, [EncoderState, In, Out, Options, Fun, From, Multi]),
   {noreply, State};
 handle_cast(_Msg, State) ->
   {noreply, State}.

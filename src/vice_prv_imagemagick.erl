@@ -8,8 +8,8 @@
          init/0
          , infos/2
          , info/3
+         , convert/7
          , convert/6
-         , convert/5
         ]).
 
 -record(state, {
@@ -87,7 +87,7 @@ get_info(Identify, Attr, File, Fun) ->
       undefined
   end.
 
-convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
+convert(#state{convert = Convert}, In, Out, Options, Fun, From, false) ->
   case Fun of
     sync ->
       ok;
@@ -100,6 +100,48 @@ convert(#state{convert = Convert}, In, Out, Options, Fun, From) ->
       case bucos:run(Cmd) of
         {ok, _} ->
           vice_utils:reply(Fun, From, {ok, In, Out});
+        Error ->
+          vice_utils:reply(Fun, From, Error)
+      end;
+    Error ->
+      vice_utils:reply(Fun, From, Error)
+  end,
+  gen_server:cast(vice, {terminate, self()});
+
+convert(#state{montage = Montage}, In, Out, Options, Fun, From, true) ->
+  case Fun of
+    sync ->
+      ok;
+    _ ->
+      gen_server:reply(From, {async, self()})
+  end,
+  case gen_montage_command(Montage, In, Out, Options) of
+    {ok, Cmd} ->
+      lager:info("COMMAND : ~p", [Cmd]),
+      case bucos:run(Cmd) of
+        {ok, _} ->
+          vice_utils:reply(Fun, From, {ok, In, Out});
+        Error ->
+          vice_utils:reply(Fun, From, Error)
+      end;
+    Error ->
+      vice_utils:reply(Fun, From, Error)
+  end,
+  gen_server:cast(vice, {terminate, self()}).
+
+convert(#state{mogrify = Mogrify}, In, Options, Fun, From, _Multi) ->
+  case Fun of
+    sync ->
+      ok;
+    _ ->
+      gen_server:reply(From, {async, self()})
+  end,
+  case gen_mogrify_command(Mogrify, In, Options) of
+    {ok, Cmd} ->
+      lager:info("COMMAND : ~p", [Cmd]),
+      case bucos:run(Cmd) of
+        {ok, _} ->
+          vice_utils:reply(Fun, From, {ok, In});
         Error ->
           vice_utils:reply(Fun, From, Error)
       end;
@@ -124,27 +166,21 @@ gen_convert_command(Convert, In, Out, Options) ->
       Error
   end.
 
-convert(#state{mogrify = Mogrify}, In, Options, Fun, From) ->
-  lager:info("====== WILL MOGRIFY ====="),
-  case Fun of
-    sync ->
-      ok;
-    _ ->
-      gen_server:reply(From, {async, self()})
-  end,
-  case gen_mogrify_command(Mogrify, In, Options) of
-    {ok, Cmd} ->
-      lager:info("COMMAND : ~p", [Cmd]),
-      case bucos:run(Cmd) of
-        {ok, _} ->
-          vice_utils:reply(Fun, From, {ok, In});
-        Error ->
-          vice_utils:reply(Fun, From, Error)
-      end;
+gen_montage_command(Montage, In, Out, Options) ->
+  Options1 = case lists:keyfind(face, 1, Options) of
+               {face, W, H} ->
+                 get_face(In, W, H, Options);
+               {face, W, H, eyes} ->
+                 get_face_on_eyes(In, W, H, Options);
+               _ ->
+                 {ok, Options}
+             end,
+  case Options1 of
+    {ok, Options2} ->
+      {ok, format("~s ~ts ~s \"~ts\"", [Montage, string:join([io_lib:format("~p", [I]) || I <- In], " "), montage_options(Options2), Out])};
     Error ->
-      vice_utils:reply(Fun, From, Error)
-  end,
-  gen_server:cast(vice, {terminate, self()}).
+      Error
+  end.
 
 gen_mogrify_command(Mogrify, In, Options) ->
   {ok, format("~s ~s \"~ts\"", [Mogrify, mogrify_options(Options), In])}.
@@ -313,9 +349,20 @@ mogrify_options(Options) ->
 
 mogrify_option([], Acc) ->
   string:join(lists:reverse(Acc), " ");
-
 mogrify_option([Option|Rest], Acc) when element(1, Option) == geometry ->
-  convert_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]).
+  mogrify_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]).
+
+% montage options
+
+montage_options(Options) ->
+  montage_option(Options, []).
+
+montage_option([], Acc) ->
+  string:join(lists:reverse(Acc), " ");
+montage_option([Option|Rest], Acc) when element(1, Option) == geometry ->
+  montage_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]);
+montage_option([Option|Rest], Acc) when element(1, Option) == tile ->
+  montage_option(Rest, [format("-tile ~ts", [geometry(Option)])|Acc]).
 
 % Common geometry
 

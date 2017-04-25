@@ -232,27 +232,33 @@ init(_) ->
 
 % @hidden
 handle_call({infos, File}, _From, State) ->
-  case get_encoder(File, State) of
-    {ok, Encoder} ->
+  case get_encoder(File, State, false) of
+    {false, {ok, Encoder}} ->
       Reply = gen_server:call(Encoder, {infos, File}),
       release_encoder(Encoder),
       {reply, Reply, State};
+    {true, {ok, Encoder}} ->
+      release_encoder(Encoder),
+      {reply, {error, unsuported}, State};
     Error ->
       {reply, Error, State}
   end;
 handle_call({info, File, Info}, _From, State) ->
-  case get_encoder(File, State) of
-    {ok, Encoder} ->
+  case get_encoder(File, State, false) of
+    {false, {ok, Encoder}} ->
       Reply = gen_server:call(Encoder, {info, File, Info}),
       release_encoder(Encoder),
       {reply, Reply, State};
+    {true, {ok, Encoder}} ->
+      release_encoder(Encoder),
+      {reply, {error, unsuported}, State};
     Error ->
       {reply, Error, State}
   end;
 handle_call({convert, In, Out, Options, Fun}, From, State) ->
-  case get_encoder(In, State) of
-    {ok, Encoder} ->
-      gen_server:cast(Encoder, {convert, In, Out, Options, Fun, From}),
+  case get_encoder(In, State, false) of
+    {Multi, {ok, Encoder}} ->
+      gen_server:cast(Encoder, {convert, In, Out, Options, Multi, Fun, From}),
       {noreply, State};
     Error ->
       {reply, Error, State}
@@ -310,14 +316,17 @@ start_encoders(Type, Default) ->
       false
   end.
 
-get_encoder(File, State) ->
+get_encoder([File|_], State, _) when is_list(File);
+                                  is_binary(File) ->
+  get_encoder(File, State, true);
+get_encoder(File, State, Type) ->
   case type(File) of
     unknow ->
       {error, invalid_file};
     EncoderType ->
       case State of
         #{EncoderType := true} ->
-          poolgirl:checkout(EncoderType);
+          {Type, poolgirl:checkout(EncoderType)};
         _ ->
           {error, invalid_file}
       end
@@ -327,7 +336,7 @@ release_encoder(?MODULE) -> ok;
 release_encoder(Encoder) ->
   poolgirl:checkin(Encoder).
 
-generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, _Sprite) ->
+generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, false) ->
   VttFile = filename:join(OutPath, OutName ++ ".vtt"),
   case file:open(VttFile, [write]) of
     {ok, IO} ->
@@ -336,9 +345,37 @@ generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, 
       file:close(IO);
     Error ->
       Error
-  end.
-  %convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]);
+  end;
 
+generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, true) ->
+  convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}]),
+  VttFile = filename:join(OutPath, OutName ++ ".vtt"),
+  SpritesPath = filename:join(OutPath, OutName),
+  bucfile:remove_recursive(SpritesPath),
+  case file:open(VttFile, [write]) of
+    {ok, IO} ->
+      io:format(IO, "WEBVTT~n", []),
+      vvtline(length(AllSprites), 0, 0, 0, Every, Duration, filename:join(AssetsPath, OutName ++ ".png"), Width, Height, Lines, Columns, IO),
+      file:close(IO);
+    Error ->
+      Error
+  end.
+
+vvtline(0, _, _, _, _, _, _, _, _, _, _, _) ->
+  ok;
+vvtline(N, L, C, Start, Every, Duration, SpriteFile, Width, Height, Lines, Columns, IO) ->
+  End = Start + Every,
+  X = C * Width,
+  Y = L * Height,
+  io:format(IO, "~n~s --> ~s~n", [vice_utils:to_full_hms(Start), vice_utils:to_full_hms(End)]),
+  io:format(IO, "~s#xywh=~p,~p,~p,~p~n", [SpriteFile, X, Y, Width, Height]),
+  {NL, NC} = new_position(L, C, Lines, Columns),
+  vvtline(N - 1, NL, NC, End, Every, Duration, SpriteFile, Width, Height, Lines, Columns, IO).
+
+new_position(L, C, _Lines, Columns) when C == Columns ->
+  {L + 1, 0};
+new_position(L, C, _Lines, _Columns) ->
+  {L, C + 1}.
 
 vvtline([Sprite], Start, _Every, Duration, AssetsPath, Width, Height, IO) ->
   io:format(IO, "~n~s --> ~s~n", [vice_utils:to_full_hms(Start), vice_utils:to_full_hms(Duration)]),
