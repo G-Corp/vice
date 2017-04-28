@@ -1,0 +1,11 @@
+% Usage: {vice_preset, html5ogg}
+[
+  {name "HTML4 ogg"},
+  {description, "Transcoding preset for HTML5 ogg"},
+  {options, [
+    {output_format, "ogg"},
+    {vcodec, "libtheora"},
+    {output_acodec, "libvorbis"},
+    {output_frame_size, "640x360"}
+  ]}
+].

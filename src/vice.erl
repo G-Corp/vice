@@ -76,6 +76,7 @@ info(File, Info) ->
 % @doc
 % Return the conversion status
 % @end
+-spec status(Worker :: pid()) -> running | {running, float()} | done.
 status(Worker) ->
   gen_server:call(?SERVER, {status, Worker}).
 

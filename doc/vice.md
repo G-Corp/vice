@@ -98,7 +98,10 @@ Start vice application
 
 ### status/1 ###
 
-`status(Worker) -> any()`
+<pre><code>
+status(Worker::pid()) -&gt; running | {running, float()} | done
+</code></pre>
+<br />
 
 Return the conversion status
 

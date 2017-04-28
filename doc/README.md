@@ -14,6 +14,11 @@ __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.le
 VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlffmpeg).
 
 
+#### Install ####
+
+cmake, ffmpeg|libav, libopencv-dev
+
+
 ### Video ###
 
 For video conversion, VICE use ffmpeg.
