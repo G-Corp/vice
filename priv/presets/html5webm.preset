@@ -1,0 +1,11 @@
+% Usage: {vice_preset, html5webm}
+[
+  {name "HTML4 webm"},
+  {description, "Transcoding preset for HTML5 webm"},
+  {options, [
+    {output_format, "webm"},
+    {vcodec, "libvpx"},
+    {output_acodec, "libvorbis"},
+    {output_frame_size, "640x360"}
+  ]}
+].

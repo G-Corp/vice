@@ -3,10 +3,10 @@
 -compile([{parse_transform, lager_transform}]).
 
 -export([
-         init/0,
-         infos/2,
-         info/3,
-         convert/7
+         init/0
+         , infos/2
+         , info/3
+         , command/5
         ]).
 
 -record(state, {
@@ -54,27 +54,12 @@ get_info(#{format := #{duration := Duration}}, duration) ->
 get_info(_, _) ->
   {error, unavailable}.
 
-convert(#state{converter = Converter}, In, Out, Options, Fun, From, _Multi) ->
-  case Fun of
-    sync ->
-      ok;
-    _ ->
-      gen_server:reply(From, {async, self()})
-  end,
-  Cmd = gen_command(Converter, In, Out, Options, [{yes, true}], []),
-  lager:debug("COMMAND : ~p", [Cmd]),
-  case bucos:run(Cmd) of
-    {ok, _} ->
-      vice_utils:reply(Fun, From, {ok, In, Out});
-    Error ->
-      vice_utils:reply(Fun, From, Error)
-  end,
-  gen_server:cast(vice, {terminate, self()}).
+command(State, In, Out, Options, _Multi) ->
+  gen_command(convert, State, In, Out, Options).
 
-gen_command(Converter, In, Out, Options, OverwriteOptions, MissingOptions) ->
-  Options1 = buclists:merge_keylists(1, OverwriteOptions, Options),
-  Options2 = buclists:merge_keylists(1, MissingOptions, Options1),
-  gen_options(Converter, In, Out, Options2).
+gen_command(convert, #state{converter = Converter}, In, Out, Options) ->
+  Options1 = buclists:merge_keylists(1, [{yes, true}], Options),
+  {ok, gen_options(Converter, In, Out, Options1)}.
 
 gen_options(Converter, In, Out, Options) ->
   [

@@ -1,0 +1,11 @@
+% Usage: {vice_preset, html5mp4}
+[
+  {name "HTML4 mp4"},
+  {description, "Transcoding preset for HTML5 mp4"},
+  {options, [
+    {output_format, "mp4"},
+    {vcodec, "libx264"},
+    {output_acodec, "libfaac"},
+    {output_frame_size, "640x360"}
+  ]}
+].

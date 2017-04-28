@@ -14,7 +14,7 @@
 
   , {maintainers, ["Gregoire Lejeune"]}
   , {licenses, ["BSD-3"]}
-  , {links, [{"Github", "https://github.com/botsunit/vice"}]}
+  , {links, [{"Github", "https://github.com/G-Corp/vice"}]}
   , {files, ["src/*"
              , "lib/*"
              , "priv/*"

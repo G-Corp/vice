@@ -8,6 +8,10 @@
 
 VICE is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmpeg">erlffmpeg</a>.
 
+<h4>Install</h4>
+
+cmake, ffmpeg|libav, libopencv-dev
+
 <h3>Video</h3>
 
 For video conversion, VICE use ffmpeg.

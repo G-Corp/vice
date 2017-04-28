@@ -36,6 +36,9 @@ defmodule Vice do
   def unquote(:"webvtt")(arg1, arg2, arg3) do
     :erlang.apply(:"vice", :"webvtt", [arg1, arg2, arg3])
   end
+  def unquote(:"webvtt_finalize")(arg1, arg2) do
+    :erlang.apply(:"vice", :"webvtt_finalize", [arg1, arg2])
+  end
   def unquote(:"webvtt")(arg1, arg2) do
     :erlang.apply(:"vice", :"webvtt", [arg1, arg2])
   end

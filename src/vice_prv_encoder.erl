@@ -1,5 +1,6 @@
 % @hidden
 -module(vice_prv_encoder).
+-compile([{parse_transform, lager_transform}]).
 -behaviour(gen_server).
 
 %% API
@@ -59,13 +60,27 @@ handle_call(_Request, _From, State) ->
   {reply, Reply, State}.
 
 % @hidden
-handle_cast({convert, In, undefined, Options, Multi, Fun, From}, #state{encoder = Encoder,
-                                                                        state = EncoderState} = State) ->
-  erlang:apply(Encoder, convert, [EncoderState, In, Options, Fun, From, Multi]),
-  {noreply, State};
 handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{encoder = Encoder,
                                                                   state = EncoderState} = State) ->
-  erlang:apply(Encoder, convert, [EncoderState, In, Out, Options, Fun, From, Multi]),
+  case erlang:apply(Encoder, command, [EncoderState, In, Out, Options, Multi]) of
+    {ok, Cmd} ->
+      lager:info("COMMAND : ~p", [Cmd]),
+      case Fun of
+        sync ->
+          ok;
+        _ ->
+          gen_server:reply(From, {async, self()})
+      end,
+      case bucos:run(Cmd) of
+        {ok, _} ->
+          vice_utils:reply(Fun, From, {ok, In, Out});
+        Error ->
+          vice_utils:reply(Fun, From, Error)
+      end;
+    Error ->
+      vice_utils:reply(Fun, From, Error)
+  end,
+  gen_server:cast(vice, {terminate, self()}),
   {noreply, State};
 handle_cast(_Msg, State) ->
   {noreply, State}.
@@ -81,3 +96,15 @@ terminate(_Reason, _State) ->
 % @hidden
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+
+% run() ->
+%   P5 = erlang:open_port({spawn, "sh test.sh"},
+%                         [stderr_to_stdout, in, exit_status,stream, {line, 255}]),
+%   loop(P5).
+%
+% loop(P) ->
+%   receive{P, Data} ->
+%            io:format("Data ~p~n",[Data]),
+%            loop(P)
+%   end.
