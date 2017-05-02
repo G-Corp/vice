@@ -64,19 +64,22 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{encoder = Enco
                                                                   state = EncoderState} = State) ->
   case erlang:apply(Encoder, command, [EncoderState, In, Out, Options, Multi]) of
     {ok, Cmd} ->
-      lager:info("COMMAND : ~p", [Cmd]),
+      lager:debug("COMMAND : ~p", [Cmd]),
+      Ref = erlang:make_ref(),
+      vice_prv_status:insert(Ref, self()),
       case Fun of
         sync ->
           ok;
         _ ->
-          gen_server:reply(From, {async, self()})
+          gen_server:reply(From, {async, Ref})
       end,
-      case bucos:run(Cmd) of
-        {ok, _} ->
+      case vice_command:exec(Cmd, Encoder, Ref) of
+        {ok, _, _} ->
           vice_utils:reply(Fun, From, {ok, In, Out});
-        Error ->
-          vice_utils:reply(Fun, From, Error)
-      end;
+        {error, Code, _} ->
+          vice_utils:reply(Fun, From, {error, Code})
+      end,
+      vice_prv_status:delete(Ref);
     Error ->
       vice_utils:reply(Fun, From, Error)
   end,
@@ -97,14 +100,3 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
 
-
-% run() ->
-%   P5 = erlang:open_port({spawn, "sh test.sh"},
-%                         [stderr_to_stdout, in, exit_status,stream, {line, 255}]),
-%   loop(P5).
-%
-% loop(P) ->
-%   receive{P, Data} ->
-%            io:format("Data ~p~n",[Data]),
-%            loop(P)
-%   end.

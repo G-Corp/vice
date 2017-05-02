@@ -9,6 +9,7 @@
          , infos/2
          , info/3
          , command/5
+         , progress/2
         ]).
 
 -record(state, {
@@ -329,4 +330,7 @@ geometry({_, Width, Height, X, Y}) when X < 0, Y < 0->
 
 format(FMT, Args) ->
   lists:flatten(io_lib:format(FMT, Args)).
+
+progress(_Bytes, Sofar) ->
+  Sofar.
 
