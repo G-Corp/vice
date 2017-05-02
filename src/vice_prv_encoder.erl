@@ -4,7 +4,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1]).
+-export([start_link/2]).
 
 %% gen_server callbacks
 -export([init/1
@@ -17,22 +17,25 @@
 -define(SERVER, ?MODULE).
 
 -record(state, {
+          type,
           encoder,
           state
          }).
 
-start_link(Encoders) ->
-  gen_server:start_link(?MODULE, Encoders, []).
+start_link(Type, Encoders) ->
+  gen_server:start_link(?MODULE, {Type, Encoders}, []).
 
 % @hidden
-init([]) ->
+init({_, []}) ->
   {stop, missing_encoder};
-init([Encoder|Rest]) ->
+init({Type, [Encoder|Rest]}) ->
   case erlang:apply(Encoder, init, []) of
     {ok, State} ->
-      {ok, #state{encoder = Encoder, state = State}};
+      {ok, #state{type = Type,
+                  encoder = Encoder,
+                  state = State}};
     _ ->
-      init(Rest)
+      init({Type, Rest})
   end.
 
 % @hidden
@@ -60,28 +63,34 @@ handle_call(_Request, _From, State) ->
   {reply, Reply, State}.
 
 % @hidden
-handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{encoder = Encoder,
+handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
+                                                                  encoder = Encoder,
                                                                   state = EncoderState} = State) ->
-  case erlang:apply(Encoder, command, [EncoderState, In, Out, Options, Multi]) of
-    {ok, Cmd} ->
-      lager:debug("COMMAND : ~p", [Cmd]),
-      Ref = erlang:make_ref(),
-      vice_prv_status:insert(Ref, self()),
-      case Fun of
-        sync ->
-          ok;
-        _ ->
-          gen_server:reply(From, {async, Ref})
-      end,
-      case vice_command:exec(Cmd, Encoder, Ref) of
-        {ok, _, _} ->
-          vice_utils:reply(Fun, From, {ok, In, Out});
-        {error, Code, _} ->
-          vice_utils:reply(Fun, From, {error, Code})
-      end,
-      vice_prv_status:delete(Ref);
-    Error ->
-      vice_utils:reply(Fun, From, Error)
+  case update_with_preset(Options, Type) of
+    {ok, NOptions} ->
+      case erlang:apply(Encoder, command, [EncoderState, In, Out, NOptions, Multi]) of
+        {ok, Cmd} ->
+          lager:debug("COMMAND : ~p", [Cmd]),
+          Ref = erlang:make_ref(),
+          vice_prv_status:insert(Ref, self()),
+          case Fun of
+            sync ->
+              ok;
+            _ ->
+              gen_server:reply(From, {async, Ref})
+          end,
+          case vice_command:exec(Cmd, Encoder, Ref) of
+            {ok, _, _} ->
+              vice_utils:reply(Fun, From, {ok, In, Out});
+            {error, Code, _} ->
+              vice_utils:reply(Fun, From, {error, Code})
+          end,
+          vice_prv_status:delete(Ref);
+        Error ->
+          vice_utils:reply(Fun, From, Error)
+      end;
+    {error, Reason} ->
+      gen_server:reply(From, {error, Reason})
   end,
   gen_server:cast(vice, {terminate, self()}),
   {noreply, State};
@@ -99,4 +108,65 @@ terminate(_Reason, _State) ->
 % @hidden
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+
+update_with_preset(Options, Type) ->
+  case get_preset_file(Options, Type) of
+    undefined ->
+      {ok, Options};
+    File ->
+      lager:info("Preset file : ~s", [File]),
+      case file:consult(File) of
+        {ok, [List]} when is_list(List) ->
+          update_options(Options, List);
+        {ok, List} when is_list(List) ->
+          update_options(Options, List);
+        _ ->
+          {error, invalid_preset}
+      end
+  end.
+
+update_options(Options, Preset) ->
+  PresetDesc = buclists:keyfind(description, 1, Preset, "<no description>"),
+  PresetName = buclists:keyfind(name, 1, Preset, "<no name>"),
+  Presets = buclists:keyfind(options, 1, Preset, []),
+  lager:info("Use preset ~s : ~s", [PresetName, PresetDesc]),
+  merge_options(lists:keydelete(preset, 1, Options), Presets).
+
+merge_options([], Presets) ->
+  {ok, Presets};
+merge_options([Option|Rest], Presets) when is_tuple(Option) ->
+  case lists:keymember(erlang:element(1, Option), 1, Presets) of
+    true ->
+      merge_options(Rest, Presets);
+    false ->
+      merge_options(Rest, [Option|Presets])
+  end;
+merge_options([Option|Rest], Presets) ->
+  case lists:member(Option, Presets) of
+    true ->
+      merge_options(Rest, Presets);
+    false ->
+      merge_options(Rest, [Option|Presets])
+  end.
+
+get_preset_file(Options, Type) ->
+  case lists:keyfind(preset, 1, Options) of
+    {preset, Name} when is_atom(Name) ->
+      filename:join([buccode:priv_dir(vice),
+                     "presets",
+                     Type,
+                     Name]) ++ ".preset";
+    {preset, Name} ->
+      case filelib:is_regular(Name) of
+        true -> Name;
+        false ->
+          filename:join([buccode:priv_dir(vice),
+                         "presets",
+                         Type,
+                         Name]) ++ ".preset"
+      end;
+    false ->
+      undefined
+  end.
 

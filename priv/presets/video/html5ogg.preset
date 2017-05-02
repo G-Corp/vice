@@ -1,6 +1,6 @@
 % Usage: {vice_preset, html5ogg}
 [
-  {name "HTML4 ogg"},
+  {name, "HTML5 ogg"},
   {description, "Transcoding preset for HTML5 ogg"},
   {options, [
     {output_format, "ogg"},

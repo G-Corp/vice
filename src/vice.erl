@@ -293,7 +293,7 @@ start_encoders(Type, Default) ->
   lager:debug("Start ~p encoders...", [Type]),
   case poolgirl:add_pool(Type, {vice_prv_encoder,
                                  start_link,
-                                 [doteki:get_env([vice, encoders, Type], Default)]}) of
+                                 [Type, doteki:get_env([vice, encoders, Type], Default)]}) of
     {ok, N} ->
       lager:debug("~p ~p encoder started!", [N, Type]),
       true;
