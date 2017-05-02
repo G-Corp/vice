@@ -1,6 +1,6 @@
 % Usage: {vice_preset, html5webm}
 [
-  {name "HTML4 webm"},
+  {name, "HTML5 webm"},
   {description, "Transcoding preset for HTML5 webm"},
   {options, [
     {output_format, "webm"},

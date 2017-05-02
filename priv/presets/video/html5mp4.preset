@@ -1,6 +1,6 @@
 % Usage: {vice_preset, html5mp4}
 [
-  {name "HTML4 mp4"},
+  {name, "HTML5 mp4"},
   {description, "Transcoding preset for HTML5 mp4"},
   {options, [
     {output_format, "mp4"},
