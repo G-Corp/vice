@@ -7,6 +7,7 @@
          , infos/2
          , info/3
          , command/5
+         , progress/2
         ]).
 
 -record(state, {
@@ -71,4 +72,34 @@ gen_options(Converter, In, Out, Options) ->
     io_lib:format(
       "~s~s~s -i \"~ts\"~s \"~ts\"",
       [Converter, GlobalOptions, InputOptions, In, OutputOptions, Out])).
+
+progress(Bytes, {D, T, P}) ->
+  Duration = case D of
+               undefined ->
+                 case re:run(Bytes, "Duration: (..):(..):(..\\...)", [{capture, all_but_first, list}]) of
+                   {match, [HH0, MM0, SS0]} ->
+                     list_to_integer(HH0) * 3600 + list_to_integer(MM0) * 60 + list_to_float(SS0);
+                   _ ->
+                     undefined
+                 end;
+               _ ->
+                 D
+             end,
+  Time = case re:run(Bytes, "time=(..):(..):(..\\...)", [{capture, all_but_first, list}]) of
+           {match, [HH1, MM1, SS1]} ->
+             list_to_integer(HH1) * 3600 + list_to_integer(MM1) * 60 + list_to_float(SS1);
+           _ ->
+             T
+         end,
+  case {Duration, Time} of
+    {undefined, _} ->
+      {undefined, undefined, P};
+    {_, undefined} ->
+      {Duration, undefined, P};
+    {_, _} ->
+      {Duration, Time, case Time / Duration * 100 of
+                         Percent when Percent > 100 -> 100.0;
+                         Percent -> Percent
+                       end}
+  end.
 

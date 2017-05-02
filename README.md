@@ -19,6 +19,23 @@ VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlf
 cmake, ffmpeg|libav, libopencv-dev
 
 
+#### Example ####
+
+```
+
+1> vice:start().
+...
+2> {async, Worker} = vice:convert("test/erlang.mp4", "erlang.webm").
+...
+3> vice:status(Worker).
+{running, 9.131803868645973}
+3> vice:status(Worker).
+{running, 22.89698605488079}
+...
+
+```
+
+
 ### Video ###
 
 For video conversion, VICE use ffmpeg.

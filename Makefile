@@ -6,5 +6,6 @@ clean::
 	$(verbose) rm -rf .c_build priv/vice_facedetect.so
 
 distclean::
+	$(verbose) rm -rf doc
 	$(verbose) rm -rf .c_build priv/vice_facedetect.so
 

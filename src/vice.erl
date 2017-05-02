@@ -76,7 +76,7 @@ info(File, Info) ->
 % @doc
 % Return the conversion status
 % @end
--spec status(Worker :: pid()) -> running | {running, float()} | done.
+-spec status(Worker :: reference()) -> running | {running, float()} | done.
 status(Worker) ->
   gen_server:call(?SERVER, {status, Worker}).
 
@@ -98,7 +98,7 @@ convert(In, Out, Fun) when is_function(Fun) orelse Fun == sync ->
 % @doc
 % Convert a media
 % @end
--spec convert(In :: binary() | string(),
+-spec convert(In :: binary() | string() | [binary() | string()],
               Out :: binary() | string() | undefined,
               Options :: list(),
               {fun((term()) -> term()) | fun((term(), term()) -> term()), term()}
@@ -135,7 +135,7 @@ screenshot(Movie, Out) ->
 %
 % Options:
 % <ul>
-% <li><tt>every :: inetegr()</tt></li>
+% <li><tt>every :: integer()</tt></li>
 % <li><tt>width :: integer()</tt></li>
 % <li><tt>out_path :: string()</tt></li>
 % <li><tt>sprite :: true | false</tt></li>
@@ -198,40 +198,25 @@ webvtt_finalize({ok, _, _}, {Movie, OutName, Options}) ->
 webvtt(Movie, OutName) ->
   webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}, {assets_path, ""}]).
 
-% @equiv to_html5_webm(Input, Output, undefined)
+% TODO : remove in 1.0.0
+% @deprecated
 to_html5_webm(Input, Output) ->
   to_html5_webm(Input, Output, undefined).
-% @doc
-% Convert the given movie for webm html5
-% @end
+% @deprecated
 to_html5_webm(Input, Output, Fun) ->
-  convert(Input, Output, [{output_format, "webm"},
-                          {vcodec, "libvpx"},
-                          {output_acodec, "libvorbis"},
-                          {output_frame_size, "640x360"}], Fun).
-
-% @equiv to_html5_mp4(Input, Output, undefined)
+  convert(Input, Output, [{output_format, "webm"}, {vcodec, "libvpx"}, {output_acodec, "libvorbis"}, {output_frame_size, "640x360"}], Fun).
+% @deprecated
 to_html5_mp4(Input, Output) ->
   to_html5_mp4(Input, Output, undefined).
-% @doc
-% Convert the given movie for mp5 html5
-% @end
+% @deprecated
 to_html5_mp4(Input, Output, Fun) ->
-  convert(Input, Output, [{output_format, "mp4"},
-                          {vcodec, "libx264"},
-                          {output_acodec, "libfaac"},
-                          {output_frame_size, "640x360"}], Fun).
-
-% @equiv to_html5_ogg(Input, Output, undefined)
+  convert(Input, Output, [{output_format, "mp4"}, {vcodec, "libx264"}, {output_acodec, "libfaac"}, {output_frame_size, "640x360"}], Fun).
+% @deprecated
 to_html5_ogg(Input, Output) ->
   to_html5_ogg(Input, Output, undefined).
-% @doc
-% Convert the given movie for ogg html5
-% @end
+% @deprecated
 to_html5_ogg(Input, Output, Fun) ->
-  convert(Input, Output, [{vcodec, "libtheora"},
-                          {output_acodec, "libvorbis"},
-                          {output_frame_size, "640x360"}], Fun).
+  convert(Input, Output, [{vcodec, "libtheora"}, {output_acodec, "libvorbis"}, {output_frame_size, "640x360"}], Fun).
 
 % @hidden
 init(_) ->
@@ -274,20 +259,11 @@ handle_call({convert, In, Out, Options, Fun}, From, State) ->
       {reply, Error, State}
   end;
 handle_call({status, Worker}, _From, State) ->
-  case lists:member(Worker,
-                    maps:fold(fun
-                                (Type, true, Acc) ->
-                                  case poolgirl:assigned(Type) of
-                                    {ok, P} -> P;
-                                    _ -> []
-                                  end ++ Acc;
-                                (_, false, Acc) ->
-                                  Acc
-                              end, [], State)) of
-    true ->
-      {reply, running, State};
-    false ->
-      {reply, done, State}
+  case vice_prv_status:value(Worker) of
+    undefined ->
+      {reply, done, State};
+    Value ->
+      {reply, {running, Value}, State}
   end;
 handle_call(_Request, _From, State) ->
   {reply, {error, missing_encoder}, State}.
