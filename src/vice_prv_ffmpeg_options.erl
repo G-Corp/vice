@@ -47,7 +47,7 @@
   {output_position,        output, "-ss",                    [{{erlang, is_list}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {output_eof_position,    output,  "-sseof",                [{{erlang, is_list}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {encoder,                output, "-c",                     [{{?MODULE, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}]},
-  {bitrate,                output, "-b",                     [{{?MODULE, is_list_and_list}, to_dotargs}], {{erlang, is_list}, to_arg}, {{erlang, is_integer}, to_arg}},
+  {bitrate,                output, "-b",                     [{{?MODULE, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {timestamp,              output, "-timestamp",             [{{erlang, is_list}, to_arg}]},
   {target,                 output, "-target",                [{{erlang, is_list}, to_arg}]},
   {dframes,                output, "-dframes",               [{{erlang, is_integer}, to_arg}]},
@@ -93,6 +93,7 @@
   {streamid,               output, "-streamid",              [{{erlang, is_list}, to_arg}]},
   {bitstream_filters,      output, "-bsf",                   [{{?MODULE, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}]},
   {timecode,               output, "-timecode",              [{{erlang, is_list}, to_arg}]},
+  {strict,                 output, "-strict",                [{{erlang, is_list}, to_arg}]},
 
   {x264_profile,           output, "-profile",               [{{?MODULE, is_list_and_list}, to_dotargs}]},
   {x264_level,             output, "-level",                 [{{erlang, is_float}, to_arg}]},
