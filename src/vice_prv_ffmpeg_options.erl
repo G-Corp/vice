@@ -14,7 +14,8 @@
     is_integer_and_float/1,
     to_nothing/1,
     to_arg/1,
-    to_dotargs/1
+    to_dotargs/1,
+    to_kvarg/1
 ]).
 
 -define(OPTIONS, [
@@ -94,6 +95,7 @@
   {bitstream_filters,      output, "-bsf",                   [{{?MODULE, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}]},
   {timecode,               output, "-timecode",              [{{erlang, is_list}, to_arg}]},
   {strict,                 output, "-strict",                [{{erlang, is_list}, to_arg}]},
+  {metadata,               output, "-metadata",              [{{?MODULE, is_list_and_list}, to_kvarg}]},
 
   {x264_profile,           output, "-profile",               [{{?MODULE, is_list_and_list}, to_dotargs}]},
   {x264_level,             output, "-level",                 [{{erlang, is_float}, to_arg}]},
@@ -200,4 +202,5 @@ to_dotargs([X, Y]) when is_list(X), is_float(Y) ->
   ":" ++ X ++ " " ++ float_to_list(Y);
 to_dotargs([X, true]) when is_list(X) ->
   ":" ++ X.
-
+to_kvarg([K, V]) when is_list(K), is_list(V) ->
+  lists:flatten(io_lib:format(" ~s=~p", [K, V])).
