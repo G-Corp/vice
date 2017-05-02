@@ -4,11 +4,12 @@
 {options, [
   {video_filtergraph, "scale=\"trunc(oh*a/2)*2:1080\""},
   {output_frame_rate, 25},
-  {bitrate, "v", "2000k"},
-  {bitrate, "a", "128k"},
+  {bitrate, ["v", "2000k"]},
+  {bitrate, ["a", "128k"]},
   {vcodec, "libx264"},
-  {output_acodec, "libfdk_aac"},
-  {x264_profile, "v", "high"},
+  {output_acodec, "aac"},
+  {strict, "experimental"},
+  {x264_profile, ["v", "high"]},
   {x264_level, 4.1},
   {x264_refs, 1}
 ]}.

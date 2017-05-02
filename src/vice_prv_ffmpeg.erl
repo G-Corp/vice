@@ -52,6 +52,10 @@ info(State, File, Info) ->
 
 get_info(#{format := #{duration := Duration}}, duration) ->
   {ok, bucs:to_float(Duration)};
+get_info(#{streams := [#{width := Width}|_]}, width) ->
+  {ok, bucs:to_integer(Width)};
+get_info(#{streams := [#{height := Height}|_]}, height) ->
+  {ok, bucs:to_integer(Height)};
 get_info(_, _) ->
   {error, unavailable}.
 
