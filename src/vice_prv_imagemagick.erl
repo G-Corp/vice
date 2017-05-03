@@ -22,19 +22,7 @@
 -define(INFOS, "~s -format \"~s\" \"~ts\"").
 
 init() ->
-  case lists:foldl(fun
-                     (App, {state, AppList}) ->
-                       case vice_utils:find_executable([bucs:to_string(App)],
-                                                       [vice, imagemagick, App]) of
-                         undefined ->
-                           {error, {App, not_found}};
-                         AppPath ->
-                           {state, [{App, AppPath}|AppList]}
-                       end;
-                     (_, Acc) -> Acc
-                   end,
-                   {state, []},
-                   [convert, identify, mogrify, montage]) of
+  case vice_utils:find_tools(record_info(fields, state)) of
     {error, Reason} ->
       {stop, Reason};
     {state, Data} ->

@@ -7,9 +7,24 @@
          , to_full_hms/1
          , reply/3
          , tile/1
+         , find_tools/1
         ]).
 
 -define(DEC(X), $0 + X div 10, $0 + X rem 10).
+
+find_tools(Apps) ->
+  lists:foldl(fun
+                (App, {state, AppList}) ->
+                  case vice_utils:find_executable([bucs:to_string(App)],
+                                                  [vice, imagemagick, App]) of
+                    undefined ->
+                      {error, {App, not_found}};
+                    AppPath ->
+                      {state, [{App, AppPath}|AppList]}
+                  end;
+                (_, Acc) -> Acc
+              end,
+              {state, []}, Apps).
 
 find_executable([], Alternative) ->
   case doteki:get_env(Alternative, undefined) of

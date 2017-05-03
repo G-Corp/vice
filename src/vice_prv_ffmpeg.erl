@@ -1,6 +1,7 @@
 % @hidden
 -module(vice_prv_ffmpeg).
 -compile([{parse_transform, lager_transform}]).
+-include_lib("bucs/include/bucs.hrl").
 
 -export([
          init/0
@@ -11,29 +12,22 @@
         ]).
 
 -record(state, {
-          prober,
-          converter
+          ffprobe,
+          ffmpeg,
+          openssl
          }).
 
 -define(PROBE, "~s -v quiet -of json -show_format -show_streams \"~ts\"").
 
 init() ->
-  case vice_utils:find_executable(["ffprobe"], [vice, ffmpeg, ffprobe]) of
-    undefined ->
-      {stop, {ffprobe, not_found}};
-    FFProbe ->
-      case vice_utils:find_executable(["ffmpeg"], [vice, ffmpeg, ffmpeg]) of
-        undefined ->
-          {stop, {ffmpeg, not_found}};
-        FFMpeg ->
-          {ok, #state{
-                  prober = FFProbe,
-                  converter = FFMpeg
-                 }}
-      end
+  case vice_utils:find_tools(record_info(fields, state)) of
+    {error, Reason} ->
+      {stop, Reason};
+    {state, Data} ->
+      {ok, ?list_to_record(state, Data)}
   end.
 
-infos(#state{prober = Prober}, File) ->
+infos(#state{ffprobe = Prober}, File) ->
   Cmd = lists:flatten(io_lib:format(?PROBE, [Prober, File])),
   case bucos:run(Cmd) of
     {ok, Output} ->
@@ -62,7 +56,7 @@ get_info(_, _) ->
 command(State, In, Out, Options, _Multi) ->
   gen_command(convert, State, In, Out, Options).
 
-gen_command(convert, #state{converter = Converter}, In, Out, Options) ->
+gen_command(convert, #state{ffmpeg = Converter}, In, Out, Options) ->
   Options1 = buclists:merge_keylists(1, [{yes, true}], Options),
   {ok, gen_options(Converter, In, Out, Options1)}.
 
