@@ -96,6 +96,9 @@
   {timecode,               output, "-timecode",              [{{erlang, is_list}, to_arg}]},
   {strict,                 output, "-strict",                [{{erlang, is_list}, to_arg}]},
   {metadata,               output, "-metadata",              [{{?MODULE, is_list_and_list}, to_kvarg}]},
+  {disable_video,          output, "-vn",                    [{{?MODULE, is_true}, to_nothing}]},
+  {disable_audio,          output, "-an",                    [{{?MODULE, is_true}, to_nothing}]},
+  {disable_subtitle,       output, "-sn",                    [{{?MODULE, is_true}, to_nothing}]},
 
   {x264_profile,           output, "-profile",               [{{?MODULE, is_list_and_list}, to_dotargs}]},
   {x264_level,             output, "-level",                 [{{erlang, is_float}, to_arg}]},
