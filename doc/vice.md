@@ -60,7 +60,10 @@ Convert a media
 
 ### info/2 ###
 
-`info(File, Info) -> any()`
+<pre><code>
+info(File::<a href="file.md#type-filename_all">file:filename_all()</a>, Info::atom()) -&gt; {ok, term()} | {error, term()}
+</code></pre>
+<br />
 
 Return the given media informations
 
@@ -68,7 +71,10 @@ Return the given media informations
 
 ### infos/1 ###
 
-`infos(File) -> any()`
+<pre><code>
+infos(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; {ok, term()} | {error, term()}
+</code></pre>
+<br />
 
 Return the media informations
 
@@ -87,7 +93,10 @@ Create a screenshot for a movie
 
 ### start/0 ###
 
-`start() -> any()`
+<pre><code>
+start() -&gt; {ok, [atom()]} | {error, term()}
+</code></pre>
+<br />
 
 Start vice application
 
@@ -142,7 +151,10 @@ Return the conversion status
 
 ### type/1 ###
 
-`type(File) -> any()`
+<pre><code>
+type(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; video | image | unknow
+</code></pre>
+<br />
 
 Return the file type (image or video)
 

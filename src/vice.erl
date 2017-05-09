@@ -44,6 +44,7 @@
 % @doc
 % Start vice application
 % @end
+-spec start() -> {ok, [atom()]} | {error, term()}.
 start() ->
   application:ensure_all_started(vice).
 
@@ -54,6 +55,7 @@ start_link() ->
 % @doc
 % Return the file type (image or video)
 % @end
+-spec type(File :: file:filename_all()) -> video | image | unknow.
 type(File) ->
   case bucmime:exploded(File) of
     {<<"image">>, _} -> image;
@@ -64,12 +66,14 @@ type(File) ->
 % @doc
 % Return the media informations
 % @end
+-spec infos(File :: file:filename_all()) -> {ok, term()} | {error, term()}.
 infos(File) ->
   gen_server:call(?SERVER, {infos, File}).
 
 % @doc
 % Return the given media informations
 % @end
+-spec info(File :: file:filename_all(), Info :: atom()) -> {ok, term()} | {error, term()}.
 info(File, Info) ->
   gen_server:call(?SERVER, {info, File, Info}).
 

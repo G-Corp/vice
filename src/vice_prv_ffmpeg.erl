@@ -46,12 +46,48 @@ info(State, File, Info) ->
 
 get_info(#{format := #{duration := Duration}}, duration) ->
   {ok, bucs:to_float(Duration)};
-get_info(#{streams := [#{width := Width}|_]}, width) ->
-  {ok, bucs:to_integer(Width)};
-get_info(#{streams := [#{height := Height}|_]}, height) ->
-  {ok, bucs:to_integer(Height)};
+get_info(#{streams := Streams}, width) ->
+  get_stream_info(Streams, <<"video">>, width);
+get_info(#{streams := Streams}, height) ->
+  get_stream_info(Streams, <<"video">>, height);
+get_info(#{streams := Streams}, r_frame_rate) ->
+  case get_stream_info(Streams, <<"video">>, r_frame_rate) of
+    {ok, FPS} ->
+      case string:tokens(bucs:to_string(FPS), "/") of
+        [N, D|_] ->
+          {ok, round(bucs:to_float(N) / bucs:to_float(D))};
+        [N] ->
+          {ok, bucs:to_integer(N)}
+      end;
+    Error ->
+      Error
+  end;
+get_info(#{streams := Streams}, avg_frame_rate) ->
+  case get_stream_info(Streams, <<"video">>, avg_frame_rate) of
+    {ok, FPS} ->
+      case string:tokens(bucs:to_string(FPS), "/") of
+        [N, D|_] ->
+          {ok, round(bucs:to_float(N) / bucs:to_float(D))};
+        [N] ->
+          {ok, bucs:to_integer(N)}
+      end;
+    Error ->
+      Error
+  end;
 get_info(_, _) ->
   {error, unavailable}.
+
+get_stream_info([], _, _) ->
+  {error, unavailable};
+get_stream_info([#{codec_type := Type} = Stream|Rest], Type, Name) ->
+  case maps:get(Name, Stream, undefined) of
+    undefined ->
+      get_stream_info(Rest, Type, Name);
+    Value ->
+      {ok, Value}
+  end;
+get_stream_info([_|Rest], Type, Name) ->
+  get_stream_info(Rest, Type, Name).
 
 command(State, In, Out, Options, _Multi) ->
   gen_command(convert, State, In, Out, Options).
