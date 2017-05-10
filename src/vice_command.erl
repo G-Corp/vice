@@ -6,6 +6,7 @@
 
 exec(Command, Module, Ref) ->
   Port = erlang:open_port({spawn, Command}, [stream, in, eof, hide, exit_status, stderr_to_stdout]),
+  vice_prv_status:port(Ref, Port),
   get_data(Port, Module, Ref, {undefined, undefined, 0.0}).
 
 get_data(Port, Module, Ref, Sofar) ->

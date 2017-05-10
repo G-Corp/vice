@@ -11,6 +11,7 @@
          , infos/1
          , info/2
          , status/1
+         , stop/1
          , convert/2
          , convert/3
          , convert/4
@@ -83,6 +84,13 @@ info(File, Info) ->
 -spec status(Worker :: reference()) -> running | {running, float()} | done.
 status(Worker) ->
   gen_server:call(?SERVER, {status, Worker}).
+
+% @doc
+% Stop a running job
+% @end
+-spec stop(Worker :: reference()) -> ok | {error, term()}.
+stop(Worker) ->
+  gen_server:call(?SERVER, {stop, Worker}).
 
 % @equiv convert(In, Out, [], undefined)
 convert(In, [Opt|_] = Options) when is_tuple(Opt) orelse is_atom(Opt) ->
@@ -268,6 +276,19 @@ handle_call({status, Worker}, _From, State) ->
       {reply, done, State};
     Value ->
       {reply, {running, Value}, State}
+  end;
+handle_call({stop, Worker}, _From, State) ->
+  case vice_prv_status:port(Worker) of
+    undefined ->
+      {reply, {error, unknow_job}, State};
+    Port ->
+      case erlang:port_info(Port, os_pid) of
+        {os_pid, OsPid} ->
+          os:cmd("kill -9 " ++ bucs:to_string(OsPid)),
+          {reply, ok, State};
+        _ ->
+          {reply, {error, stopped_job}, State}
+      end
   end;
 handle_call(_Request, _From, State) ->
   {reply, {error, missing_encoder}, State}.

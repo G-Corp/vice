@@ -21,6 +21,9 @@ defmodule Vice do
   def unquote(:"status")(arg1) do
     :erlang.apply(:"vice", :"status", [arg1])
   end
+  def unquote(:"stop")(arg1) do
+    :erlang.apply(:"vice", :"stop", [arg1])
+  end
   def unquote(:"convert")(arg1, arg2) do
     :erlang.apply(:"vice", :"convert", [arg1, arg2])
   end

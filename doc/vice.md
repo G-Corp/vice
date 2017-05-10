@@ -18,7 +18,8 @@ Return the given media informations.</td></tr><tr><td valign="top"><a href="#inf
 Return the media informations.</td></tr><tr><td valign="top"><a href="#screenshot-2">screenshot/2</a></td><td>
 Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
 Start vice application.</td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
-Return the conversion status.</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
+Return the conversion status.</td></tr><tr><td valign="top"><a href="#stop-1">stop/1</a></td><td>
+Stop a running job.</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
 Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>Equivalent to <a href="#webvtt-3"><tt>webvtt(Movie, OutName,
 [{every, 1}, {width, 100}, {out_path, "."},
 {sprite, true}, {assets_path, ""}])</tt></a>.</td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
@@ -110,6 +111,17 @@ status(Worker::reference()) -&gt; running | {running, float()} | done
 <br />
 
 Return the conversion status
+
+<a name="stop-1"></a>
+
+### stop/1 ###
+
+<pre><code>
+stop(Worker::reference()) -&gt; ok | {error, term()}
+</code></pre>
+<br />
+
+Stop a running job
 
 <a name="to_html5_mp4-2"></a>
 
