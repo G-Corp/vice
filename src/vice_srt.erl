@@ -1,4 +1,4 @@
--module(vice_webvtt).
+-module(vice_srt).
 
 -export([parse/1, parse_file/1, write/2, to_string/1]).
 
@@ -77,7 +77,7 @@ add_empty(_, Current) ->
   Current.
 
 parse_duration(Data, Rest, Current, L, Acc, CanBeString) ->
-  case re:run(Data, "^((\\d\\d):)?(\\d\\d):(\\d\\d).(\\d\\d\\d)\s+-->\s+((\\d\\d):)?(\\d\\d):(\\d\\d).(\\d\\d\\d)", [global, {capture, all_but_first, list}]) of
+  case re:run(Data, "^((\\d\\d):)?(\\d\\d):(\\d\\d),(\\d\\d\\d)\s+-->\s+((\\d\\d):)?(\\d\\d):(\\d\\d),(\\d\\d\\d)", [global, {capture, all_but_first, list}]) of
     {match, [[_, SHH, SMM, SSS, SMS, _, EHH, EMM, ESS, EMS]]} ->
       case verify_and_add(Current, Acc) of
         {ok, Current0, Acc0} ->
