@@ -1,7 +1,7 @@
 -module(vice_prv_status_tests).
 -include_lib("eunit/include/eunit.hrl").
 
-vice_prv_status_tests_test_() ->
+vice_prv_status_test_() ->
   {setup,
    fun() ->
        ok

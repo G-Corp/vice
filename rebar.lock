@@ -1,5 +1,5 @@
 {"1.1.0",
-[{<<"bucs">>,{pkg,<<"bucs">>,<<"1.0.9">>},0},
+[{<<"bucs">>,{pkg,<<"bucs">>,<<"1.0.10">>},0},
  {<<"doteki">>,{pkg,<<"doteki">>,<<"1.0.5">>},0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.2">>},0},
@@ -7,7 +7,7 @@
  {<<"poolgirl">>,{pkg,<<"poolgirl">>,<<"1.1.2">>},0}]}.
 [
 {pkg_hash,[
- {<<"bucs">>, <<"18E703058EA49B981581FEBDADFB20FE6D433602CEC9A3550E88DB59A322F810">>},
+ {<<"bucs">>, <<"ACEF426061570257DF02898535243D9A81A75D94FA4C7C2DDECACB8013534F38">>},
  {<<"doteki">>, <<"1E719DBE540F84EA87C6DC92BE4B6F706A42B08067AF519DE13B6EFC27243A49">>},
  {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>},
  {<<"jsx">>, <<"7ACC7D785B5ABE8A6E9ADBDE926A24E481F29956DD8B4DF49E3E4E7BCC92A018">>},
