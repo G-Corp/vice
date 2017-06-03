@@ -23,27 +23,32 @@ parse([], string, Current, L, Acc) ->
     {ok, _, Acc0} ->
       {ok, lists:reverse(Acc0)};
     _ ->
-      {error, missing_data1, {line, L - 1}}
+      {error, missing_data, {line, L - 1}}
   end;
 parse([], {empty, N}, Current, L, Acc) ->
   case verify_and_add(add_empty(N - 2, Current), Acc) of
     {ok, _, Acc0} ->
       {ok, lists:reverse(Acc0)};
     _ ->
-      {error, missing_data2, {line, L - 1}}
+      {error, missing_data, {line, L - 1}}
   end;
 
-parse([<<"WEBVTT", _/binary>>|Rest], start, Current, L, Acc) ->
-  parse(Rest, header, Current, L + 1, Acc);
-
-parse([<<>>|Rest], header, Current, L, Acc) ->
-  parse(Rest, {empty, 1}, Current, L + 1, Acc);
+parse([<<>>|Rest], start, Current, L, Acc) ->
+  parse(Rest, start, Current, L + 1, Acc);
 parse([<<>>|Rest], {empty, N}, Current, L, Acc) ->
   parse(Rest, {empty, N + 1}, Current, L + 1, Acc);
 parse([<<>>|Rest], string, Current, L, Acc) ->
   parse(Rest, {empty, 1}, Current, L + 1, Acc);
 parse([<<>>|Rest], duration, Current, L, Acc) ->
   parse(Rest, {empty, 1}, Current, L + 1, Acc);
+
+parse([Data|Rest], start, _Current, L, Acc) ->
+  case re:run(Data, "^([0-9]+)$", [global, {capture, all_but_first, list}]) of
+    {match, [[Num]]} ->
+      parse(Rest, number, ?NEW_ENTRY#{num => bucs:to_integer(Num)}, L + 1, Acc);
+    nomatch ->
+      {error, missing_sequence, {line, L}}
+  end;
 
 parse([Data|Rest], {empty, N}, Current, L, Acc) ->
   Current0 = add_empty(N - 1, Current),
@@ -53,7 +58,7 @@ parse([Data|Rest], {empty, N}, Current, L, Acc) ->
         {ok, Current1, Acc0} ->
           parse(Rest, number, Current1#{num => bucs:to_integer(Num)}, L + 1, Acc0);
         _ ->
-          {error, missing_data3, {line, L}}
+          {error, missing_data, {line, L}}
       end;
     nomatch ->
       parse_duration(Data, Rest, Current0, L, Acc, true)
@@ -69,7 +74,7 @@ parse([Data|Rest], string, #{lines := Lines} = Current, L, Acc) ->
   parse(Rest, string, Current#{lines => [Data|Lines]}, L + 1, Acc);
 
 parse(_, _, _, L, _) ->
-  {error, missing_data4, {line, L}}.
+  {error, missing_data, {line, L}}.
 
 add_empty(N, #{lines := Lines} = Current) when N > 0 ->
   add_empty(N - 1, Current#{lines => [<<>>|Lines]});
@@ -84,7 +89,7 @@ parse_duration(Data, Rest, Current, L, Acc, CanBeString) ->
           parse(Rest, duration, Current0#{from => {SHH, SMM, SSS, SMS},
                                           to => {EHH, EMM, ESS, EMS}}, L + 1, Acc0);
         _ ->
-          {error, missing_data5, {line, L}}
+          {error, missing_data, {line, L}}
       end;
     nomatch ->
       case {Current, CanBeString} of
