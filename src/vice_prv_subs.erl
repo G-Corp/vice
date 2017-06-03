@@ -15,9 +15,9 @@ tokenize([], Line, Column, Tokens) ->
   {ok, Line, Column, lists:reverse(Tokens)};
 
 tokenize([H|String], Line, _Column, Tokens) when ?IS_CR(H) ->
-  tokenize(String, Line, 1, Tokens);
-tokenize([H|String], Line, _Column, Tokens) when ?IS_LF(H) ->
   tokenize(String, Line + 1, 1, Tokens);
+tokenize([H|String], Line, Column, Tokens) when ?IS_LF(H) ->
+  tokenize(String, Line + 1, 1, [{newline, {Line, Column, Column + 1}}|Tokens]);
 
 tokenize([H|_] = String, Line, Column, Tokens) when ?IS_SPACE(H) ->
   {Rest, Size} = build_space(String, 0),
@@ -50,8 +50,7 @@ build_digit(String, Len, Acc) ->
 build_string([], Len, Acc) ->
   {[], lists:reverse(Acc), Len};
 build_string([H|String], Len, Acc) when not(?IS_CR(H)) andalso
-                                        not(?IS_LF(H)) andalso
-                                        not(?IS_SPACE(H)) ->
+                                        not(?IS_LF(H)) ->
   build_string(String, Len + 1, [H|Acc]);
 build_string(String, Len, Acc) ->
   {String, lists:reverse(Acc), Len}.
