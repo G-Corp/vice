@@ -32,13 +32,29 @@ tokenize([$.|String], Line, Column, Tokens) ->
 tokenize([$,|String], Line, Column, Tokens) ->
   tokenize(String, Line, Column + 1, [{comma, {Line, Column, Column + 1}}|Tokens]);
 
+% digit
 tokenize([H|_] = String, Line, Column, Tokens) when ?IS_DIGIT(H) ->
   {Rest, Data, Size} = build_digit(String, 0, []),
   tokenize(Rest, Line, Column + Size, [{digit, {Line, Column, Column + Size}, Data}|Tokens]);
 
+% NOTE
+tokenize([$N, $O, $T, $E|String], Line, Column, Tokens) ->
+  tokenize(String, Line, Column + 4, [{note, {Line, Column, Column + 4}}|Tokens]);
+
+% STYLE
+tokenize([$S, $T, $Y, $L, $E|String], Line, Column, Tokens) ->
+  tokenize(String, Line, Column + 5, [{style, {Line, Column, Column + 5}}|Tokens]);
+
+% REGION
+tokenize([$R, $E, $G, $I, $O, $N|String], Line, Column, Tokens) ->
+  tokenize(String, Line, Column + 5, [{region, {Line, Column, Column + 5}}|Tokens]);
+
+% string
 tokenize(String, Line, Column, Tokens) ->
   {Rest, Data, Size} = build_string(String, 0, []),
   tokenize(Rest, Line, Column + Size, [{string, {Line, Column, Column + Size}, Data}|Tokens]).
+
+% --
 
 build_digit([], Len, Acc) ->
   {[], lists:reverse(Acc), Len};
