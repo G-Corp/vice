@@ -14,9 +14,11 @@ tokenize(String) ->
 tokenize([], Line, Column, Tokens) ->
   {ok, Line, Column, lists:reverse(Tokens)};
 
-tokenize([H|String], Line, _Column, Tokens) when ?IS_CR(H) ->
-  tokenize(String, Line + 1, 1, Tokens);
-tokenize([H|String], Line, Column, Tokens) when ?IS_LF(H) ->
+tokenize([CR, LF|String], Line, Column, Tokens) when ?IS_CR(CR), ?IS_LF(LF) ->
+  tokenize(String, Line + 1, 1, [{newline, {Line, Column, Column + 2}}|Tokens]);
+tokenize([CR|String], Line, Column, Tokens) when ?IS_CR(CR) ->
+  tokenize(String, Line + 1, 1, [{newline, {Line, Column, Column + 1}}|Tokens]);
+tokenize([LF|String], Line, Column, Tokens) when ?IS_LF(LF) ->
   tokenize(String, Line + 1, 1, [{newline, {Line, Column, Column + 1}}|Tokens]);
 
 tokenize([H|_] = String, Line, Column, Tokens) when ?IS_SPACE(H) ->
