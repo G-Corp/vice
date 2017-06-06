@@ -3,11 +3,12 @@ HAS_ELIXIR=1
 include bu.mk
 
 clean::
-	$(verbose) rm -rf .c_build priv/vice_facedetect.so
+	$(verbose) $(RM_RF) .c_build priv/vice_facedetect.so
 
 distclean::
-	$(verbose) rm -rf doc
-	$(verbose) rm -rf .c_build priv/vice_facedetect.so
+	$(verbose) $(RM_RF) doc
+	$(verbose) $(RM_RF) lib
+	$(verbose) $(RM_RF) .c_build priv/vice_facedetect.so
 
 changelog: ## Generate CHANGELOG
 	$(verbose) github_changelog_generator

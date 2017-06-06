@@ -154,8 +154,8 @@ screenshot(Movie, Out) ->
 % </ul>
 % @end
 -spec webvtt(Movie :: binary() | string(),
-       OutName :: binary() | string(),
-       Options :: list()) -> ok | {error, term()}.
+             OutName :: binary() | string(),
+             Options :: list()) -> ok | {error, term()}.
 webvtt(Movie, OutName, Options) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
