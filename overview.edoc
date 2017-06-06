@@ -4,6 +4,8 @@
 @title VICE - Video and Image Converter for Erlang/Elixir
 @doc
 
+[![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
+
 <h3>VICE</h3>
 
 VICE is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmpeg">erlffmpeg</a>.

@@ -8,6 +8,8 @@ __Version:__ 0.0.1
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
+[![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
+
 
 ### VICE ###
 

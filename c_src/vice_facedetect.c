@@ -90,6 +90,7 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   char *cimg;
   char *cface_xml;
   char *ceyes_xml;
+  size_t i, j;
   ERL_NIF_TERM result;
 
   if(argc != 3
@@ -107,13 +108,13 @@ static ERL_NIF_TERM faces(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(rcod == OK) {
     ERL_NIF_TERM *erl_faces = (ERL_NIF_TERM*)malloc(sizeof(ERL_NIF_TERM)*faces.nb_faces);
 
-    for(size_t i = 0; i < faces.nb_faces; i++) {
+    for(i = 0; i < faces.nb_faces; i++) {
       ERL_NIF_TERM *erl_eyes = NULL;
 
       if(faces.faces[i].nb_eyes > 0) {
         erl_eyes = (ERL_NIF_TERM*)malloc(sizeof(ERL_NIF_TERM)*faces.faces[i].nb_eyes);
 
-        for(size_t j = 0; j < faces.faces[i].nb_eyes; j++) {
+        for(j = 0; j < faces.faces[i].nb_eyes; j++) {
           erl_eyes[j] = mk_eyes(env,
               faces.faces[i].eyes[j].x,
               faces.faces[i].eyes[j].y,
