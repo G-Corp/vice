@@ -1,4 +1,5 @@
 %%% -*- mode: erlang -*-
+%%% https://w3c.github.io/webvtt/
 
 Header
   "% @hidden".

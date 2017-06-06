@@ -1,4 +1,5 @@
 % @hidden
+% https://w3c.github.io/webvtt/
 -module(vice_prv_subs).
 
 -export([tokenize/1]).
