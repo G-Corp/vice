@@ -1,6 +1,6 @@
 language: elixir
 
-dist: trusty
+# dist: trusty
 
 sudo: required
 
