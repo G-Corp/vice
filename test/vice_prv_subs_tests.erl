@@ -37,7 +37,10 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -48,7 +51,10 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -59,7 +65,10 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -70,7 +79,10 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -81,7 +93,10 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -94,10 +109,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -108,10 +129,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -122,10 +149,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -136,10 +169,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -150,10 +189,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -167,11 +212,17 @@ vice_prv_subs_tests_test_() ->
            fun(T) ->
                ?assertEqual(
                   {ok, #{cues => [#{identifier => "1",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
                                   #{identifier => "2",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -186,12 +237,18 @@ vice_prv_subs_tests_test_() ->
            fun(T) ->
                ?assertEqual(
                   {ok, #{cues => [#{identifier => "1",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"},
                                                   settings => [{"position", "10%,line-left"}, {"align", "left"}, {"size", "35%"}]},
                                     text => "Hello World\nThis is good!"},
                                   #{identifier => "2",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -204,11 +261,17 @@ vice_prv_subs_tests_test_() ->
            fun(T) ->
                ?assertEqual(
                   {ok, #{cues => [#{identifier => "1",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
                                   #{identifier => "2",
-                                    duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                    duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"},
                                                   settings => [{"position", "10%,line-left"}, {"align", "left"}, {"size", "35%"}]},
                                     text => "Hola Mundo!"}]}},
@@ -223,11 +286,17 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"},
                                                   settings => [{"position", "10%,line-left"}, {"align", "left"}, {"size", "35%"}]},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -239,10 +308,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"},
                                                   settings => [{"position", "10%,line-left"}, {"align", "left"}, {"size", "35%"}]},
                                     text => "Hola Mundo!"}]}},
@@ -256,11 +331,17 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!",
                                     note => "hello"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -271,11 +352,17 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!",
                                     note => "hello"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -286,11 +373,17 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!",
                                     note => "hello\nworld"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -301,11 +394,17 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!",
                                     note => "hello\nworld"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -316,10 +415,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola"}]}},
@@ -331,10 +436,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola"}]}},
@@ -346,10 +457,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola\nmundo"}]}},
@@ -361,10 +478,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola\nmundo"}]}},
@@ -376,10 +499,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola\nmundo"}]}},
@@ -391,10 +520,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     note => "hola\nmundo"}]}},
@@ -408,10 +543,16 @@ vice_prv_subs_tests_test_() ->
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}]}},
                   vice_prv_subs_parser:parse(T))
@@ -420,14 +561,20 @@ vice_prv_subs_tests_test_() ->
     fun() ->
         ?assertContinueIfMatch(
            {ok, _, _, Tokens},
-           vice_prv_subs:tokenize("WEBVTT\n\n\n\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+           vice_prv_subs:tokenize("WEBVTT\n\n\n\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => ""}}},
@@ -435,14 +582,20 @@ vice_prv_subs_tests_test_() ->
            end),
         ?assertContinueIfMatch(
            {ok, _, _, Tokens},
-           vice_prv_subs:tokenize("WEBVTT\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+           vice_prv_subs:tokenize("WEBVTT\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => ""}}},
@@ -452,14 +605,20 @@ vice_prv_subs_tests_test_() ->
     fun() ->
         ?assertContinueIfMatch(
            {ok, _, _, Tokens},
-           vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n\n\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+           vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n\n\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017"}}},
@@ -467,14 +626,20 @@ vice_prv_subs_tests_test_() ->
            end),
         ?assertContinueIfMatch(
            {ok, _, _, Tokens},
-           vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+           vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017"}}},
@@ -486,15 +651,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n\n\n" ++
                                   "NOTE this is a WEBVTT !\n\n\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -505,15 +676,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n" ++
                                   "NOTE this is a WEBVTT !\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -524,15 +701,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n" ++
                                   "NOTE\nthis is\na WEBVTT !\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -545,15 +728,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n" ++
                                   "STYLE\n::cue(b) {\ncolor: blue;\n}\n\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -564,15 +753,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n" ++
                                   "STYLE\n::cue(b) {\ncolor: blue;\n}\n::cue {\ncolor: white;\n}\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -584,15 +779,21 @@ vice_prv_subs_tests_test_() ->
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n\n" ++
                                   "STYLE\n::cue(b) {\ncolor: blue;\n}\n\n" ++
                                   "STYLE\n::cue {\ncolor: white;\n}\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -605,15 +806,21 @@ vice_prv_subs_tests_test_() ->
            {ok, _, _, Tokens},
            vice_prv_subs:tokenize("WEBVTT by greg, June 2017\n" ++
                                   "REGION\nid:john\nwidth:50%\nlines:3\n\n\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -629,15 +836,21 @@ vice_prv_subs_tests_test_() ->
                                   "REGION\nid:john\nwidth:50%\nlines:3\n" ++
                                   "STYLE\n::cue {\ncolor: green;\n}\n" ++
                                   "NOTE\nsecond\nnote\n" ++
-                                  "00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n" ++
-                                  "00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n" ++
+                                  "00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!"}],
                          codec_private => #{webvtt => "by greg, June 2017",
@@ -652,16 +865,22 @@ vice_prv_subs_tests_test_() ->
                                   "NOTE note1\n" ++
                                   "REGION\nid:john\nwidth:50%\nlines:3\n" ++
                                   "STYLE\n::cue {\ncolor: green;\n}\nNOTE\nsecond\nnote\n" ++
-                                  "1\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n" ++
-                                  "2\n00:00:01,000 --> 00:00:02,000\nHola Mundo!"),
+                                  "1\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n" ++
+                                  "2\n00:00:01.000 --> 00:00:02.000\nHola Mundo!"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     text => "Hello World\nThis is good!",
                                     identifier => "1"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     text => "Hola Mundo!",
                                     identifier => "2"}],
@@ -678,17 +897,23 @@ vice_prv_subs_tests_test_() ->
                                   "REGION\nid:john\nwidth:50%\nlines:3\n\n\n\n" ++
                                   "STYLE\n::cue {\ncolor: green;\n}\n\n\n\n" ++
                                   "NOTE\nsecond\nnote\n\n\n\n" ++
-                                  "1\n00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!\n\n\n\nNOTE this is the one\n\n\n" ++
-                                  "2\n00:00:01,000 --> 00:00:02,000\nHola Mundo!\n\n\nNOTE\nThis is\nthe two\n\n\n\n"),
+                                  "1\n00:00:00.000 --> 00:00:01.000\nHello World\nThis is good!\n\n\n\nNOTE this is the one\n\n\n" ++
+                                  "2\n00:00:01.000 --> 00:00:02.000\nHola Mundo!\n\n\nNOTE\nThis is\nthe two\n\n\n\n"),
            Tokens,
            fun(T) ->
                ?assertEqual(
-                  {ok, #{cues => [#{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
                                     note => "this is the one",
                                     text => "Hello World\nThis is good!",
                                     identifier => "1"},
-                                  #{duration => #{from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                  #{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+                                                  id => 1000,
+                                                  length => 1000,
                                                   to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
                                     note => "This is\nthe two",
                                     text => "Hola Mundo!",

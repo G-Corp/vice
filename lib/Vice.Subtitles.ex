@@ -12,10 +12,16 @@ defmodule Vice.Subtitles do
   def unquote(:"to_string")(arg1, arg2) do
     :erlang.apply(:"vice_subtitles", :"to_string", [arg1, arg2])
   end
+  def unquote(:"to_string")(arg1, arg2, arg3) do
+    :erlang.apply(:"vice_subtitles", :"to_string", [arg1, arg2, arg3])
+  end
   def unquote(:"to_file")(arg1, arg2) do
     :erlang.apply(:"vice_subtitles", :"to_file", [arg1, arg2])
   end
   def unquote(:"to_file")(arg1, arg2, arg3) do
     :erlang.apply(:"vice_subtitles", :"to_file", [arg1, arg2, arg3])
+  end
+  def unquote(:"to_file")(arg1, arg2, arg3, arg4) do
+    :erlang.apply(:"vice_subtitles", :"to_file", [arg1, arg2, arg3, arg4])
   end
 end

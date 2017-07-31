@@ -43,9 +43,9 @@ CueBlock -> CueIdentifier Timing Text Note : #{identifier => '$1', duration => '
 CueIdentifier -> digit newline : digit('$1').
 CueIdentifier -> digit space newline : digit('$1').
 
-Timing -> Time space arrow space Time newline : #{from => '$1', to => '$5'}.
-Timing -> Time space arrow space Time space newline : #{from => '$1', to => '$5'}.
-Timing -> Time space arrow space Time space string newline : #{from => '$1', to => '$5', settings => cue_settings('$7')}.
+Timing -> Time space arrow space Time newline : #{from => '$1', to => '$5', id => subid('$1'), length => sublength('$1', '$5'), duration => duration('$1', '$5')}.
+Timing -> Time space arrow space Time space newline : #{from => '$1', to => '$5', id => subid('$1'), length => sublength('$1', '$5'), duration => duration('$1', '$5')}.
+Timing -> Time space arrow space Time space string newline : #{from => '$1', to => '$5', id => subid('$1'), length => sublength('$1', '$5'), duration => duration('$1', '$5'), settings => cue_settings('$7')}.
 
 Time -> digit colon digit colon digit period digit : #{hh => digit('$1'),
                                                        mm => digit('$3'),
@@ -105,6 +105,18 @@ add_codec_private(CodecPrivate, Cues) ->
     0 -> Cues;
     _ -> Cues#{codec_private => CodecPrivate}
   end.
+
+subid(#{hh := HH, mm := MM, ss := SS, ex := MS}) ->
+  (((bucs:to_integer(HH) * 60 * 60) +
+    (bucs:to_integer(MM) * 60) +
+    bucs:to_integer(SS)) * 1000) +
+  bucs:to_integer(MS).
+
+sublength(Start, End) ->
+  subid(End) - subid(Start).
+
+duration(Start, End) ->
+  sublength(Start, End) / 1000.
 
 is_webvtt({string, _, [$W, $E, $B, $V, $T, $T|Rest]}) ->
   #{webvtt => string:strip(string:strip(Rest, left, 32), left, 9)}.
