@@ -72,10 +72,14 @@ to_file(Subs, File) ->
 %
 % This function will use the file extension to determine the subtitle format.
 %
-% Options:
+% M3U8 Options:
 % <ul>
 % <li>segment_time</li>
 % <li>segment_filename</li>
+% </ul>
+%
+% SRT and WEBVTT options:
+% <ul>
 % <li>from</li>
 % <li>to</li>
 % <li>duration</li>
@@ -83,7 +87,7 @@ to_file(Subs, File) ->
 % @end
 -spec to_file(Subs :: subs(),
               File :: file:filename_all(),
-              Options :: map()) -> ok | {error, term()}.
+              Options :: map()) -> ok | no_data | {error, term()}.
 to_file(Subs, File, Options) ->
   case filename:extension(File) of
     ".srt" ->
@@ -101,10 +105,14 @@ to_file(Subs, File, Options) ->
 % @doc
 % Generate a subtitle file in the given format.
 %
-% Options:
+% M3U8 Options:
 % <ul>
 % <li>segment_time</li>
 % <li>segment_filename</li>
+% </ul>
+%
+% SRT and WEBVTT options:
+% <ul>
 % <li>from</li>
 % <li>to</li>
 % <li>duration</li>
@@ -113,6 +121,6 @@ to_file(Subs, File, Options) ->
 -spec to_file(Subs :: subs(),
               File :: file:filename_all(),
               Options :: map(),
-              Type :: webvtt | srt | m3u8) -> ok | {error, term()}.
+              Type :: webvtt | srt | m3u8) -> ok | no_data | {error, term()}.
 to_file(Subs, File, Options, Type) ->
   vice_prv_subs_writer:to_file(Subs, Type, File, Options).
