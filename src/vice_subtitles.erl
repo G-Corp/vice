@@ -41,7 +41,7 @@ parse_file(File) ->
 
 % @equiv to_string(Subs, Type, #{})
 -spec to_string(Subs :: subs(),
-                Type :: webvtt | srt) -> {ok, string(), integer()} | no_data.
+                Type :: webvtt | srt) -> {ok, string(), integer(), float()} | no_data.
 to_string(Subs, Type) ->
   to_string(Subs, Type, #{}).
 
@@ -57,7 +57,7 @@ to_string(Subs, Type) ->
 % @end
 -spec to_string(Subs :: subs(),
                 Type :: srt | webvtt,
-                Options :: map()) -> {ok, string(), integer()} | no_data.
+                Options :: map()) -> {ok, string(), integer(), float()} | no_data.
 to_string(Subs, Type, Options) ->
   vice_prv_subs_writer:to_string(Subs, Type, Options).
 

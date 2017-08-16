@@ -74,7 +74,7 @@ Equivalent to [`to_file(Subs, File, #{})`](#to_file-3).
 ### to_file/3 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}) -&gt; ok | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
@@ -83,11 +83,14 @@ Generate a subtitle file.
 
 This function will use the file extension to determine the subtitle format.
 
-Options:
+M3U8 Options:
 
 * segment_time
 
 * segment_filename
+
+
+SRT and WEBVTT options:
 
 * from
 
@@ -101,18 +104,21 @@ Options:
 ### to_file/4 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}, Type::webvtt | srt | m3u8) -&gt; ok | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}, Type::webvtt | srt | m3u8) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
 
 Generate a subtitle file in the given format.
 
-Options:
+M3U8 Options:
 
 * segment_time
 
 * segment_filename
+
+
+SRT and WEBVTT options:
 
 * from
 
@@ -126,7 +132,7 @@ Options:
 ### to_string/2 ###
 
 <pre><code>
-to_string(Subs::<a href="#type-subs">subs()</a>, Type::webvtt | srt) -&gt; {ok, string(), integer()} | no_data
+to_string(Subs::<a href="#type-subs">subs()</a>, Type::webvtt | srt) -&gt; {ok, string(), integer(), float()} | no_data
 </code></pre>
 <br />
 
@@ -137,7 +143,7 @@ Equivalent to [`to_string(Subs, Type, #{})`](#to_string-3).
 ### to_string/3 ###
 
 <pre><code>
-to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::#{}) -&gt; {ok, string(), integer()} | no_data
+to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::#{}) -&gt; {ok, string(), integer(), float()} | no_data
 </code></pre>
 <br />
 

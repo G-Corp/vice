@@ -65,6 +65,13 @@ endef
 
 # Template
 
+# define internet
+#   echo -e "GET http://google.com HTTP/1.0\n\n" | nc google.com 80 > /dev/null 2>&1
+#   echo $?
+# endef
+# 
+# INTERNET=$(shell $(call internet))
+
 define render_template
   $(verbose) printf -- '$(subst $(newline),\n,$(subst %,%%,$(subst ','\'',$(subst $(tab),$(WS),$(call $(1))))))\n' > $(2)
 endef

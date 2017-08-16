@@ -5,7 +5,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
--define(DEFAULT_SEGMENTS, #{
+-define(DEFAULT_OPTIONS, #{
           segment_time => 10,
           segment_filename => "subtitle_%d.vtt",
           from => 0,
@@ -22,8 +22,22 @@ to_string(#{cues := Subs}, webvtt, Options) ->
 to_string(_Subs, _Type, _Options) ->
   {error, invalid_type}.
 
-to_file(_Subs, m3u8, _File, _Options) ->
-  todo; % TODO
+to_file(Subs, m3u8, File, Options) ->
+  Options0 = #{segment_time := Duration} = options(Options),
+  case m3u8_segments(Subs, Options0) of
+    {ok, Segments} ->
+      file:write_file(
+        File,
+        lists:flatten(
+          io_lib:format(
+            "#EXTM3U~n#EXT-X-TARGETDURATION:~p~n#EXT-X-VERSION:3~n#EXT-X-MEDIA-SEQUENCE:0~n#EXT-X-PLAYLIST-TYPE:VOD~n~s~n#EXT-X-ENDLIST",
+            [
+             Duration,
+             string:join(segments(Segments), "\n")
+            ])));
+    Other ->
+      Other
+  end;
 to_file(Subs, Type, File, Options) ->
   case to_string(Subs, Type, Options) of
     {ok, Data, _} ->
@@ -32,12 +46,33 @@ to_file(Subs, Type, File, Options) ->
       Other
   end.
 
+segments(Segments) ->
+  segments(Segments, []).
+segments([], Acc) ->
+  lists:reverse(Acc);
+segments([{Duration, File}|Rest], Acc) ->
+  segments(Rest, [lists:flatten(io_lib:format("#EXTINF:~p,~n~s", [Duration, File]))|Acc]).
+
+m3u8_segments(Subs, Options) ->
+  m3u8_segments(Subs, Options, 0, 0, []).
+m3u8_segments(Subs, #{segment_time := Duration, segment_filename := Filename} = Options, From, FileNo, Acc) ->
+  SegmentFile = filename(Filename, FileNo),
+  case to_string(Subs, webvtt, #{from => From, duration => Duration}) of
+    {ok, Data, NewFrom, SegmentDuration} ->
+      file:write_file(SegmentFile, Data),
+      m3u8_segments(Subs, Options, NewFrom, FileNo + 1, [{SegmentDuration, SegmentFile}|Acc]);
+    no_data ->
+      {ok, lists:reverse(Acc)};
+    Other ->
+      Other
+  end.
+
 to_subs([], _, {[], _, _}, _, _) ->
   no_data;
 to_subs([], _, {["WEBVTT"], _, _}, _, _) ->
   no_data;
-to_subs([], _, {Acc, ID, _}, _, _) ->
-  {ok, string:join(lists:reverse(Acc), "\n\n"), ID};
+to_subs([], _, {Acc, ID, Duration}, _, _) ->
+  {ok, string:join(lists:reverse(Acc), "\n\n"), ID, Duration/1000};
 to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
                          to := #{hh := THH, mm := TMM, ss := TSS, ex := TMS},
                          id := ID,
@@ -68,13 +103,13 @@ to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
     From when From < Start ->
       to_subs(Rest, Options, {Acc, CID, TotalDuration}, Num, Format);
     _ ->
-      {ok, string:join(lists:reverse(Acc), "\n\n"), CID}
+      {ok, string:join(lists:reverse(Acc), "\n\n"), CID, TotalDuration/1000}
   end.
 
 options(Options) ->
   Opts = #{from := From,
            to := To,
-           duration := Duration} = maps:merge(?DEFAULT_SEGMENTS, Options),
+           duration := Duration} = maps:merge(?DEFAULT_OPTIONS, Options),
   From1 = to_ms(From, 0),
   To1 = to_ms(To),
   Opts#{from => From1,
@@ -137,7 +172,12 @@ to_format(String) ->
   end.
 
 filename(Format, N) ->
-  lists:flatten(io_lib:format(to_format(Format), [N])).
+  case to_format(Format) of
+    {true, F} ->
+      lists:flatten(io_lib:format(F, [N]));
+    {false, F} ->
+      lists:flatten(io_lib:format(F, []))
+  end.
 
 -ifdef(TEST).
 vice_prv_subs_writer_internal_test_() ->
