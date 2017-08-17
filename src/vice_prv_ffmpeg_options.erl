@@ -102,7 +102,14 @@
 
   {x264_profile,           output, "-profile",               [{{?MODULE, is_list_and_list}, to_dotargs}]},
   {x264_level,             output, "-level",                 [{{erlang, is_float}, to_arg}]},
-  {x264_refs,              output, "-refs",                  [{{erlang, is_integer}, to_arg}]}
+  {x264_refs,              output, "-refs",                  [{{erlang, is_integer}, to_arg}]},
+
+  {start_number,           output, "-start_number",          [{{erlang, is_integer}, to_arg}]},
+  {hls_list_size,          output, "-hls_list_size",         [{{erlang, is_integer}, to_arg}]},
+  {hls_key_info_file,      output, "-hls_key_info_file",     [{{erlang, is_list}, to_arg}]},
+  {hls_playlist_type,      output, "-hls_playlist_type",     [{{erlang, is_list}, to_arg}]},
+  {hls_segment_filename,   output, "-hls_segment_filename",  [{{erlang, is_list}, to_arg}]},
+  {hls_time,               output, "-hls_time",              [{{erlang, is_integer}, to_arg}]}
 ]).
 
 options(Options) ->
@@ -185,24 +192,24 @@ is_integer_and_float(_) ->
 to_arg(X) when is_list(X) ->
   " " ++ X;
 to_arg(X) when is_integer(X) ->
-  " " ++ integer_to_list(X);
+  " " ++ bucs:to_string(X);
 to_arg(X) when is_float(X) ->
-  " " ++ float_to_list(X).
+  " " ++ bucs:to_string(X).
 %% @hidden
 to_nothing(_) -> "".
 %% @hidden
 to_dotargs([X, Y]) when is_integer(X), is_list(Y) ->
-  ":" ++ integer_to_list(X) ++ " " ++ Y;
+  ":" ++ bucs:to_string(X) ++ " " ++ Y;
 to_dotargs([X, Y]) when is_integer(X), is_integer(Y) ->
-  ":" ++ integer_to_list(X) ++ " " ++ integer_to_list(Y);
+  ":" ++ bucs:to_string(X) ++ " " ++ bucs:to_string(Y);
 to_dotargs([X, Y]) when is_integer(X), is_float(Y) ->
-  ":" ++ integer_to_list(X) ++ " " ++ float_to_list(Y);
+  ":" ++ bucs:to_string(X) ++ " " ++ bucs:to_string(Y);
 to_dotargs([X, Y]) when is_list(X), is_list(Y) ->
   ":" ++ X ++ " " ++ Y;
 to_dotargs([X, Y]) when is_list(X), is_integer(Y) ->
-  ":" ++ X ++ " " ++ integer_to_list(Y);
+  ":" ++ X ++ " " ++ bucs:to_string(Y);
 to_dotargs([X, Y]) when is_list(X), is_float(Y) ->
-  ":" ++ X ++ " " ++ float_to_list(Y);
+  ":" ++ X ++ " " ++ bucs:to_string(Y);
 to_dotargs([X, true]) when is_list(X) ->
   ":" ++ X.
 to_kvarg([K, V]) when is_list(K), is_list(V) ->

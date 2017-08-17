@@ -17,7 +17,8 @@
   , {links, [{"Github", "https://github.com/G-Corp/vice"}]}
   , {files, ["src/*"
              , "lib/*"
-             , "priv/*"
+             , "priv/presets/*"
+             , "priv/*.xml"
              , "c_src/*"
              , "Makefile"
              , "bu.mk"

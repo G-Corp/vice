@@ -131,23 +131,23 @@ update_options(Options, Preset) ->
   PresetName = buclists:keyfind(name, 1, Preset, "<no name>"),
   Presets = buclists:keyfind(options, 1, Preset, []),
   lager:info("Use preset ~s : ~s", [PresetName, PresetDesc]),
-  merge_options(lists:keydelete(preset, 1, Options), Presets).
+  merge_options(Presets, lists:keydelete(preset, 1, Options)).
 
-merge_options([], Presets) ->
-  {ok, Presets};
-merge_options([Option|Rest], Presets) when is_tuple(Option) ->
-  case lists:keymember(erlang:element(1, Option), 1, Presets) of
+merge_options([], Options) ->
+  {ok, Options};
+merge_options([Preset|Rest], Options) when is_tuple(Preset) ->
+  case lists:keymember(erlang:element(1, Preset), 1, Options) of
     true ->
-      merge_options(Rest, Presets);
+      merge_options(Rest, Options);
     false ->
-      merge_options(Rest, [Option|Presets])
+      merge_options(Rest, [Preset|Options])
   end;
-merge_options([Option|Rest], Presets) ->
-  case lists:member(Option, Presets) of
+merge_options([Preset|Rest], Options) ->
+  case lists:member(Preset, Options) of
     true ->
-      merge_options(Rest, Presets);
+      merge_options(Rest, Options);
     false ->
-      merge_options(Rest, [Option|Presets])
+      merge_options(Rest, [Preset|Options])
   end.
 
 get_preset_file(Options, Type) ->
