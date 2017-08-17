@@ -154,7 +154,7 @@ duration(_, _, _) ->
 % %cNd
 to_format(String) ->
   try
-    [Start, End] = string:split(String, "%"),
+    [Start, End] = bucstring:split(String, "%"),
     {true, bucs:to_string(
              case bucs:to_binary(End) of
                <<C:1/binary, N:1/binary, "d", Rest/binary>> ->

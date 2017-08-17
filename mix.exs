@@ -24,9 +24,9 @@ defmodule Vice.Mixfile do
   defp deps do
     [
       {:lager, "~> 3.2.0"},
-      {:bucs, "~> 1.0.9"},
-      {:doteki, "~> 1.0.5"},
-      {:poolgirl, "~> 1.1.2"},
+      {:bucs, "~> 1.0.11"},
+      {:doteki, "~> 1.0.6"},
+      {:poolgirl, "~> 1.1.3"},
       {:jsx, "~> 2.8.0"}
     ]
   end
