@@ -1,7 +1,9 @@
 # Change Log
 
-## [Unreleased](https://github.com/G-Corp/vice/tree/HEAD)
+## [0.0.2](https://github.com/G-Corp/vice/tree/0.0.2) (2017-08-18)
+[Full Changelog](https://github.com/G-Corp/vice/compare/0.0.1...0.0.2)
 
+## [0.0.1](https://github.com/G-Corp/vice/tree/0.0.1) (2017-08-17)
 **Merged pull requests:**
 
 - Webvtt [\#3](https://github.com/G-Corp/vice/pull/3) ([glejeune](https://github.com/glejeune))
