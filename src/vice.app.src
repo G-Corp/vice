@@ -16,6 +16,7 @@
   , {licenses, ["BSD-3"]}
   , {links, [{"Github", "https://github.com/G-Corp/vice"}]}
   , {files, ["src/*"
+             , "include/*"
              , "lib/*"
              , "priv/presets/*"
              , "priv/*.xml"
