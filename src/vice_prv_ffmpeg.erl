@@ -5,7 +5,7 @@
 
 -export([
          init/0
-         , infos/2
+         , infos/3
          , info/3
          , command/5
          , progress/2
@@ -27,17 +27,18 @@ init() ->
       {ok, ?list_to_record(state, Data)}
   end.
 
-infos(#state{ffprobe = Prober}, File) ->
+infos(#state{ffprobe = Prober}, File, Options) ->
+  Labels = {labels, buclists:keyfind(labels, 1, Options, atom)},
   Cmd = lists:flatten(io_lib:format(?PROBE, [Prober, File])),
   case bucos:run(Cmd) of
     {ok, Output} ->
-      {ok, jsx:decode(bucs:to_binary(Output), [{labels, atom}, return_maps])};
+      {ok, jsx:decode(bucs:to_binary(Output), [Labels, return_maps])};
     Error ->
       Error
   end.
 
 info(State, File, Info) ->
-  case infos(State, File) of
+  case infos(State, File, []) of
     {ok, Infos} ->
       get_info(Infos, Info);
     Error ->

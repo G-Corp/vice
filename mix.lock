@@ -1,6 +1,6 @@
-%{"bucs": {:hex, :bucs, "1.0.11", "98886b1fa4e25bc0a56c9b236201d087487118162d95d2bd9309d6c0580781d8", [:make, :mix, :rebar3], [], "hexpm"},
-  "doteki": {:hex, :doteki, "1.0.6", "a953213c8c34e5af8de22cb48779bb6390f0d352d43ece3b75223bd941ec543b", [:make, :mix, :rebar3], [{:bucs, "~> 1.0.11", [hex: :bucs, repo: "hexpm", optional: false]}], "hexpm"},
-  "goldrush": {:hex, :goldrush, "0.1.9", "f06e5d5f1277da5c413e84d5a2924174182fb108dabb39d5ec548b27424cd106", [:rebar3], [], "hexpm"},
-  "jsx": {:hex, :jsx, "2.8.2", "7acc7d785b5abe8a6e9adbde926a24e481f29956dd8b4df49e3e4e7bcc92a018", [:mix, :rebar3], [], "hexpm"},
-  "lager": {:hex, :lager, "3.2.4", "a6deb74dae7927f46bd13255268308ef03eb206ec784a94eaf7c1c0f3b811615", [:rebar3], [{:goldrush, "0.1.9", [hex: :goldrush, repo: "hexpm", optional: false]}], "hexpm"},
-  "poolgirl": {:hex, :poolgirl, "1.1.3", "2a6c8aa0f74fefdf7a3cc443aa892be015d07b467afbb364f746e1b191e15340", [:make, :mix, :rebar3], [{:doteki, "~> 1.0.6", [hex: :doteki, repo: "hexpm", optional: false]}], "hexpm"}}
+%{"bucs": {:hex, :bucs, "1.0.11", "98886b1fa4e25bc0a56c9b236201d087487118162d95d2bd9309d6c0580781d8", [], [], "hexpm"},
+  "doteki": {:hex, :doteki, "1.0.6", "a953213c8c34e5af8de22cb48779bb6390f0d352d43ece3b75223bd941ec543b", [], [{:bucs, "~> 1.0.11", [hex: :bucs, repo: "hexpm", optional: false]}], "hexpm"},
+  "goldrush": {:hex, :goldrush, "0.1.9", "f06e5d5f1277da5c413e84d5a2924174182fb108dabb39d5ec548b27424cd106", [], [], "hexpm"},
+  "jsx": {:hex, :jsx, "2.8.2", "7acc7d785b5abe8a6e9adbde926a24e481f29956dd8b4df49e3e4e7bcc92a018", [], [], "hexpm"},
+  "lager": {:hex, :lager, "3.2.4", "a6deb74dae7927f46bd13255268308ef03eb206ec784a94eaf7c1c0f3b811615", [], [{:goldrush, "0.1.9", [hex: :goldrush, repo: "hexpm", optional: false]}], "hexpm"},
+  "poolgirl": {:hex, :poolgirl, "1.1.3", "2a6c8aa0f74fefdf7a3cc443aa892be015d07b467afbb364f746e1b191e15340", [], [{:doteki, "~> 1.0.6", [hex: :doteki, repo: "hexpm", optional: false]}], "hexpm"}}

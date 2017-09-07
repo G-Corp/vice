@@ -1,10 +1,25 @@
 
 
 # Module vice #
+* [Data Types](#types)
 * [Function Index](#index)
 * [Function Details](#functions)
 
 __Behaviours:__ [`gen_server`](gen_server.md).
+
+<a name="types"></a>
+
+## Data Types ##
+
+
+
+
+### <a name="type-info_options">info_options()</a> ###
+
+
+<pre><code>
+info_options() = [{labels, atom | binary}]
+</code></pre>
 
 <a name="index"></a>
 
@@ -14,7 +29,7 @@ __Behaviours:__ [`gen_server`](gen_server.md).
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#convert-2">convert/2</a></td><td>Equivalent to <a href="#convert-4"><tt>convert(In, Out, [], undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#convert-3">convert/3</a></td><td>
 Convert a media.</td></tr><tr><td valign="top"><a href="#convert-4">convert/4</a></td><td>
 Convert a media.</td></tr><tr><td valign="top"><a href="#info-2">info/2</a></td><td>
-Return the given media informations.</td></tr><tr><td valign="top"><a href="#infos-1">infos/1</a></td><td>
+Return the given media informations.</td></tr><tr><td valign="top"><a href="#infos-1">infos/1</a></td><td>Equivalent to <a href="#infos-2"><tt>infos(File, [])</tt></a>.</td></tr><tr><td valign="top"><a href="#infos-2">infos/2</a></td><td>
 Return the media informations.</td></tr><tr><td valign="top"><a href="#screenshot-2">screenshot/2</a></td><td>
 Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
 Start vice application.</td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
@@ -74,6 +89,17 @@ Return the given media informations
 
 <pre><code>
 infos(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; {ok, term()} | {error, term()}
+</code></pre>
+<br />
+
+Equivalent to [`infos(File, [])`](#infos-2).
+
+<a name="infos-2"></a>
+
+### infos/2 ###
+
+<pre><code>
+infos(File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::<a href="#type-info_options">info_options()</a>) -&gt; {ok, term()} | {error, term()}
 </code></pre>
 <br />
 

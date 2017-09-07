@@ -15,6 +15,9 @@ defmodule Vice do
   def unquote(:"infos")(arg1) do
     :erlang.apply(:"vice", :"infos", [arg1])
   end
+  def unquote(:"infos")(arg1, arg2) do
+    :erlang.apply(:"vice", :"infos", [arg1, arg2])
+  end
   def unquote(:"info")(arg1, arg2) do
     :erlang.apply(:"vice", :"info", [arg1, arg2])
   end

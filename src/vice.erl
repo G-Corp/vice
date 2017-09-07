@@ -9,6 +9,7 @@
          , start_link/0
          , type/1
          , infos/1
+         , infos/2
          , info/2
          , status/1
          , stop/1
@@ -42,6 +43,8 @@
 
 -define(SERVER, ?MODULE).
 
+-type info_options() :: [{labels, atom | binary}].
+
 % @doc
 % Start vice application
 % @end
@@ -64,12 +67,17 @@ type(File) ->
     _ -> unknow
   end.
 
+% @equiv infos(File, [])
+-spec infos(File :: file:filename_all()) -> {ok, term()} | {error, term()}.
+infos(File) ->
+  infos(File, []).
+
 % @doc
 % Return the media informations
 % @end
--spec infos(File :: file:filename_all()) -> {ok, term()} | {error, term()}.
-infos(File) ->
-  gen_server:call(?SERVER, {infos, File}).
+-spec infos(File :: file:filename_all(), Options :: info_options()) -> {ok, term()} | {error, term()}.
+infos(File, Options) ->
+  gen_server:call(?SERVER, {infos, File, Options}).
 
 % @doc
 % Return the given media informations
@@ -247,10 +255,10 @@ init(_) ->
     }}.
 
 % @hidden
-handle_call({infos, File}, _From, State) ->
+handle_call({infos, File, Options}, _From, State) ->
   case get_encoder(File, State, false) of
     {false, {ok, Encoder}} ->
-      Reply = gen_server:call(Encoder, {infos, File}),
+      Reply = gen_server:call(Encoder, {infos, File, Options}),
       release_encoder(Encoder),
       {reply, Reply, State};
     {true, {ok, Encoder}} ->

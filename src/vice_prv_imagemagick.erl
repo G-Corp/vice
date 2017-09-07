@@ -6,7 +6,7 @@
 %% API
 -export([
          init/0
-         , infos/2
+         , infos/3
          , info/3
          , command/5
          , progress/2
@@ -29,8 +29,8 @@ init() ->
       {ok, ?list_to_record(state, Data)}
   end.
 
-infos(#state{identify = Identify}, File) ->
-  {ok, #{
+infos(#state{identify = Identify}, File, Options) ->
+  Response = #{
      file_size => get_info(Identify, "%b", File, undefined),
      filename => get_info(Identify, "%f", File, undefined),
      page_geometry => get_info(Identify, "%g", File, undefined),
@@ -53,10 +53,18 @@ infos(#state{identify = Identify}, File) ->
      page_width => get_info(Identify, "%W", File, fun bucs:to_integer/1),
      page_x_offset => get_info(Identify, "%X", File, fun bucs:to_integer/1),
      page_y_offset => get_info(Identify, "%Y", File, fun bucs:to_integer/1)
-    }}.
+    },
+  case buclists:keyfind(labels, 1, Options, atom) of
+    binary ->
+      {ok, maps:fold(fun(K, V, Acc) ->
+                         maps:put(bucs:to_binary(K), V, Acc)
+                     end, #{}, Response)};
+    _ ->
+      {ok, Response}
+  end.
 
 info(State, File, Info) ->
-  case infos(State, File) of
+  case infos(State, File, []) of
     {ok, #{Info := Value}} ->
       {ok, Value};
     _ ->

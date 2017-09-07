@@ -39,10 +39,10 @@ init({Type, [Encoder|Rest]}) ->
   end.
 
 % @hidden
-handle_call({infos, File}, _, #state{encoder = Encoder,
+handle_call({infos, File, Options}, _, #state{encoder = Encoder,
                                      state = EncoderState} = State) ->
   try
-    Reply = erlang:apply(Encoder, infos, [EncoderState, File]),
+    Reply = erlang:apply(Encoder, infos, [EncoderState, File, Options]),
     {reply, Reply, State}
   catch
     _:_ ->
