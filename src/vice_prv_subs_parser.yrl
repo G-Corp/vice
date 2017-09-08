@@ -85,6 +85,8 @@ Text -> string newline Text : string('$1') ++ "\n" ++ '$3'.
 %Text -> digit space Text : digit('$1') ++ " " ++ '$2'.
 Text -> string Newlines : string('$1').
 Text -> string : string('$1').
+Text -> period Text : "." ++ '$2'.
+Text -> space Text : " " ++ '$2'.
 
 StyleText -> colon colon string newline Text : "::" ++ string('$3') ++ "\n" ++ '$5'.
 StyleText -> colon colon string newline Text StyleText : "::" ++ string('$3') ++ "\n" ++ '$5' ++ "\n" ++ '$6'.
