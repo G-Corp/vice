@@ -10,7 +10,8 @@
          , to_file/4
         ]).
 
--type subs() :: #{}.
+-type cue() :: #{}.
+-type subs() :: [cue()].
 
 % @doc
 % Parse a subtitle string
@@ -50,14 +51,21 @@ to_string(Subs, Type) ->
 %
 % Options:
 % <ul>
-% <li>from</li>
-% <li>to</li>
-% <li>duration</li>
+% <li><tt>from :: string() | binary() | {integer(), integer(), integer(), integer()}</tt> : Starting cue (default: <tt>"00:00:00"</tt>))</li>
+% <li><tt>to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined</tt> : Starting cue (default: <tt>undefined</tt>)</li>
+% <li><tt>duration :: integer() | undefined</tt> : Total duration in seconds (default: <tt>undefined</tt>)</li>
+% </ul>
+%
+% <tt>from</tt> and <tt>to</tt> formats :
+% <ul>
+% <li><tt>HH:MM:SS</tt></li>
+% <li><tt>HH:MM:SS.mmm</tt></li>
+% <li><tt>{MM, MM, SS, mmm}</tt></li>
 % </ul>
 % @end
 -spec to_string(Subs :: subs(),
                 Type :: srt | webvtt,
-                Options :: map()) -> {ok, string(), integer(), float()} | no_data.
+                Options :: map()) -> {ok, string(), integer(), float(), cue()} | no_data.
 to_string(Subs, Type, Options) ->
   vice_prv_subs_writer:to_string(Subs, Type, Options).
 
@@ -74,15 +82,23 @@ to_file(Subs, File) ->
 %
 % M3U8 Options:
 % <ul>
-% <li>segment_time</li>
-% <li>segment_filename</li>
+% <li><tt>segment_time :: integer()</tt> : Segment duration in seconds (default: 10)</li>
+% <li><tt>segment_filename :: string()</tt> : Segments file name (default: <tt>subtitle_%d.vtt</tt>)</li>
+% <li><tt>segment_repeat_cue :: true | false</tt> : Repeat the last cue (default: <tt>true</tt>)</li>
 % </ul>
 %
 % SRT and WEBVTT options:
 % <ul>
-% <li>from</li>
-% <li>to</li>
-% <li>duration</li>
+% <li><tt>from :: string() | binary() | {integer(), integer(), integer(), integer()}</tt> : Starting cue (default: <tt>"00:00:00"</tt>))</li>
+% <li><tt>to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined</tt> : Starting cue (default: <tt>undefined</tt>)</li>
+% <li><tt>duration :: integer() | undefined</tt> : Total duration in seconds (default: <tt>undefined</tt>)</li>
+% </ul>
+%
+% <tt>from</tt> and <tt>to</tt> formats :
+% <ul>
+% <li><tt>HH:MM:SS</tt></li>
+% <li><tt>HH:MM:SS.mmm</tt></li>
+% <li><tt>{MM, MM, SS, mmm}</tt></li>
 % </ul>
 % @end
 -spec to_file(Subs :: subs(),
@@ -107,15 +123,23 @@ to_file(Subs, File, Options) ->
 %
 % M3U8 Options:
 % <ul>
-% <li>segment_time</li>
-% <li>segment_filename</li>
+% <li><tt>segment_time :: integer()</tt> : Segment duration in seconds (default: 10)</li>
+% <li><tt>segment_filename :: string()</tt> : Segments file name (default: <tt>subtitle_%d.vtt</tt>)</li>
+% <li><tt>segment_repeat_cue :: true | false</tt> : Repeat the last cue (default: <tt>true</tt>)</li>
 % </ul>
 %
 % SRT and WEBVTT options:
 % <ul>
-% <li>from</li>
-% <li>to</li>
-% <li>duration</li>
+% <li><tt>from :: string() | binary() | {integer(), integer(), integer(), integer()}</tt> : Starting cue (default: <tt>"00:00:00"</tt>))</li>
+% <li><tt>to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined</tt> : Starting cue (default: <tt>undefined</tt>)</li>
+% <li><tt>duration :: integer() | undefined</tt> : Total duration in seconds (default: <tt>undefined</tt>)</li>
+% </ul>
+%
+% <tt>from</tt> and <tt>to</tt> formats :
+% <ul>
+% <li><tt>HH:MM:SS</tt></li>
+% <li><tt>HH:MM:SS.mmm</tt></li>
+% <li><tt>{MM, MM, SS, mmm}</tt></li>
 % </ul>
 % @end
 -spec to_file(Subs :: subs(),

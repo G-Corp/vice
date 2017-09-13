@@ -12,11 +12,21 @@
 
 
 
+### <a name="type-cue">cue()</a> ###
+
+
+<pre><code>
+cue() = #{}
+</code></pre>
+
+
+
+
 ### <a name="type-subs">subs()</a> ###
 
 
 <pre><code>
-subs() = #{}
+subs() = [<a href="#type-cue">cue()</a>]
 </code></pre>
 
 <a name="index"></a>
@@ -85,18 +95,29 @@ This function will use the file extension to determine the subtitle format.
 
 M3U8 Options:
 
-* segment_time
+* `segment_time :: integer()` : Segment duration in seconds (default: 10)
 
-* segment_filename
+* `segment_filename :: string()` : Segments file name (default: `subtitle_%d.vtt`)
+
+* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `true`)
 
 
 SRT and WEBVTT options:
 
-* from
+* `from :: string() | binary() | {integer(), integer(), integer(), integer()}` : Starting cue (default: `"00:00:00"`))
 
-* to
+* `to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined` : Starting cue (default: `undefined`)
 
-* duration
+* `duration :: integer() | undefined` : Total duration in seconds (default: `undefined`)
+
+
+`from` and `to` formats :
+
+* `HH:MM:SS`
+
+* `HH:MM:SS.mmm`
+
+* `{MM, MM, SS, mmm}`
 
 
 <a name="to_file-4"></a>
@@ -113,18 +134,29 @@ Generate a subtitle file in the given format.
 
 M3U8 Options:
 
-* segment_time
+* `segment_time :: integer()` : Segment duration in seconds (default: 10)
 
-* segment_filename
+* `segment_filename :: string()` : Segments file name (default: `subtitle_%d.vtt`)
+
+* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `true`)
 
 
 SRT and WEBVTT options:
 
-* from
+* `from :: string() | binary() | {integer(), integer(), integer(), integer()}` : Starting cue (default: `"00:00:00"`))
 
-* to
+* `to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined` : Starting cue (default: `undefined`)
 
-* duration
+* `duration :: integer() | undefined` : Total duration in seconds (default: `undefined`)
+
+
+`from` and `to` formats :
+
+* `HH:MM:SS`
+
+* `HH:MM:SS.mmm`
+
+* `{MM, MM, SS, mmm}`
 
 
 <a name="to_string-2"></a>
@@ -143,7 +175,7 @@ Equivalent to [`to_string(Subs, Type, #{})`](#to_string-3).
 ### to_string/3 ###
 
 <pre><code>
-to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::#{}) -&gt; {ok, string(), integer(), float()} | no_data
+to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::#{}) -&gt; {ok, string(), integer(), float(), <a href="#type-cue">cue()</a>} | no_data
 </code></pre>
 <br />
 
@@ -152,10 +184,19 @@ Generate a subtitle string
 
 Options:
 
-* from
+* `from :: string() | binary() | {integer(), integer(), integer(), integer()}` : Starting cue (default: `"00:00:00"`))
 
-* to
+* `to :: string() | binary() | {integer(), integer(), integer(), integer()} | undefined` : Starting cue (default: `undefined`)
 
-* duration
+* `duration :: integer() | undefined` : Total duration in seconds (default: `undefined`)
+
+
+`from` and `to` formats :
+
+* `HH:MM:SS`
+
+* `HH:MM:SS.mmm`
+
+* `{MM, MM, SS, mmm}`
 
 

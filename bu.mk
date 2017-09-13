@@ -175,8 +175,14 @@ xref:
 XREF=xref
 endif
 
-compile-erl:
+update-packages-registry: ## Updage packages registry
 	$(verbose) $(REBAR) as $(REBAR_ENV) update
+
+ifdef NO_REGISTRY_UPDATE
+compile-erl:
+else
+compile-erl: update-packages-registry
+endif
 	$(verbose) $(REBAR) as $(REBAR_ENV) compile
 
 tests: ## Run tests

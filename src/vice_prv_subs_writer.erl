@@ -6,6 +6,7 @@
 -endif.
 
 -define(DEFAULT_OPTIONS, #{
+          segment_repeat_cue => false,
           segment_time => 10,
           segment_filename => "subtitle_%d.vtt",
           from => 0,
@@ -16,23 +17,22 @@
 -define(WEBVTT_FORMAT, "~w~n~s:~s:~s.~s --> ~s:~s:~s.~s~n~s").
 
 to_string(#{cues := Subs}, srt, Options) ->
-  to_subs(Subs, options(Options), {[], -1, 0}, 1, ?SRT_FORMAT);
+  to_subs(Subs, options(Options), {[], -1, 0, undefined}, 1, ?SRT_FORMAT);
 to_string(#{cues := Subs}, webvtt, Options) ->
-  to_subs(Subs, options(Options), {["WEBVTT"], -1, 0}, 1, ?WEBVTT_FORMAT);
+  to_subs(Subs, options(Options), {["WEBVTT"], -1, 0, undefined}, 1, ?WEBVTT_FORMAT);
 to_string(_Subs, _Type, _Options) ->
   {error, invalid_type}.
 
 to_file(Subs, m3u8, File, Options) ->
-  Options0 = #{segment_time := Duration} = options(Options),
-  case m3u8_segments(Subs, Options0) of
-    {ok, Segments} ->
+  case m3u8_segments(Subs, options(Options)) of
+    {ok, Segments, MaxDuration} ->
       file:write_file(
         File,
         lists:flatten(
           io_lib:format(
             "#EXTM3U~n#EXT-X-TARGETDURATION:~p~n#EXT-X-VERSION:3~n#EXT-X-MEDIA-SEQUENCE:0~n#EXT-X-PLAYLIST-TYPE:VOD~n~s~n#EXT-X-ENDLIST",
             [
-             Duration,
+             ceil(MaxDuration),
              string:join(segments(Segments), "\n")
             ])));
     Other ->
@@ -40,7 +40,7 @@ to_file(Subs, m3u8, File, Options) ->
   end;
 to_file(Subs, Type, File, Options) ->
   case to_string(Subs, Type, Options) of
-    {ok, Data, _} ->
+    {ok, Data, _, _, _} ->
       file:write_file(File, Data);
     Other ->
       Other
@@ -54,32 +54,53 @@ segments([{Duration, File}|Rest], Acc) ->
   segments(Rest, [lists:flatten(io_lib:format("#EXTINF:~p,~n~s", [Duration, File]))|Acc]).
 
 m3u8_segments(Subs, Options) ->
-  m3u8_segments(Subs, Options, 0, 0, []).
-m3u8_segments(Subs, #{segment_time := Duration, segment_filename := Filename} = Options, From, FileNo, Acc) ->
+  m3u8_segments(Subs, Options, 0, 0, 0, undefined, []).
+m3u8_segments(Subs, #{segment_time := Duration,
+                      segment_filename := Filename,
+                      segment_repeat_cue := Repeat} = Options, From, FileNo, MaxDuration, PreviousCue, Acc) ->
+  {From0, Duration0} = case {Repeat, PreviousCue} of
+                                {true, #{duration := #{duration := ExtraDuration, id := ID}}} ->
+                                  {ID,
+                                   Duration + ceil(ExtraDuration)};
+                                _ ->
+                                  {From, Duration}
+                              end,
   SegmentFile = filename(Filename, FileNo),
-  case to_string(Subs, webvtt, #{from => From, duration => Duration}) of
-    {ok, Data, NewFrom, SegmentDuration} ->
+  case to_string(Subs, webvtt, #{from => From0, duration => Duration0}) of
+    {ok, _Data, _NewFrom, _SegmentDuration, PreviousCue} ->
+      {ok, lists:reverse(Acc), MaxDuration};
+    {ok, Data, NewFrom, SegmentDuration, LastCue} ->
       file:write_file(SegmentFile, Data),
-      m3u8_segments(Subs, Options, NewFrom, FileNo + 1, [{SegmentDuration, SegmentFile}|Acc]);
+      m3u8_segments(
+        Subs,
+        Options,
+        NewFrom,
+        FileNo + 1,
+        case SegmentDuration > MaxDuration of
+          true -> SegmentDuration;
+          _ -> MaxDuration
+        end,
+        LastCue,
+        [{SegmentDuration, SegmentFile}|Acc]);
     no_data ->
-      {ok, lists:reverse(Acc)};
+      {ok, lists:reverse(Acc), MaxDuration};
     Other ->
       Other
   end.
 
-to_subs([], _, {[], _, _}, _, _) ->
+to_subs([], _, {[], _, _, _}, _, _) ->
   no_data;
-to_subs([], _, {["WEBVTT"], _, _}, _, _) ->
+to_subs([], _, {["WEBVTT"], _, _, _}, _, _) ->
   no_data;
-to_subs([], _, {Acc, ID, Duration}, _, _) ->
-  {ok, string:join(lists:reverse(Acc), "\n\n"), ID, Duration/1000};
+to_subs([], _, {Acc, ID, Duration, LastCue}, _, _) ->
+  {ok, string:join(lists:reverse(Acc), "\n\n"), ID, Duration/1000, LastCue};
 to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
                          to := #{hh := THH, mm := TMM, ss := TSS, ex := TMS},
                          id := ID,
                          duration := Duration},
-           text := Text}|Rest],
+           text := Text} = Cue|Rest],
         #{from := Start, duration := MaxDuration} = Options,
-        {Acc, CID, TotalDuration},
+        {Acc, CID, TotalDuration, LastCue},
         Num,
         Format) ->
   case to_ms({FHH, FMM, FSS, FMS}) of
@@ -96,14 +117,15 @@ to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
                      Text]))
                 |Acc],
                ID + bucs:to_integer(Duration * 1000),
-               TotalDuration  + bucs:to_integer(Duration * 1000)
+               TotalDuration  + bucs:to_integer(Duration * 1000),
+               Cue
               },
               Num + 1,
               Format);
     From when From < Start ->
-      to_subs(Rest, Options, {Acc, CID, TotalDuration}, Num, Format);
+      to_subs(Rest, Options, {Acc, CID, TotalDuration, LastCue}, Num, Format);
     _ ->
-      {ok, string:join(lists:reverse(Acc), "\n\n"), CID, TotalDuration/1000}
+      {ok, string:join(lists:reverse(Acc), "\n\n"), CID, TotalDuration/1000, LastCue}
   end.
 
 options(Options) ->
@@ -133,6 +155,16 @@ to_ms(<<HH:1/binary, ":", MM:2/binary, ":", SS:2/binary>>) ->
   bucs:to_integer(HH) * 60 * 60 * 1000 +
   bucs:to_integer(MM) * 60 * 1000 +
   bucs:to_integer(SS) * 1000;
+to_ms(<<HH:2/binary, ":", MM:2/binary, ":", SS:2/binary, ".", MS/binary>>) ->
+  bucs:to_integer(HH) * 60 * 60 * 1000 +
+  bucs:to_integer(MM) * 60 * 1000 +
+  bucs:to_integer(SS) * 1000 +
+  bucs:to_integer(MS);
+to_ms(<<HH:1/binary, ":", MM:2/binary, ":", SS:2/binary, ".", MS/binary>>) ->
+  bucs:to_integer(HH) * 60 * 60 * 1000 +
+  bucs:to_integer(MM) * 60 * 1000 +
+  bucs:to_integer(SS) * 1000 +
+  bucs:to_integer(MS);
 to_ms({HH, MM, SS, MS}) ->
   bucs:to_integer(HH) * 60 * 60 * 1000 +
   bucs:to_integer(MM) * 60 * 1000 +
