@@ -7,16 +7,16 @@
          , to_full_hms/1
          , reply/3
          , tile/1
-         , find_tools/1
+         , find_tools/2
         ]).
 
 -define(DEC(X), $0 + X div 10, $0 + X rem 10).
 
-find_tools(Apps) ->
+find_tools(Apps, Encoder) ->
   lists:foldl(fun
                 (App, {state, AppList}) ->
                   case vice_utils:find_executable([bucs:to_string(App)],
-                                                  [vice, imagemagick, App]) of
+                                                  [vice, Encoder, App]) of
                     undefined ->
                       {error, {App, not_found}};
                     AppPath ->

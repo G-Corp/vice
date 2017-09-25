@@ -56,7 +56,7 @@ handle_call({info, File, Info}, _, #state{encoder = Encoder,
     {reply, Reply, State}
   catch
     _:_ ->
-      {reply, {error, infos_not_availables}, State}
+      {reply, {error, info_not_availables}, State}
   end;
 handle_call(_Request, _From, State) ->
   Reply = ok,

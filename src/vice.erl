@@ -64,6 +64,7 @@ type(File) ->
   case bucmime:exploded(File) of
     {<<"image">>, _} -> image;
     {<<"video">>, _} -> video;
+    {<<"audio">>, _} -> audio;
     _ -> unknow
   end.
 
@@ -251,7 +252,8 @@ to_html5_ogg(Input, Output, Fun) ->
 init(_) ->
   {ok, #{
      video => start_encoders(video, ?VIDEO_ENCODERS),
-     image => start_encoders(image, ?PHOTO_ENCODERS)
+     image => start_encoders(image, ?PHOTO_ENCODERS),
+     audio => start_encoders(audio, ?AUDIO_ENCODERS)
     }}.
 
 % @hidden
@@ -345,7 +347,7 @@ start_encoders(Type, Default) ->
   end.
 
 get_encoder([File|_], State, _) when is_list(File);
-                                  is_binary(File) ->
+                                     is_binary(File) ->
   get_encoder(File, State, true);
 get_encoder(File, State, Type) ->
   case type(File) of
