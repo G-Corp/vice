@@ -32,7 +32,7 @@ to_file(Subs, m3u8, File, Options) ->
           io_lib:format(
             "#EXTM3U~n#EXT-X-TARGETDURATION:~p~n#EXT-X-VERSION:3~n#EXT-X-MEDIA-SEQUENCE:0~n#EXT-X-PLAYLIST-TYPE:VOD~n~s~n#EXT-X-ENDLIST",
             [
-             ceil(MaxDuration),
+             math_ceil(MaxDuration),
              string:join(segments(Segments), "\n")
             ])));
     Other ->
@@ -61,7 +61,7 @@ m3u8_segments(Subs, #{segment_time := Duration,
   {From0, Duration0} = case {Repeat, PreviousCue} of
                                 {true, #{duration := #{duration := ExtraDuration, id := ID}}} ->
                                   {ID,
-                                   Duration + ceil(ExtraDuration)};
+                                   Duration + math_ceil(ExtraDuration)};
                                 _ ->
                                   {From, Duration}
                               end,
@@ -209,6 +209,18 @@ filename(Format, N) ->
       lists:flatten(io_lib:format(F, [N]));
     {false, F} ->
       lists:flatten(io_lib:format(F, []))
+  end.
+
+math_ceil(V) ->
+  try
+    erlang:ceil(V)
+  catch
+    _:_ ->
+      T = erlang:trunc(V) * 1.0,
+      if
+        V - T > 0 -> T + 1;
+        true -> T
+      end
   end.
 
 -ifdef(TEST).
