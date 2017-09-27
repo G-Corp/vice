@@ -2,6 +2,7 @@
 -module(vice_prv_ffmpeg).
 -compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
+-include("../include/vice_ffmpeg.hrl").
 
 -export([
          init/0
@@ -20,7 +21,7 @@
 -define(PROBE, "~s -v quiet -of json -show_format -show_streams \"~ts\"").
 
 init() ->
-  case vice_utils:find_tools(record_info(fields, state)) of
+  case vice_utils:find_tools(record_info(fields, state), ffmpeg) of
     {error, Reason} ->
       {stop, Reason};
     {state, Data} ->
@@ -98,11 +99,10 @@ gen_command(convert, #state{ffmpeg = Converter}, In, Out, Options) ->
   {ok, gen_options(Converter, In, Out, Options1)}.
 
 gen_options(Converter, In, Out, Options) ->
-  [
-    {input, InputOptions},
-    {output, OutputOptions},
-    {global, GlobalOptions}
-  ] = vice_prv_ffmpeg_options:options(Options),
+  Params = vice_prv_options:options(?OPTIONS, Options),
+  InputOptions = buclists:keyfind(input, 1, Params, ""),
+  OutputOptions = buclists:keyfind(output, 1, Params, ""),
+  GlobalOptions = buclists:keyfind(global, 1, Params, ""),
   lists:flatten(
     io_lib:format(
       "~s~s~s -i \"~ts\"~s \"~ts\"",

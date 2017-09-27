@@ -22,7 +22,7 @@
 -define(INFOS, "~s -format \"~s\" \"~ts\"").
 
 init() ->
-  case vice_utils:find_tools(record_info(fields, state)) of
+  case vice_utils:find_tools(record_info(fields, state), imagemagick) of
     {error, Reason} ->
       {stop, Reason};
     {state, Data} ->
