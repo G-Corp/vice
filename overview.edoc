@@ -1,10 +1,11 @@
 @author Gregoire Lejeune <gregoire.lejeune@gmail.com>
 @copyright 2014-2016 Grégoire Lejeune, 2016 Botsunit, 2017 G-Corp
-@version 0.0.1
-@title VICE - Video and Image Converter for Erlang/Elixir
+@version 0.0.3
+@title VICE - Video, audio and Image Converter for Erlang/Elixir
 @doc
 
 [![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
+[![Hex.pm](https://img.shields.io/hexpm/v/vice.svg)](https://hex.pm/packages/vice)
 
 <h3>VICE</h3>
 
@@ -12,7 +13,7 @@ VICE is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmp
 
 <h4>Install</h4>
 
-cmake, ffmpeg|libav, libopencv-dev
+<a href="https://cmake.org/">cmake</a>, <a href="https://www.ffmpeg.org/">ffmpeg</a>|<a href="https://www.libav.org/">libav</a>, <a href="http://opencv.org/">libopencv-dev</a>, <a href="https://www.imagemagick.org/script/index.php">imagemagick</a>
 
 <h4>Example</h4>
 
