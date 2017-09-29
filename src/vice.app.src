@@ -1,6 +1,6 @@
 {application, vice,
  [{description, "Video and Image Converter for Erlang/Elixir"}
-  , {vsn, "0.0.3"}
+  , {vsn, "0.1.0"}
   , {registered, []}
   , {mod, {vice_app, []}}
   , {applications,
