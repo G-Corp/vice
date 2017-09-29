@@ -66,7 +66,7 @@ Convert a media
 ### convert/4 ###
 
 <pre><code>
-convert(In::binary() | string() | [binary() | string()], Out::binary() | string() | undefined, Options::list(), Fun::{fun((Data::term()) -&gt; term()) | fun(({ok, In::string() | binary(), Out::string() | binary()} | {error, term()}, Data::term()) -&gt; term()), Data::term()} | fun(({ok, In::string() | binary(), Out::string() | binary()} | {error, term()}) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
+convert(In::binary() | string() | [binary() | string()], Out::binary() | string() | undefined, Options::list(), Fun::{fun((Data::term()) -&gt; term()) | fun(({ok, In::string() | binary(), Out::string() | binary()} | {error, In::string() | binary(), Out::string() | binary(), Code::term()}, Data::term()) -&gt; term()), Data::term()} | fun(({ok, In::string() | binary(), Out::string() | binary()} | {error, In::string() | binary(), Out::string() | binary(), Code::term()}) -&gt; term()) | fun(() -&gt; term()) | sync | undefined) -&gt; {async, term()} | {ok, In::binary() | string(), Out::binary() | string()} | {error, term()}
 </code></pre>
 <br />
 

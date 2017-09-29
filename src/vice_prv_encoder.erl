@@ -83,7 +83,7 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
             {ok, _, _} ->
               vice_utils:reply(Fun, From, {ok, In, Out});
             {error, Code, _} ->
-              vice_utils:reply(Fun, From, {error, Code})
+              vice_utils:reply(Fun, From, {error, In, Out, Code})
           end,
           vice_prv_status:delete(Ref);
         Error ->

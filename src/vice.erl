@@ -126,13 +126,21 @@ convert(In, Out, Fun) when is_function(Fun) orelse Fun == sync ->
                | fun(({ok,
                        In :: string() | binary(),
                        Out :: string() | binary()}
-                      | {error, term()},
+                      |
+                      {error,
+                       In :: string() | binary(),
+                       Out :: string() | binary(),
+                       Code :: term()},
                       Data :: term()) -> term()),
                Data :: term()}
               | fun(({ok,
                       In :: string() | binary(),
                       Out :: string() | binary()}
-                     | {error, term()}) -> term())
+                     |
+                     {error,
+                      In :: string() | binary(),
+                      Out :: string() | binary(),
+                      Code :: term()}) -> term())
               | fun(() -> term())
               | sync
               | undefined) ->
