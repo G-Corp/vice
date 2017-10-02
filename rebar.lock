@@ -3,7 +3,7 @@
  {<<"doteki">>,{pkg,<<"doteki">>,<<"1.0.6">>},0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.2">>},0},
- {<<"lager">>,{pkg,<<"lager">>,<<"3.2.4">>},0},
+ {<<"lager">>,{pkg,<<"lager">>,<<"3.5.1">>},0},
  {<<"poolgirl">>,{pkg,<<"poolgirl">>,<<"1.1.3">>},0}]}.
 [
 {pkg_hash,[
@@ -11,6 +11,6 @@
  {<<"doteki">>, <<"A953213C8C34E5AF8DE22CB48779BB6390F0D352D43ECE3B75223BD941EC543B">>},
  {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>},
  {<<"jsx">>, <<"7ACC7D785B5ABE8A6E9ADBDE926A24E481F29956DD8B4DF49E3E4E7BCC92A018">>},
- {<<"lager">>, <<"A6DEB74DAE7927F46BD13255268308EF03EB206EC784A94EAF7C1C0F3B811615">>},
+ {<<"lager">>, <<"63897A61AF646C59BB928FEE9756CE8BDD02D5A1A2F3551D4A5E38386C2CC071">>},
  {<<"poolgirl">>, <<"2A6C8AA0F74FEFDF7A3CC443AA892BE015D07B467AFBB364F746E1B191E15340">>}]}
 ].
