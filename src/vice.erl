@@ -18,12 +18,18 @@
          , convert/4
         ]).
 
--export([webvtt_finalize/2]).
+-export([thumbnails_finalize/2]).
 
 %% Video API
 -export([
          screenshot/2
-         , webvtt/2
+         , thumbnails/2
+         , thumbnails/3
+        ]).
+
+%% DEPRECATED
+-export([
+         webvtt/2
          , webvtt/3
          , to_html5_webm/2
          , to_html5_webm/3
@@ -168,6 +174,16 @@ screenshot(Movie, Out) ->
       {error, invalid_media}
   end.
 
+% @deprecated use thumbnails/2
+webvtt(Movie, OutName) -> thumbnails(Movie, OutName).
+
+% @deprecated use thumbnails/3
+webvtt(Movie, OutName, Options) -> thumbnails(Movie, OutName, Options).
+
+% @equiv thumbnails(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}, {assets_path, ""}])
+thumbnails(Movie, OutName) ->
+  thumbnails(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}, {assets_path, ""}]).
+
 % @doc
 % Generate a video thumbnails (.vtt + sprite)
 %
@@ -179,10 +195,10 @@ screenshot(Movie, Out) ->
 % <li><tt>sprite :: true | false</tt></li>
 % </ul>
 % @end
--spec webvtt(Movie :: binary() | string(),
-             OutName :: binary() | string(),
-             Options :: list()) -> ok | {error, term()}.
-webvtt(Movie, OutName, Options) ->
+-spec thumbnails(Movie :: binary() | string(),
+                 OutName :: binary() | string(),
+                 Options :: list()) -> ok | {error, term()}.
+thumbnails(Movie, OutName, Options) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   SpritesPath = filename:join(OutPath, OutName),
@@ -191,14 +207,14 @@ webvtt(Movie, OutName, Options) ->
       SpritesFiles = filename:join(SpritesPath, "%016d.png"),
       convert(Movie, SpritesFiles, [{output_format, "image2"},
                                     {video_filtergraph, "fps=1/" ++ bucs:to_string(Every)}],
-              {fun ?MODULE:webvtt_finalize/2, {Movie, OutName, Options}});
+              {fun ?MODULE:thumbnails_finalize/2, {Movie, OutName, Options}});
 
     Error ->
       Error
   end.
 
 % @hidden
-webvtt_finalize({ok, _, _}, {Movie, OutName, Options}) ->
+thumbnails_finalize({ok, _, _}, {Movie, OutName, Options}) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   AssetsPath = buclists:keyfind(assets_path, 1, Options, ""),
@@ -231,10 +247,6 @@ webvtt_finalize({ok, _, _}, {Movie, OutName, Options}) ->
       bucfile:remove_recursive(SpritesPath),
       Error
   end.
-
-% @equiv webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}, {assets_path, ""}])
-webvtt(Movie, OutName) ->
-  webvtt(Movie, OutName, [{every, 1}, {width, 100}, {out_path, "."}, {sprite, true}, {assets_path, ""}]).
 
 % TODO : remove in 1.0.0
 % @deprecated

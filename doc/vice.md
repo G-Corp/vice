@@ -34,11 +34,11 @@ Return the media informations.</td></tr><tr><td valign="top"><a href="#screensho
 Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
 Start vice application.</td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
 Return the conversion status.</td></tr><tr><td valign="top"><a href="#stop-1">stop/1</a></td><td>
-Stop a running job.</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
-Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>Equivalent to <a href="#webvtt-3"><tt>webvtt(Movie, OutName,
+Stop a running job.</td></tr><tr><td valign="top"><a href="#thumbnails-2">thumbnails/2</a></td><td>Equivalent to <a href="#thumbnails-3"><tt>thumbnails(Movie, OutName,
 [{every, 1}, {width, 100}, {out_path, "."},
-{sprite, true}, {assets_path, ""}])</tt></a>.</td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td> 
-Generate a video thumbnails (.vtt + sprite).</td></tr></table>
+{sprite, true}, {assets_path, ""}])</tt></a>.</td></tr><tr><td valign="top"><a href="#thumbnails-3">thumbnails/3</a></td><td> 
+Generate a video thumbnails (.vtt + sprite).</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
+Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td>(<em>Deprecated</em>.) </td></tr></table>
 
 
 <a name="functions"></a>
@@ -149,6 +149,37 @@ stop(Worker::reference()) -&gt; ok | {error, term()}
 
 Stop a running job
 
+<a name="thumbnails-2"></a>
+
+### thumbnails/2 ###
+
+`thumbnails(Movie, OutName) -> any()`
+
+Equivalent to [`thumbnails(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}, {assets_path, ""}])`](#thumbnails-3).
+
+<a name="thumbnails-3"></a>
+
+### thumbnails/3 ###
+
+<pre><code>
+thumbnails(Movie::binary() | string(), OutName::binary() | string(), Options::list()) -&gt; ok | {error, term()}
+</code></pre>
+<br />
+
+
+Generate a video thumbnails (.vtt + sprite)
+
+Options:
+
+* `every :: integer()`
+
+* `width :: integer()`
+
+* `out_path :: string()`
+
+* `sprite :: true | false`
+
+
 <a name="to_html5_mp4-2"></a>
 
 ### to_html5_mp4/2 ###
@@ -202,28 +233,13 @@ Return the file type (image or video)
 
 `webvtt(Movie, OutName) -> any()`
 
-Equivalent to [`webvtt(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}, {assets_path, ""}])`](#webvtt-3).
+__This function is deprecated:__ use thumbnails/2
 
 <a name="webvtt-3"></a>
 
 ### webvtt/3 ###
 
-<pre><code>
-webvtt(Movie::binary() | string(), OutName::binary() | string(), Options::list()) -&gt; ok | {error, term()}
-</code></pre>
-<br />
+`webvtt(Movie, OutName, Options) -> any()`
 
-
-Generate a video thumbnails (.vtt + sprite)
-
-Options:
-
-* `every :: integer()`
-
-* `width :: integer()`
-
-* `out_path :: string()`
-
-* `sprite :: true | false`
-
+__This function is deprecated:__ use thumbnails/3
 
