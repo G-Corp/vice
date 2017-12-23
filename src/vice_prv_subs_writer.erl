@@ -1,6 +1,7 @@
 % @hidden
 -module(vice_prv_subs_writer).
 -export([to_string/3, to_file/4]).
+-export([webvtt_formater/2, srt_formater/2]).
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
 -endif.
@@ -15,11 +16,56 @@
          }).
 -define(SRT_FORMAT, "~w~n~s:~s:~s,~s --> ~s:~s:~s,~s~n~s").
 -define(WEBVTT_FORMAT, "~w~n~s:~s:~s.~s --> ~s:~s:~s.~s~n~s").
+-define(WEBVTT_FORMAT_SETTINGS, "~w~n~s:~s:~s.~s --> ~s:~s:~s.~s ~s~n~s").
+
+webvtt_formater(
+  Num,
+  #{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
+                  to := #{hh := THH, mm := TMM, ss := TSS, ex := TMS},
+                  settings := Settings},
+
+    text := Text}
+ ) ->
+  lists:flatten(
+    io_lib:format(
+      ?WEBVTT_FORMAT_SETTINGS,
+      [Num,
+       FHH, FMM, FSS, FMS,
+       THH, TMM, TSS, TMS,
+       webvtt_settings(Settings),
+       Text]));
+webvtt_formater(Num, Cue) ->
+  common_formater(?WEBVTT_FORMAT, Num, Cue).
+
+srt_formater(Num, Cue) ->
+  common_formater(?SRT_FORMAT, Num, Cue).
+
+common_formater(
+  Format,
+  Num,
+  #{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
+                  to := #{hh := THH, mm := TMM, ss := TSS, ex := TMS}},
+    text := Text}
+ ) ->
+  lists:flatten(
+    io_lib:format(
+      Format,
+      [Num,
+       FHH, FMM, FSS, FMS,
+       THH, TMM, TSS, TMS,
+       Text])).
+
+webvtt_settings(Settings) ->
+  string:join(do_webvtt_settings(Settings), " ").
+
+do_webvtt_settings([]) -> [];
+do_webvtt_settings([{K, V}|Settings]) ->
+  [io_lib:format("~s:~s", [K, V])|do_webvtt_settings(Settings)].
 
 to_string(#{cues := Subs}, srt, Options) ->
-  to_subs(Subs, options(Options), {[], -1, 0, undefined}, 1, ?SRT_FORMAT);
+  to_subs(Subs, options(Options), {[], -1, 0, undefined}, 1, srt_formater);
 to_string(#{cues := Subs}, webvtt, Options) ->
-  to_subs(Subs, options(Options), {["WEBVTT"], -1, 0, undefined}, 1, ?WEBVTT_FORMAT);
+  to_subs(Subs, options(Options), {["WEBVTT"], -1, 0, undefined}, 1, webvtt_formater);
 to_string(_Subs, _Type, _Options) ->
   {error, invalid_type}.
 
@@ -95,35 +141,26 @@ to_subs([], _, {["WEBVTT"], _, _, _}, _, _) ->
 to_subs([], _, {Acc, ID, Duration, LastCue}, _, _) ->
   {ok, string:join(lists:reverse(Acc), "\n\n"), ID, Duration/1000, LastCue};
 to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
-                         to := #{hh := THH, mm := TMM, ss := TSS, ex := TMS},
                          id := ID,
-                         duration := Duration},
-           text := Text} = Cue|Rest],
+                         duration := Duration}} = Cue|Rest],
         #{from := Start, duration := MaxDuration} = Options,
         {Acc, CID, TotalDuration, LastCue},
         Num,
-        Format) ->
+        Formater) ->
   case to_ms({FHH, FMM, FSS, FMS}) of
     From when From >= Start andalso (MaxDuration == undefined orelse TotalDuration < MaxDuration) ->
       to_subs(Rest,
               Options,
               {
-               [lists:flatten(
-                  io_lib:format(
-                    Format,
-                    [Num,
-                     FHH, FMM, FSS, FMS,
-                     THH, TMM, TSS, TMS,
-                     Text]))
-                |Acc],
+               [erlang:apply(?MODULE, Formater, [Num, Cue])|Acc],
                ID + bucs:to_integer(Duration * 1000),
-               TotalDuration  + bucs:to_integer(Duration * 1000),
+               TotalDuration + bucs:to_integer(Duration * 1000),
                Cue
               },
               Num + 1,
-              Format);
+              Formater);
     From when From < Start ->
-      to_subs(Rest, Options, {Acc, CID, TotalDuration, LastCue}, Num, Format);
+      to_subs(Rest, Options, {Acc, CID, TotalDuration, LastCue}, Num, Formater);
     _ ->
       {ok, string:join(lists:reverse(Acc), "\n\n"), CID, TotalDuration/1000, LastCue}
   end.
