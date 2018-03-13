@@ -18,7 +18,7 @@
           openssl
          }).
 
--define(PROBE, "~s -v quiet -of json -show_format -show_streams \"~ts\"").
+-define(PROBE, "~s -v quiet -of json -show_format -show_streams -allowed_extensions ALL \"~ts\"").
 
 init() ->
   case vice_utils:find_tools(record_info(fields, state), ffmpeg) of
@@ -137,4 +137,3 @@ progress(Bytes, {D, T, P}) ->
                          Percent -> Percent
                        end}
   end.
-

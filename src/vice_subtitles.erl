@@ -85,7 +85,15 @@ to_file(Subs, File) ->
 % <li><tt>segment_time :: integer()</tt> : Segment duration in seconds (default: 10)</li>
 % <li><tt>segment_filename :: string()</tt> : Segments file name (default: <tt>subtitle_%d.vtt</tt>)</li>
 % <li><tt>segment_repeat_cue :: true | false</tt> : Repeat the last cue (default: <tt>true</tt>)</li>
+% <li>
+%   <tt>x_timestamp_map :: {cue_time(), mpeg2_time()}</tt> : Add X-TIMESTAMP-MAP to  maps WebVTT cue timestamps to MPEG-2 (PES) timestamps.
+%   <ul>
+%     <li><tt>cue_time()</tt> :: <tt>00:00:00.000</tt></li>
+%     <li><tt>mpeg2_time()</tt> :: <tt>integer()</tt></li>
+%   </ul>
+% </li>
 % </ul>
+%
 %
 % SRT and WEBVTT options:
 % <ul>
@@ -125,7 +133,14 @@ to_file(Subs, File, Options) ->
 % <ul>
 % <li><tt>segment_time :: integer()</tt> : Segment duration in seconds (default: 10)</li>
 % <li><tt>segment_filename :: string()</tt> : Segments file name (default: <tt>subtitle_%d.vtt</tt>)</li>
-% <li><tt>segment_repeat_cue :: true | false</tt> : Repeat the last cue (default: <tt>true</tt>)</li>
+% <li><tt>segment_repeat_cue :: true | false</tt> : Repeat the last cue (default: <tt>false</tt>)</li>
+% <li>
+%   <tt>x_timestamp_map :: {cue_time(), mpeg2_time()}</tt> : Add X-TIMESTAMP-MAP to  maps WebVTT cue timestamps to MPEG-2 (PES) timestamps.
+%   <ul>
+%     <li><tt>cue_time()</tt> :: <tt>00:00:00.000</tt></li>
+%     <li><tt>mpeg2_time()</tt> :: <tt>integer()</tt></li>
+%   </ul>
+% </li>
 % </ul>
 %
 % SRT and WEBVTT options:

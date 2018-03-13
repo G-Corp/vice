@@ -16,6 +16,29 @@ vice_subtitles_test_() ->
            {error, {1, 1}},
            vice_subtitles:parse("$$$$"))
     end,
+    % fun() ->
+    %     ?assertContinueIfMatch(
+    %        {ok, Subs},
+    %        vice_subtitles:parse(
+    %          "WEBVTT\n\n" ++
+    %          "1\n00:00:00.000 --> 00:00:01.000\n12345\n\n" ++
+    %          "2\n00:00:01.000 --> 00:00:02.000\nblah blah blah\n"),
+    %        Subs,
+    %        fun(S) ->
+    %            ?assertEqual(
+    %               {ok,
+    %                "1\n00:00:00,000 --> 00:00:01,000\n12345\n\n" ++
+    %                "2\n00:00:01,000 --> 00:00:02,000\nblah blah blah",
+    %                2000, 2.0,
+    %                #{duration =>
+    %                  #{duration => 1.0,
+    %                    from => #{ex => "000", hh => "00", mm => "00", ss => "01"},
+    %                    id => 1000, length => 1000,
+    %                    to => #{ex => "000", hh => "00", mm => "00", ss => "02"}},
+    %                  identifier => "2", note => "This is\nthe two", text => "Hola Mundo!"}},
+    %               vice_subtitles:to_string(S, srt))
+    %        end)
+    % end,
     fun() ->
         ?assertContinueIfMatch(
            {ok, Subs},

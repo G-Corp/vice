@@ -84,7 +84,7 @@ Equivalent to [`to_file(Subs, File, #{})`](#to_file-3).
 ### to_file/3 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}) -&gt; ok | no_data | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map()) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
@@ -100,6 +100,13 @@ M3U8 Options:
 * `segment_filename :: string()` : Segments file name (default: `subtitle_%d.vtt`)
 
 * `segment_repeat_cue :: true | false` : Repeat the last cue (default: `true`)
+
+* `x_timestamp_map :: {cue_time(), mpeg2_time()}` : Add X-TIMESTAMP-MAP to  maps WebVTT cue timestamps to MPEG-2 (PES) timestamps.
+
+* `cue_time()` :: `00:00:00.000`
+
+* `mpeg2_time()` :: `integer()`
+
 
 
 SRT and WEBVTT options:
@@ -125,7 +132,7 @@ SRT and WEBVTT options:
 ### to_file/4 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::#{}, Type::webvtt | srt | m3u8) -&gt; ok | no_data | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map(), Type::webvtt | srt | m3u8) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
@@ -138,7 +145,15 @@ M3U8 Options:
 
 * `segment_filename :: string()` : Segments file name (default: `subtitle_%d.vtt`)
 
-* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `true`)
+* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `false`)
+
+* `x_timestamp_map :: {cue_time(), mpeg2_time()}` : Add X-TIMESTAMP-MAP to  maps WebVTT cue timestamps to MPEG-2 (PES) timestamps.
+
+* `cue_time()` :: `00:00:00.000`
+
+* `mpeg2_time()` :: `integer()`
+
+
 
 
 SRT and WEBVTT options:
@@ -175,7 +190,7 @@ Equivalent to [`to_string(Subs, Type, #{})`](#to_string-3).
 ### to_string/3 ###
 
 <pre><code>
-to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::#{}) -&gt; {ok, string(), integer(), float(), <a href="#type-cue">cue()</a>} | no_data
+to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::map()) -&gt; {ok, string(), integer(), float(), <a href="#type-cue">cue()</a>} | no_data
 </code></pre>
 <br />
 

@@ -81,8 +81,7 @@ Region -> region newline Text : '$3'.
 Region -> region space newline Text : '$4'.
 
 Text -> string newline Text : string('$1') ++ "\n" ++ '$3'.
-%Text -> digit Text : digit('$1') ++ '$2'.
-%Text -> digit space Text : digit('$1') ++ " " ++ '$2'.
+% Text -> digit Text : digit('$1') ++ '$2'.
 Text -> string Newlines : string('$1').
 Text -> string : string('$1').
 Text -> period Text : "." ++ '$2'.

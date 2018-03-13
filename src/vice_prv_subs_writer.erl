@@ -17,6 +17,7 @@
 -define(SRT_FORMAT, "~w~n~s:~s:~s,~s --> ~s:~s:~s,~s~n~s").
 -define(WEBVTT_FORMAT, "~w~n~s:~s:~s.~s --> ~s:~s:~s.~s~n~s").
 -define(WEBVTT_FORMAT_SETTINGS, "~w~n~s:~s:~s.~s --> ~s:~s:~s.~s ~s~n~s").
+-define(X_TIMESTAMP_MAP_FORMAT, "WEBVTT~nX-TIMESTAMP-MAP=LOCAL:~s,MPEGTS:~w").
 
 webvtt_formater(
   Num,
@@ -65,12 +66,17 @@ do_webvtt_settings([{K, V}|Settings]) ->
 to_string(#{cues := Subs}, srt, Options) ->
   to_subs(Subs, options(Options), {[], -1, 0, undefined}, 1, srt_formater);
 to_string(#{cues := Subs}, webvtt, Options) ->
-  to_subs(Subs, options(Options), {["WEBVTT"], -1, 0, undefined}, 1, webvtt_formater);
+  to_subs(Subs, options(Options), {webvtt_headers(Options), -1, 0, undefined}, 1, webvtt_formater);
 to_string(_Subs, _Type, _Options) ->
   {error, invalid_type}.
 
+webvtt_headers(#{x_timestamp_map := {CueTime, MPEG2Time}}) ->
+  [lists:flatten(io_lib:format(?X_TIMESTAMP_MAP_FORMAT, [CueTime, MPEG2Time]))];
+webvtt_headers(_) ->
+  ["WEBVTT"].
+
 to_file(Subs, m3u8, File, Options) ->
-  case m3u8_segments(Subs, options(Options)) of
+  case m3u8_segments(Subs, filename:dirname(File), options(Options)) of
     {ok, Segments, MaxDuration} ->
       file:write_file(
         File,
@@ -99,11 +105,11 @@ segments([], Acc) ->
 segments([{Duration, File}|Rest], Acc) ->
   segments(Rest, [lists:flatten(io_lib:format("#EXTINF:~p,~n~s", [Duration, File]))|Acc]).
 
-m3u8_segments(Subs, Options) ->
-  m3u8_segments(Subs, Options, 0, 0, 0, undefined, []).
-m3u8_segments(Subs, #{segment_time := Duration,
-                      segment_filename := Filename,
-                      segment_repeat_cue := Repeat} = Options, From, FileNo, MaxDuration, PreviousCue, Acc) ->
+m3u8_segments(Subs, Path, Options) ->
+  m3u8_segments(Subs, Path, Options, 0, 0, 0, undefined, []).
+m3u8_segments(Subs, Path, #{segment_time := Duration,
+                            segment_filename := Filename,
+                            segment_repeat_cue := Repeat} = Options, From, FileNo, MaxDuration, PreviousCue, Acc) ->
   {From0, Duration0} = case {Repeat, PreviousCue} of
                                 {true, #{duration := #{duration := ExtraDuration, id := ID}}} ->
                                   {ID,
@@ -112,13 +118,14 @@ m3u8_segments(Subs, #{segment_time := Duration,
                                   {From, Duration}
                               end,
   SegmentFile = filename(Filename, FileNo),
-  case to_string(Subs, webvtt, #{from => From0, duration => Duration0}) of
+  case to_string(Subs, webvtt, #{from => From0, duration => Duration0, x_timestamp_map => maps:get(x_timestamp_map, Options, undefined)}) of
     {ok, _Data, _NewFrom, _SegmentDuration, PreviousCue} ->
       {ok, lists:reverse(Acc), MaxDuration};
     {ok, Data, NewFrom, SegmentDuration, LastCue} ->
-      file:write_file(SegmentFile, Data),
+      file:write_file(filename:join([Path, SegmentFile]), Data),
       m3u8_segments(
         Subs,
+        Path,
         Options,
         NewFrom,
         FileNo + 1,
@@ -136,7 +143,7 @@ m3u8_segments(Subs, #{segment_time := Duration,
 
 to_subs([], _, {[], _, _, _}, _, _) ->
   no_data;
-to_subs([], _, {["WEBVTT"], _, _, _}, _, _) ->
+to_subs([], _, {["WEBVTT" ++ _] = Acc, _, _, _}, _, _) when length(Acc) == 1 ->
   no_data;
 to_subs([], _, {Acc, ID, Duration, LastCue}, _, _) ->
   {ok, string:join(lists:reverse(Acc), "\n\n"), ID, Duration/1000, LastCue};
