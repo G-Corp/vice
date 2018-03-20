@@ -20,7 +20,13 @@ find_tools(Apps, Encoder) ->
                     undefined ->
                       {error, {App, not_found}};
                     AppPath ->
-                      {state, [{App, AppPath}|AppList]}
+                      Exec = bucfile:is_executable(AppPath),
+                      case lists:member(true, maps:values(Exec)) of
+                        true ->
+                          {state, [{App, AppPath}|AppList]};
+                        false ->
+                          {error, {App, not_found}}
+                      end
                   end;
                 (_, Acc) -> Acc
               end,
@@ -107,4 +113,3 @@ columns(Number, Plus, Lines) ->
   round(Number / Lines) + Extra + if Lines * Extra == Plus -> 0;
                                      true -> 1
                                   end.
-

@@ -14,11 +14,21 @@ __Behaviours:__ [`gen_server`](gen_server.md).
 
 
 
+### <a name="type-info_option">info_option()</a> ###
+
+
+<pre><code>
+info_option() = {labels, atom | binary} | {type, image | audio | video} | {allowed_extensions, string()}
+</code></pre>
+
+
+
+
 ### <a name="type-info_options">info_options()</a> ###
 
 
 <pre><code>
-info_options() = [{labels, atom | binary}]
+info_options() = [<a href="#type-info_option">info_option()</a>] | #{labels =&gt; atom | binary, type =&gt; image | audio | video, allowed_extensions =&gt; string()}
 </code></pre>
 
 <a name="index"></a>
@@ -28,17 +38,14 @@ info_options() = [{labels, atom | binary}]
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#convert-2">convert/2</a></td><td>Equivalent to <a href="#convert-4"><tt>convert(In, Out, [], undefined)</tt></a>.</td></tr><tr><td valign="top"><a href="#convert-3">convert/3</a></td><td>
 Convert a media.</td></tr><tr><td valign="top"><a href="#convert-4">convert/4</a></td><td>
-Convert a media.</td></tr><tr><td valign="top"><a href="#info-2">info/2</a></td><td>
-Return the given media informations.</td></tr><tr><td valign="top"><a href="#infos-1">infos/1</a></td><td>Equivalent to <a href="#infos-2"><tt>infos(File, [])</tt></a>.</td></tr><tr><td valign="top"><a href="#infos-2">infos/2</a></td><td>
-Return the media informations.</td></tr><tr><td valign="top"><a href="#screenshot-2">screenshot/2</a></td><td>
+Convert a media.</td></tr><tr><td valign="top"><a href="#info-2">info/2</a></td><td>Equivalent to <a href="#info-3"><tt>info(File, Info, [])</tt></a>.</td></tr><tr><td valign="top"><a href="#info-3">info/3</a></td><td>
+Return the given media information.</td></tr><tr><td valign="top"><a href="#infos-1">infos/1</a></td><td>Equivalent to <a href="#infos-2"><tt>infos(File, [])</tt></a>.</td></tr><tr><td valign="top"><a href="#infos-2">infos/2</a></td><td>
+Return all media informations.</td></tr><tr><td valign="top"><a href="#screenshot-2">screenshot/2</a></td><td>
 Create a screenshot for a movie.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
 Start vice application.</td></tr><tr><td valign="top"><a href="#status-1">status/1</a></td><td>
 Return the conversion status.</td></tr><tr><td valign="top"><a href="#stop-1">stop/1</a></td><td>
-Stop a running job.</td></tr><tr><td valign="top"><a href="#thumbnails-2">thumbnails/2</a></td><td>Equivalent to <a href="#thumbnails-3"><tt>thumbnails(Movie, OutName,
-[{every, 1}, {width, 100}, {out_path, "."},
-{sprite, true}, {assets_path, ""}])</tt></a>.</td></tr><tr><td valign="top"><a href="#thumbnails-3">thumbnails/3</a></td><td> 
-Generate a video thumbnails (.vtt + sprite).</td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td></td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td></td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
-Return the file type (image or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td>(<em>Deprecated</em>.) </td></tr></table>
+Stop a running job.</td></tr><tr><td valign="top"><a href="#thumbnails-2">thumbnails/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#thumbnails-3">thumbnails/3</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_mp4-2">to_html5_mp4/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_mp4-3">to_html5_mp4/3</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_ogg-2">to_html5_ogg/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_ogg-3">to_html5_ogg/3</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_webm-2">to_html5_webm/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#to.md5_webm-3">to_html5_webm/3</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#type-1">type/1</a></td><td>
+Return the file type (image, audio or video).</td></tr><tr><td valign="top"><a href="#webvtt-2">webvtt/2</a></td><td>(<em>Deprecated</em>.) </td></tr><tr><td valign="top"><a href="#webvtt-3">webvtt/3</a></td><td>(<em>Deprecated</em>.) </td></tr></table>
 
 
 <a name="functions"></a>
@@ -81,7 +88,18 @@ info(File::<a href="file.md#type-filename_all">file:filename_all()</a>, Info::at
 </code></pre>
 <br />
 
-Return the given media informations
+Equivalent to [`info(File, Info, [])`](#info-3).
+
+<a name="info-3"></a>
+
+### info/3 ###
+
+<pre><code>
+info(File::<a href="file.md#type-filename_all">file:filename_all()</a>, Info::atom(), Options::<a href="#type-info_options">info_options()</a>) -&gt; {ok, term()} | {error, term()}
+</code></pre>
+<br />
+
+Return the given media information
 
 <a name="infos-1"></a>
 
@@ -103,7 +121,7 @@ infos(File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options
 </code></pre>
 <br />
 
-Return the media informations
+Return all media informations
 
 <a name="screenshot-2"></a>
 
@@ -155,30 +173,15 @@ Stop a running job
 
 `thumbnails(Movie, OutName) -> any()`
 
-Equivalent to [`thumbnails(Movie, OutName,[{every, 1}, {width, 100}, {out_path, "."},{sprite, true}, {assets_path, ""}])`](#thumbnails-3).
+__This function is deprecated:__ use vice_thumbnails:generate/2
 
 <a name="thumbnails-3"></a>
 
 ### thumbnails/3 ###
 
-<pre><code>
-thumbnails(Movie::binary() | string(), OutName::binary() | string(), Options::list()) -&gt; ok | {error, term()}
-</code></pre>
-<br />
+`thumbnails(Movie, OutName, Options) -> any()`
 
-
-Generate a video thumbnails (.vtt + sprite)
-
-Options:
-
-* `every :: integer()`
-
-* `width :: integer()`
-
-* `out_path :: string()`
-
-* `sprite :: true | false`
-
+__This function is deprecated:__ use vice_thumbnails:thumbnails/3
 
 <a name="to_html5_mp4-2"></a>
 
@@ -186,11 +189,15 @@ Options:
 
 `to_html5_mp4(Input, Output) -> any()`
 
+__This function is deprecated:__ use convert/4 with `html5mp4` preset
+
 <a name="to_html5_mp4-3"></a>
 
 ### to_html5_mp4/3 ###
 
 `to_html5_mp4(Input, Output, Fun) -> any()`
+
+__This function is deprecated:__ use convert/4 with `html5mp4` preset
 
 <a name="to_html5_ogg-2"></a>
 
@@ -198,11 +205,15 @@ Options:
 
 `to_html5_ogg(Input, Output) -> any()`
 
+__This function is deprecated:__ use convert/4 with `html5ogg` preset
+
 <a name="to_html5_ogg-3"></a>
 
 ### to_html5_ogg/3 ###
 
 `to_html5_ogg(Input, Output, Fun) -> any()`
+
+__This function is deprecated:__ use convert/4 with `html5ogg` preset
 
 <a name="to_html5_webm-2"></a>
 
@@ -210,11 +221,15 @@ Options:
 
 `to_html5_webm(Input, Output) -> any()`
 
+__This function is deprecated:__ use convert/4 with `html5webm` preset
+
 <a name="to_html5_webm-3"></a>
 
 ### to_html5_webm/3 ###
 
 `to_html5_webm(Input, Output, Fun) -> any()`
+
+__This function is deprecated:__ use convert/4 with `html5webm` preset
 
 <a name="type-1"></a>
 
@@ -225,7 +240,7 @@ type(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; vi
 </code></pre>
 <br />
 
-Return the file type (image or video)
+Return the file type (image, audio or video)
 
 <a name="webvtt-2"></a>
 
@@ -233,7 +248,7 @@ Return the file type (image or video)
 
 `webvtt(Movie, OutName) -> any()`
 
-__This function is deprecated:__ use thumbnails/2
+__This function is deprecated:__ use vice_thumbnails:generate/2
 
 <a name="webvtt-3"></a>
 
@@ -241,5 +256,5 @@ __This function is deprecated:__ use thumbnails/2
 
 `webvtt(Movie, OutName, Options) -> any()`
 
-__This function is deprecated:__ use thumbnails/3
+__This function is deprecated:__ use vice_thumbnails:generate/3
 

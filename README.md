@@ -2,7 +2,7 @@
 
 # VICE - Video, audio and Image Converter for Erlang/Elixir #
 
-Copyright (c) 2014-2016 Grégoire Lejeune, 2016 Botsunit, 2017 G-Corp
+Copyright (c) 2014-2016 Grégoire Lejeune, 2016 Botsunit, 2017-2018 G-Corp
 
 __Version:__ 0.0.3
 
@@ -19,7 +19,7 @@ VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlf
 
 #### Install ####
 
-[cmake](https://cmake.org/), [ffmpeg](https://www.ffmpeg.org/)|[libav](https://www.libav.org/), [libopencv-dev](http://opencv.org/), [imagemagick](https://www.imagemagick.org/script/index.php)
+[cmake](https://cmake.org/), [ffmpeg](https://www.ffmpeg.org/)|[libav](https://www.libav.org/), [libopencv-dev](http://opencv.org/), [imagemagick](https://www.imagemagick.org/script/index.php), [SoX](http://sox.sourceforge.net/)
 
 
 #### Example ####
@@ -41,292 +41,1075 @@ VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlf
 
 ### Video ###
 
-For video conversion, VICE use ffmpeg.
+For video conversion, VICE use [FFmpeg](https://www.ffmpeg.org).
+
+
+#### Options ####
+
+
+<table width="100%" border="0" summary="video conversion options">
+<tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>global</td>
+<td><tt>yes</tt></td>
+<td>Overwrite output files without asking.</td>
+<td><tt>true</tt> | <tt>false</tt></td>
+<td><tt>{yes, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>fix_sub_duration</tt></td>
+<td>Fix subtitles durations. For each subtitle, wait for the next packet in the same stream and adjust the duration of the first to avoid overlap.</td>
+<td><tt>true</tt> | <tt>false</tt></td>
+<td><tt>{fix_sub_duration, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>canvas_size</tt></td>
+<td>Set the size of the canvas used to render subtitles.</td>
+<td><tt>integer()</tt></td>
+<td><tt>{canvas_size, 10}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>filter_complex</tt></td>
+<td>Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or outputs.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-all.md#Filtergraph-syntax-1">Filtergraph</a> :: string() | binary() | proplist()</tt></td>
+<td><tt>{filter_complex, [{"acrossfade", "d=10"}, {"c1", "exp"}, {"c2", "exp"}]}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>filter_complex_script</tt></td>
+<td>This option is similar to <tt>filter_complex</tt>, the only difference is that its argument is the name of the file from which a complex filtergraph description is to be read. </td>
+<td><tt>Script :: file:filename_all()</tt></td>
+<td><tt>{filter_complex_script, "filter.script"}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>allowed_extensions</tt></td>
+<td>List of file extensions that dash or hls is allowed to access.</td>
+<td><tt>Extensions :: string() | binary()</tt></td>
+<td><tt>{allowed_extensions, "vtt,aac,ts,key"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_position</tt></td>
+<td>Seeks in this input file to <i>position</i>.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{input_position, "00:01:02.123"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_eof_position</tt></td>
+<td>Like the <tt>input_position</tt> option but relative to the "end of file". That is negative values are earlier in the file, 0 is at EOF. .</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{input_eof_position, "-0:32:01.123"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_format</tt></td>
+<td>Force input format.</td>
+<td><tt>Format :: string()</tt></td>
+<td><tt>{input_format, "mp4"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_duration</tt></td>
+<td>Limit the duration of data read from the input file.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{input_duration, "0:32:01.123"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>decoder</tt></td>
+<td>Select a decoder for one or more streams.</td>
+<td><tt>[Stream :: string(), Codec :: string()]</tt></td>
+<td><tt>{decoder, ["a", "pcm_s161e"]}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>itoffset</tt></td>
+<td>Set the input time offset.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{itoffset, "+12.345"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_frame_rate</tt></td>
+<td>Set frame rate (Hz value, fraction or abbreviation).</td>
+<td><tt>[Stream :: string(), FPS :: integer()] | FPS :: integer()</tt></td>
+<td><tt>{input_frame_rate, 25}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_frame_size</tt></td>
+<td>Set frame size.</td>
+<td><tt>[Stream :: string(), Size :: integer()] | Size :: integer()</tt></td>
+<td><tt>{input_frame_size, ["v", 1]}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_pixel_format</tt></td>
+<td>Set pixel format.</td>
+<td><tt>[Stream :: string(), Format :: string()] | Format :: string() | binary()</tt></td>
+<td><tt>{input_pixel_format, "rgb24"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_sws_flags</tt></td>
+<td>Set SwScaler flags.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-all.md#Scaler-Options">Flags</a> :: string() | binary()</tt></td>
+<td><tt>{input_sws_flags, "gauss"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_audio_frequency</tt></td>
+<td>Set the audio sampling frequency.</td>
+<td><tt>[Stream :: string(), Freq :: integer()] | Freq :: integer()</tt></td>
+<td><tt>{input_audio_frequency, ["a:1", 22050]}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_audio_channels</tt></td>
+<td>Set the number of audio channels.</td>
+<td><tt>[Stream :: string(), Channels :: integer()] | Channels :: integer()</tt></td>
+<td><tt>{input_audio_channels, 6}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_acodec</tt></td>
+<td>Set the audio codec.</td>
+<td><tt>Codec :: string() | binary()</tt></td>
+<td><tt>{input_acodec, "pcm_s24le"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>guess_layout_max</tt></td>
+<td>If some input channel layout is not known, try to guess only if it corresponds to at most the specified number of channels.</td>
+<td><tt>Channels :: integer()</tt></td>
+<td><tt>{guess_layout_max, 2}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_vcodec</tt></td>
+<td>Set the video codec.</td>
+<td><tt>Codec :: string() | binary()</tt></td>
+<td><tt>{input_vcodec, "libxvid"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_scodec</tt></td>
+<td>Set the subtitle codec.</td>
+<td><tt>Codec :: string() | binary()</tt></td>
+<td><tt>{input_scodec, "srt"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>muxdelay</tt></td>
+<td>Set the maximum demux-decode delay. </td>
+<td><tt>Delay :: float() | integer()</tt></td>
+<td><tt>{muxdelay, 0.1}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>muxpreload</tt></td>
+<td>Set the initial demux-decode delay.</td>
+<td><tt>Delay :: float() | integer()</tt></td>
+<td><tt>{muxpreload, 0.1}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>accurate_seek</tt></td>
+<td>This option enables or disables accurate seeking in input files with the <tt>output_position</tt> option.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{accurate_seek, false}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_format</tt></td>
+<td>Force output format.</td>
+<td><tt>Format :: string()</tt></td>
+<td><tt>{output_format, "mp4"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_duration</tt></td>
+<td>Limit the duration of data read from the output file.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{output_duration, "0:32:01.123}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_position</tt></td>
+<td>Seeks in this output file to <i>position</i>.</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{output_position, "00:01:02.123}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_eof_position</tt></td>
+<td>Like the <tt>output_position</tt> option but relative to the "end of file". That is negative values are earlier in the file, 0 is at EOF. .</td>
+<td><tt><a href="https://www.ffmpeg.org/ffmpeg-utils.md#time-duration-syntax">position</a> :: string() | binary()</tt></td>
+<td><tt>{output_eof_position, "-0:32:01.123}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>encoder</tt></td>
+<td>Select a encoder for one or more streams.</td>
+<td><tt>[Stream :: string(), Codec :: string()] | Codec :: string()</tt></td>
+<td><tt>{encoder, ["a", "pcm_s161e"]}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>bitrate</tt></td>
+<td>Set bitrate.</td>
+<td><tt>[Stream :: string(), Bitrate :: string()] | [Stream :: string(), Number :: integer(), Bitrate :: string()] | Bitrate :: string() | integer()</tt></td>
+<td><tt>{bitrate, ["v", 0, "800k"]}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>timestamp</tt></td>
+<td>Set the recording timestamp in the container.</td>
+<td><tt>Date :: date()</tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>target</tt></td>
+<td>Specify target file type (<tt>vcd</tt>, <tt>svcd</tt>, <tt>dvd</tt>, <tt>dv</tt>, <tt>dv50</tt>). type may be prefixed with <tt>pal-</tt>, <tt>ntsc-</tt> or <tt>film-</tt> to use the corresponding standard.</td>
+<td><tt>Target :: string()</tt></td>
+<td><tt>{target, "vcd"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>frames</tt></td>
+<td>Stop writing to the stream after framecount frames.</td>
+<td><tt>[Stream :: string(), Framecount :: integer()] | Framecount :: integer()</tt></td>
+<td><tt>{frames, ["v", 1]}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>qscale</tt></td>
+<td>Use fixed quality scale (VBR).</td>
+<td><tt>[Stream :: string(), Quality :: integer()] | [Stream :: string(), Number :: integer(), Quality :: integer()] | Quality :: integer()</tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>filter</tt></td>
+<td>Create the filtergraph specified by filtergraph and use it to filter the stream.</td>
+<td><tt>[Stream :: string(), <a href="https://www.ffmpeg.org/ffmpeg-all.md#Filtergraph-syntax-1">Filtergraph</a> :: string()]</tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>filter_script</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>pre</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>vframes</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_frame_rate</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_frame_size</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>aspect</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>no_video_recording</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>vcodec</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>pass</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>vlang</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>video_filtergraph</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_pixel_format</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_sws_flags</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>rc_override</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>top</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>force_key_frames</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>copyinkf</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>aframes</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_audio_frequency</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>audio_quality</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_audio_channels</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>no_audio_recording</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_acodec</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>sample_fmt</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>audio_filtergraph</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_scodec</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>no_subtitle_recording</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>map</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>map_channel</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>map_chapters</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>vsync</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>async</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>copytb</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>shortest</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>dts_delta_threshold</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>streamid</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>bitstream_filters</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>timecode</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>strict</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>metadata</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>disable_video</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>disable_audio</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>disable_subtitle</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>x264_profile</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>x264_level</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>x264_refs</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>start_number</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>hls_list_size</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>hls_key_info_file</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>hls_playlist_type</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>hls_segment_filename</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>hls_time</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+</table>
+
+
+
+### Audio ###
+
+For audio conversion, VICE use [SoX](http://sox.sourceforge.net/).
+
+
+#### Options ####
+
+
+<table width="100%" border="0" summary="video conversion options">
+<tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>global</td>
+<td><tt>buffer</tt> or <tt>input_buffer</tt></td>
+<td>Set the size in bytes of the buffers used for processing audio (default 8192).</td>
+<td><tt>Bytes :: integer()</tt></td>
+<td><tt>{buffer, 20000}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>clobber</tt></td>
+<td>Don’t prompt before overwriting an existing file with the same name as that given for the output file.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{clobber, false}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>combine</tt></td>
+<td>Select the input file combining method.</td>
+<td><tt>concatenate | merge | mix | 'mix−power' | multiply | sequence</tt></td>
+<td><tt>{combine, concatenate}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>no_dither</tt></td>
+<td>Disable automatic dither.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{no_dither, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>effects_file</tt></td>
+<td>Use <tt>File</tt> to obtain all effects and their arguments.</td>
+<td><tt>File :: file:filename_all()</tt></td>
+<td><tt>{effects_file, "effects.data"}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>guard</tt></td>
+<td>Automatically invoke the gain effect to guard against clipping.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{guard, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>magic</tt></td>
+<td>If SoX has been built with the optional <tt>libmagic</tt> library then this option can be given to enable its use in helping to detect audio file types.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{magic, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>multi_threaded</tt></td>
+<td>By default, SoX is <i>single threaded</i>. If the <tt>multi_threaded</tt> option is given however then SoX will process audio channels for most multi-channel effects in parallel on hyper-threading/multi-core architectures.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{multi_threaded, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>single_threaded</tt></td>
+<td>Opposite of the <tt>multi_threaded</tt> option.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{single_threaded, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>norm</tt></td>
+<td>Automatically invoke the gain effect to guard against clipping and to normalise the audio.</td>
+<td><tt>DBLevel :: integer() | true</tt></td>
+<td><tt>{norm, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>play_rate_arg</tt></td>
+<td>Selects a quality option to be used when the <i>rate</i> effect is automatically invoked whilst playing audio.</td>
+<td><tt>Arg :: string()</tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>plot</tt></td>
+<td>If not set to off (the default if <tt>plot</tt> is not given), run in a mode that can be used, in conjunction with the gnuplot program or the GNU Octave program, to assist with the selection and configuration of many of the transfer-function based effects.</td>
+<td><tt>gnuplot | octave | off</tt></td>
+<td><tt>{plot, gnuplot}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>repeatable</tt></td>
+<td>VICE will embed a fixed time-stamp in the output file (e.g. AIFF) and will <i>seed</i> pseudo random number generators (e.g. dither) with a fixed number, thus ensuring that successive SoX invocations with the same inputs and the same parameters yield the same output.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{repeatable, true}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>replay_gain</tt></td>
+<td>Select whether or not to apply replay-gain adjustment to input files.</td>
+<td><tt>track | album | off</tt></td>
+<td><tt>{replay_gain, track}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>temp</tt></td>
+<td>Specify that any temporary files should be created in the given <tt>Directory</tt>.</td>
+<td><tt>Directory :: string()</tt></td>
+<td><tt>{temp, "/home/vice/tmp"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>ignore_length</tt></td>
+<td>Override an (incorrect) audio length given in an audio file’s header.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{ignore_length, true}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>volume</tt></td>
+<td>Intended for use when combining multiple input files, this option adjusts the volume of the file that follows it on the command line by a factor of <tt>Factor</tt>.</td>
+<td><tt>{volume, Factor :: float()}</tt></td>
+<td><tt>{volume, 0.8}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_bits</tt></td>
+<td>The number of bits (a.k.a. bit-depth or sometimes word-length) in each encoded sample.</td>
+<td><tt>Bytes :: integer()</tt></td>
+<td><tt>{input_bits, 8}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_channels</tt></td>
+<td>The number of audio channels in the audio file.</td>
+<td><tt>Channels :: integer()</tt></td>
+<td><tt>{input_channels, 2}}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_encoding</tt></td>
+<td>The audio encoding type.</td>
+<td><tt>Encoding :: string()</tt></td>
+<td><tt>{input_encoding, "float"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_rate</tt></td>
+<td>Gives the sample rate in Hz of the file.</td>
+<td><tt>Rate :: integer()</tt></td>
+<td><tt>{input_rate, 48720}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_rate_k</tt></td>
+<td>Gives the sample rate in kHz of the file.</td>
+<td><tt>KRate :: integer()</tt></td>
+<td><tt>{input_rate_k, 48}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_type</tt></td>
+<td>Gives the type of the audio file.</td>
+<td><tt>Filetype :: string()</tt></td>
+<td><tt>{input_type, "mp3"}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_endian</tt></td>
+<td>Specify the byte-order of the audio data.</td>
+<td><tt>little | bug | swap</tt></td>
+<td><tt>{input_endian, little}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_reverse_nibbles</tt></td>
+<td>Specifies that the nibble ordering (i.e. the 2 halves of a byte) of the samples should be reversed.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{input_reverse_nibbles, true}</tt></td>
+</tr>
+<tr>
+<td>input</td>
+<td><tt>input_reverse_bits</tt></td>
+<td>Specifies that the bit ordering of the samples should be reversed.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{input_reverse_bits, true}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_encoding</tt></td>
+<td>The audio encoding type.</td>
+<td><tt>Encoding :: string()</tt></td>
+<td><tt>{output_encoding, "float"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_bits</tt></td>
+<td>The number of bits (a.k.a. bit-depth or sometimes word-length) in each encoded sample.</td>
+<td><tt>Bytes :: integer()</tt></td>
+<td><tt>{output_bits, 8}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_channels</tt></td>
+<td>The number of audio channels in the audio file.</td>
+<td><tt>Channels :: integer()</tt></td>
+<td><tt>{output_channels, 2}}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_rate</tt></td>
+<td>Gives the sample rate in Hz of the file.</td>
+<td><tt>Rate :: integer()</tt></td>
+<td><tt>{output_rate, 48720}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_rate_k</tt></td>
+<td>Gives the sample rate in kHz of the file.</td>
+<td><tt>KRate :: integer()</tt></td>
+<td><tt>{output_rate_k, 48}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_type</tt></td>
+<td>Gives the type of the audio file.</td>
+<td><tt>Filetype :: string()</tt></td>
+<td><tt>{output_type, "mp3"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_endian</tt></td>
+<td>Specify the byte-order of the audio data.</td>
+<td><tt>little | bug | swap</tt></td>
+<td><tt>{output_endian, little}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_reverse_nibbles</tt></td>
+<td>Specifies that the nibble ordering (i.e. the 2 halves of a byte) of the samples should be reversed.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{output_reverse_nibbles, true}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>output_reverse_bits</tt></td>
+<td>Specifies that the bit ordering of the samples should be reversed.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{output_reverse_bits, true}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>add_comment</tt></td>
+<td>Append a comment in the output file header (where applicable).</td>
+<td><tt>Text :: string()</tt></td>
+<td><tt>{add_comment, "Encoded by VICE"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>comment</tt></td>
+<td>Specify the comment text to store in the output file header (where applicable).</td>
+<td><tt>Text :: string()</tt></td>
+<td><tt>{comment, "Encoded by VICE"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>comment_file</tt></td>
+<td>Specify a file containing the comment text to store in the output file header (where applicable).</td>
+<td><tt>File :: file:filename_all()</tt></td>
+<td><tt>{comment_file, "/home/vice/comment.txt"}</tt></td>
+</tr>
+<tr>
+<td>output</td>
+<td><tt>compression</tt></td>
+<td>The compression factor for variably compressing output file formats.</td>
+<td><tt>Factor :: integer()</tt></td>
+<td><tt>{compression, 2}</tt></td>
+</tr>
+<tr>
+<td>effects</td>
+<td><tt>effects</tt></td>
+<td>Audio effects to invoke (see <a href="http://sox.sourceforge.net/sox.md#EFFECTS">Effects</a>).</td>
+<td><tt>Effects :: string()</tt></td>
+<td><tt>{effects, "chorus 0.7 0.9 55 0.4 0.25 2"}</tt></td>
+</tr>
+</table>
 
-
-#### Main options ####
-
-`{output_format, Format}`<br />
-`{input_format, Format}`<br />
-: Force input or output file format. The format is normally auto detected for input files and guessed from the file extension for output files, so this option is not needed in most cases.
-
-`{yes, true}`<br />
-: Overwrite output files without asking.
-
-`{encoder, [Stream, Codec]}` | `{encoder, Codec}`<br />
-: Select and encoder for one or more output streams.
-
-`{decoder, [Stream, Codec]}` | `{decoder, Codec}`<br />
-: Select a decoder for one or more input streams.
-
-`{duration, Duration}`<br />
-: Stop writing the output after its duration reaches duration. Duration may be a number in seconds, or in "hh:mm:ss[.xxx]" form.
-
-`{limit_size, Limit}`<br />
-: Set the file size limit. Limit expressed in bytes.
-
-`{input_position, Position}`<br />
-: Seeks in the input file to position. Position may be either in seconds or in "hh:mm:ss[.xxx]" form.
-
-`{output_position, Position}`<br />
-: Decodes but discards input until the timestamps reach position. Position may be either in seconds or in "hh:mm:ss[.xxx]" form.
-
-`{itoffset, Offset}`<br />
-: Set the input time offset in seconds. "[-]hh:mm:ss[.xxx]" syntax is also supported. The offset is added to the timestamps of the input files.
-
-`{timestamp, Time}`<br />
-: Set the recording timestamp in the container.  The syntax for time is: `now|([(YYYY-MM-DD|YYYYMMDD)[T|t| ]]((HH:MM:SS[.m...])|(HHMMSS[.m...]))[Z|z])`
-
-`{target, Type}`<br />
-: Specify target file type ("vcd", "svcd", "dvd", "dv", "dv50"). Type may be prefixed with "pal-", "ntsc-" or "film-" to use the corresponding standard.
-
-`{dframes, Number}`<br />
-: Set the number of data frames to record.
-
-`{frames, [Stream, Framecount]}` | `{frames, Framecount}`<br />
-: Stop writing to the Stream after Framecount frames.
-
-`{qscale, [Stream, Quality]}` | `{qscale, Quality}`<br />
-: Use fixed quality scale (VBR).
-
-`{filter, [Stream, Filtergraph]}` | `{filter, Filtergraph}`<br />
-: Create the filtergraph specified by Siltergraph and use it to filter the Stream. (see ffmpeg-filters manual for more information about the filtergraph syntax.)
-
-`{filter_script, [Stream, Filename]}` | `{filter_script, Filename}`<br />
-: This option is similar to filter, the only difference is that its argument is the name of the file from which a filtergraph description is to be read.
-
-`{pre, [Stream, PresetName]}` | `{pre, PresetName}`<br />
-: Specify the preset for matching stream(s).
-
-
-#### Video Options ####
-
-`{vframes, Number}`<br />
-: Set the number of video frames to record. This is an alias for "-frames:v".
-
-`{input_frame_rate, [Stream, Fps]}` | `{input_frame_rate, Fps}`<br />
-`{output_frame_rate, [Stream, Fps]}` | `{output_frame_rate, Fps}`<br />
-: Set frame rate (Hz value, fraction or abbreviation).
-
-`{input_frame_size, [Stream, Size]}` | `{input_frame_size, Size}`<br />
-`{output_frame_size, [Stream, Size]}` | `{output_frame_size, Size}`<br />
-: Set frame size.
-
-`{aspect, [Stream, Aspect]}` | `{aspect, Aspect}`<br />
-: Set the video display aspect ratio specified by aspect. Aspect can be a floating point number string, or a string of the form num:den, where num and den are the numerator and denominator of the aspect ratio. For example "4:3", "16:9", "1.3333", and "1.7777" are valid argument values.
-
-`{no_video_recording, true}`<br />
-: Disable video recording.
-
-`{vcodev, Codec}`<br />
-: Set the video codec.
-
-`{pass, [Stream, N]}` | `{pass, N}`<br />
-: Select the pass number (1 or 2).
-
-`{vlang, Code}`<br />
-: Set the ISO 639 language code (3 letters) of the current video stream.
-
-`{video_filtergraph, Filter}`<br />
-: Create the filtergraph specified by filtergraph and use it to filter the stream.
-
-
-#### Advanced Video Options ####
-
-`{input_pixel_format, [Stream, Format]}` | `{input_pixel_format, Format}`<br />
-`{output_pixel_format, [Stream, Format]}` | `{output_pixel_format, Format}`<br />
-: Set pixel format.
-
-`{input_sws_flags, Flags}`<br />
-`{output_sws_flags, Flags}`<br />
-: Set SwScaler flags.
-
-`{rc_override, [Stream, Override]}` | `{rc_override, Override}`<br />
-: Rate control override for specific intervals
-
-`{top, [Stream, N]}` | `{top, N}`<br />
-: top=1/bottom=0/auto=-1 field first
-
-`‘force_key_frames, [Stream, KeyFrame]}` | `{force_key_frames, KeyFrame}`<br />
-: Force key frames at the specified timestamps, more precisely at the first frames after each specified time.
-
-`{copyinkf, [Stream, true]}` | `{copyinkf, true}`<br />
-: When doing stream copy, copy also non-key frames found at the beginning.
-
-
-#### Audio Options ####
-
-`{aframes, N}`<br />
-: Set the number of audio frames to record.
-
-`{input_audio_frequency, [Stream, Frequency]}` | `{input_audio_frequency, Frequency}`<br />
-`{output_audio_frequency, [Stream, Frequency]}` | `{output_audio_frequency, Frequency}`<br />
-: Set the audio sampling frequency.
-
-`{audio_quality, Quality}`<br />
-: Set the audio quality (codec-specific, VBR).
-
-`{input_audio_channels, [Stream, N]}` | `{input_audio_channels, N}`<br />
-`{output_audio_channels, [Stream, N]}` | `{output_audio_channels, N}`<br />
-: Set the number of audio channels.
-
-`{no_audio_recording, true}`<br />
-: Disable audio recording.
-
-`{input_acodec, Codec}`<br />
-`{output_acodec, Codec}`<br />
-Set the audio codec.
-
-`{sample_fmt, [Stream, AudioSampleFormat]}` | `{sample_fmt, AudioSampleFormat}`<br />
-Set the audio sample format.
-
-`{audio_filtergraph, Filter}`<br />
-Create the filtergraph specified by filtergraph and use it to filter the stream.
-
-
-#### Advanced Audio options: ####
-
-`{guess_layout_max, Channels}`<br />
-: If some input channel layout is not known, try to guess only if it corresponds to at most the specified number of channels.
-
-
-#### Subtitle options: ####
-
-`{input_scodec, Codec}`<br />
-`{output_scodec, Codec}`<br />
-: Set the subtitle codec.
-
-`{no_subtitle_recording, true}`<br />
-: Disable subtitle recording.
-
-
-#### Advanced Subtitle options: ####
-
-`{fix_sub_duration, true}`<br />
-: Fix subtitles durations.
-
-`{canvas_size, Size}`<br />
-: Set the size of the canvas used to render subtitles.
-
-
-#### Advanced options ####
-
-`{map, Map}`<br />
-: Designate one or more input streams as a source for the output file.
-
-`{map_channel, MapChannel}`<br />
-: Map an audio channel from a given input to an output.
-
-`{map_chapters, InputFileIndex}`<br />
-: Copy chapters from input file with index input_file_index to the next output file.
-
-`{vsync, Parameter}`<br />
-: Video sync method.
-
-`{async, SamplePerSec}`<br />
-: Audio sync method.
-
-`{copytb, Mode}`<br />
-: Specify how to set the encoder timebase when stream copying.
-
-`{shortest, true}`<br />
-: Finish encoding when the shortest input stream ends.
-
-`{dts_delta_threshold, true}`<br />
-: Timestamp discontinuity delta threshold.
-
-`{muxdelay, Second}`<br />
-: Set the maximum demux-decode delay.
-
-`{muxpreload, Second}`<br />
-: Set the initial demux-decode delay.
-
-`{streamid, OSI_NV}`<br />
-: Assign a new stream-id value to an output stream.
-
-`{bitstream_filters, [Stream, Filters]}` | `{bitstream_filters, Filters}`<br />
-: Set bitstream filters for matching streams.
-
-`{timecode, Timecode}`<br />
-: Specify Timecode for writing.
-
-`{filter_complex, Filtergraph}`<br />
-: Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or outputs.
-
-`{filter_complex_script, Filename}`<br />
-: This option is similar to filter_complex, the only difference is that its argument is the name of the file from which a complex filtergraph description is to be read.
-
-`{accurate_seek, true}`<br />
-: This option enables or disables accurate seeking in input files with the input_position option.
 
 
 ### Image ###
 
-For image conversion, VICE use ImageMagick.
+For image conversion, VICE use [ImageMagick](https://www.imagemagick.org)
+<sup>[®](http://tarr.uspto.gov/servlet/tarr?regser=serial&entry=78333969)</sup>
+.
 
-`{resize, P, percent}`
-`{resize, P, pixels}` |<br />
-`{resize, W, H}` |<br />
-`{resize, W, H, percent}` |<br />
-`{resize, W, H, ignore_ration}` |<br />
-`{resize, W, H, no_enlarge}` |<br />
-`{resize, W, H, no_shrink}` |<br />
-`{resize, W, H, fill}`<br />
-: Resize an image
 
-`{thumbnail, P, percent}` |<br />
-`{thumbnail, P, pixels}` |<br />
-`{thumbnail, W, H}` |<br />
-`{thumbnail, W, H, percent}` |<br />
-`{thumbnail, W, H, ignore_ration}` |<br />
-`{thumbnail, W, H, no_enlarge}` |<br />
-`{thumbnail, W, H, no_shrink}` |<br />
-`{thumbnail, W, H, fill}`<br />
-: Create a thumbnail of the image. This is similar to `resize`, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.
+#### Options ####
 
-`{crop, W, H, X, Y}` |<br />
-`{crop, W, H}`<br />
-: Cut out a rectangular region of the image
 
-`{gravity, Gravity}`<br />
-: Sets the current gravity suggestion for various other settings and options. Choices include: `NorthWest`, `North`, `NorthEast`, `West`, `Center`, `East`, `SouthWest`, `South`, `SouthEast`.
+<table width="100%" border="0" summary="video conversion options">
+<tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>convert</td>
+<td><tt>resize</tt></td>
+<td>Resize image</td>
+<td><tt>{resize, P :: integer(), percent | pixel} | {resize, W :: integer(), H :: integer()} | {resize, W :: integer(), H :: integer(), percent | ignore_ration | no_enlarge | no_shrink | fill}</tt></td>
+<td><tt>{resize, 50, percent}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>thumbnail</tt></td>
+<td>Create a thumbnail of the image. This is similar to <tt>resize</tt>, except it is optimized for speed and any image profile, other than a color profile, is removed to reduce the thumbnail size.</td>
+<td><tt>{thumbnail, P :: integer(), percent | pixel} | {thumbnail, W :: integer(), H :: integer()} | {thumbnail, W :: integer(), H :: integer(), percent | ignore_ration | no_enlarge | no_shrink | fill}</tt></td>
+<td><tt>{thumbnail, 100, 100, no_enlarge}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>quality</tt></td>
+<td></td>
+<td><tt></tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>crop</tt></td>
+<td>Cut out a rectangular region of the image.</td>
+<td><tt>{crop, W :: integer(), H :: integer(), X :: integer(), Y :: integer()} | {crop, W :: integer(), H :: integer()}</tt></td>
+<td><tt>{crop, 100, 80, 20, 30}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>gravity</tt></td>
+<td>Sets the current gravity suggestion for various other settings and options. Choices include: <tt>NorthWest</tt>, <tt>North</tt>, <tt>NorthEast</tt>, <tt>West</tt>, <tt>Center</tt>, <tt>East</tt>, <tt>SouthWest</tt>, <tt>South</tt>, <tt>SouthEast</tt></td>
+<td><tt>{gravity, Gravity :: string()}</tt></td>
+<td><tt>{gravity, "SouthEast"}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>repage</tt> or <tt>'+repage'</tt></td>
+<td>Adjust the canvas and offset information of the image</td>
+<td>-</td>
+<td><tt>repage</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>flip</tt></td>
+<td>Create a mirror image</td>
+<td>-</td>
+<td><tt>flip</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>trim</tt></td>
+<td>Trim an image</td>
+<td>-</td>
+<td><tt>trim</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>magnify</tt></td>
+<td>Double the size of the image with pixel art scaling</td>
+<td>-</td>
+<td><tt>magnify</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>rotation</tt></td>
+<td>Apply Paeth image rotation (using shear operations) to the image</td>
+<td><tt>{rotation, Degrees :: integer()}</tt></td>
+<td><tt>{rotation, 90}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>'auto-orient'</tt></td>
+<td>Adjusts an image so that its orientation is suitable for viewing</td>
+<td>-</td>
+<td><tt>'auto-orient'</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>strip</tt></td>
+<td>Strip the image of any profiles, comments or these PNG chunks: bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date.</td>
+<td>-</td>
+<td><tt>strip</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>blur</tt></td>
+<td>Reduce image noise and reduce detail levels</td>
+<td><tt>{blur, Radius :: integer()} | {blur, Radius :: integer(), Sigma :: integer()}</tt></td>
+<td><tt>{blur, 0, 8}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>edge</tt></td>
+<td>Detect edges within an image</td>
+<td><tt>{edge, Radius :: integer()}</tt></td>
+<td><tt>{edge 3}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>size</tt></td>
+<td>Set the width and height of the image</td>
+<td><tt>{size, Width} | {size, Width :: integer(), Height :: integer()} | {size, Width :: integer(), Height :: integer(), Offset :: integer()}</tt></td>
+<td><tt>{size, 192, 128}</tt></td>
+</tr>
+<tr>
+<td>convert</td>
+<td><tt>extent</tt></td>
+<td>Set the image size and offset</td>
+<td><tt>{extent, Width :: integer(), Height :: integer()}</tt></td>
+<td><tt>{extent, 384, 256}</tt></td>
+</tr>
+<tr>
+<td>mogrify</td>
+<td><tt>geometry</tt></td>
+<td>Set the preferred size and location of the image.</td>
+<td><tt>{geometry, Scale :: integer(), percent} | {geometry, Area :: integer(), pixels} | {geometry, ScaleX :: integer(), ScaleY :: integer(), percent} | {geometry, Width :: integer()} | {geometry, Width :: integer(), undefined} | {geometry, undefined, Height :: integer()} | {geometry, Width :: integer(), Height :: integer()} | {geometry, Width :: integer(), Height :: integer(), ignore_ration | no_enlarge | no_shrink | fill} | {geometry, Width :: integer(), Height :: integer(), X :: integer(), Y :: integer()}</tt></td>
+<td><tt>{geometry, 325, 192, 10, 10}</tt></td>
+</tr>
+<tr>
+<td>montage</td>
+<td><tt>geometry</tt></td>
+<td>Set the preferred size and location of the image.</td>
+<td><tt>{geometry, Scale :: integer(), percent} | {geometry, Area :: integer(), pixels} | {geometry, ScaleX :: integer(), ScaleY :: integer(), percent} | {geometry, Width :: integer()} | {geometry, Width :: integer(), undefined} | {geometry, undefined, Height :: integer()} | {geometry, Width :: integer(), Height :: integer()} | {geometry, Width :: integer(), Height :: integer(), ignore_ration | no_enlarge | no_shrink | fill} | {geometry, Width :: integer(), Height :: integer(), X :: integer(), Y :: integer()}</tt></td>
+<td><tt>{geometry, 10, percent}</tt></td>
+</tr>
+<tr>
+<td>montage</td>
+<td><tt>tile</tt></td>
+<td>Specify the layout of images.</td>
+<td><tt>{tile, Scale :: integer(), percent} | {tile, Area :: integer(), pixels} | {tile, ScaleX :: integer(), ScaleY :: integer(), percent} | {tile, Width :: integer()} | {tile, Width :: integer(), undefined} | {tile, undefined, Height :: integer()} | {tile, Width :: integer(), Height :: integer()} | {tile, Width :: integer(), Height :: integer(), ignore_ration | no_enlarge | no_shrink | fill} | {tile, Width :: integer(), Height :: integer(), X :: integer(), Y :: integer()}</tt></td>
+<td><tt>{tile, 234, 186, ignore_ration}</tt></td>
+</tr>
+</table>
 
-`repage` |<br />
-`'+repage'`<br />
-: Adjust the canvas and offset information of the image
-
-`flip`<br />
-: Create a mirror image
-
-`trim`<br />
-: Trim an image
-
-`magnify`<br />
-: Double the size of the image with pixel art scaling
-
-`{rotate, Degrees}`<br />
-: Apply Paeth image rotation (using shear operations) to the image
-
-`'auto-orient'`<br />
-: Adjusts an image so that its orientation is suitable for viewing
-
-`strip`<br />
-: Strip the image of any profiles, comments or these PNG chunks: bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date.
-
-`{blur, Radius}` |<br />
-`{blur, Radius, Sigma}`<br />
-: Reduce image noise and reduce detail levels
-
-`{edge, Radius}`<br />
-: Detect edges within an image
-
-`{size, Weight}` |<br />
-`{size, Weight, Height}` |<br />
-`{size, Weight, Height, Offset}`<br />
-: Set the width and height of the image
-
-`{extent, W, H}`<br />
-: Set the image size and offset
 
 
 ### Licence ###
@@ -335,7 +1118,7 @@ VICE is available for use under the following license, commonly known as the 3-c
 
 Copyright (c) 2014-2015 Grégoire Lejeune<br />
 Copyright (c) 2016 BotsUnit<br />
-Copyright (c) 2017 G-Corp<br />
+Copyright (c) 2017-2018 G-Corp<br />
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -353,5 +1136,7 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 
 <table width="100%" border="0" summary="list of modules">
 <tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice.md" class="module">vice</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr></table>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_encoder.md" class="module">vice_encoder</a></td></tr>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
 

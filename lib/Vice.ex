@@ -1,6 +1,6 @@
 # File: Vice.ex
 # This file was generated from vice.beam
-# Using rebar3_elixir (https://github.com/botsunit/rebar3_elixir)
+# Using rebar3_elixir (https://github.com/G-Corp/rebar3_elixir)
 # MODIFY IT AT YOUR OWN RISK AND ONLY IF YOU KNOW WHAT YOU ARE DOING!
 defmodule Vice do
   def unquote(:"start")() do
@@ -20,6 +20,9 @@ defmodule Vice do
   end
   def unquote(:"info")(arg1, arg2) do
     :erlang.apply(:"vice", :"info", [arg1, arg2])
+  end
+  def unquote(:"info")(arg1, arg2, arg3) do
+    :erlang.apply(:"vice", :"info", [arg1, arg2, arg3])
   end
   def unquote(:"status")(arg1) do
     :erlang.apply(:"vice", :"status", [arg1])
@@ -51,9 +54,6 @@ defmodule Vice do
   def unquote(:"thumbnails")(arg1, arg2, arg3) do
     :erlang.apply(:"vice", :"thumbnails", [arg1, arg2, arg3])
   end
-  def unquote(:"thumbnails_finalize")(arg1, arg2) do
-    :erlang.apply(:"vice", :"thumbnails_finalize", [arg1, arg2])
-  end
   def unquote(:"to_html5_webm")(arg1, arg2) do
     :erlang.apply(:"vice", :"to_html5_webm", [arg1, arg2])
   end
@@ -71,23 +71,5 @@ defmodule Vice do
   end
   def unquote(:"to_html5_ogg")(arg1, arg2, arg3) do
     :erlang.apply(:"vice", :"to_html5_ogg", [arg1, arg2, arg3])
-  end
-  def unquote(:"init")(arg1) do
-    :erlang.apply(:"vice", :"init", [arg1])
-  end
-  def unquote(:"handle_call")(arg1, arg2, arg3) do
-    :erlang.apply(:"vice", :"handle_call", [arg1, arg2, arg3])
-  end
-  def unquote(:"handle_cast")(arg1, arg2) do
-    :erlang.apply(:"vice", :"handle_cast", [arg1, arg2])
-  end
-  def unquote(:"handle_info")(arg1, arg2) do
-    :erlang.apply(:"vice", :"handle_info", [arg1, arg2])
-  end
-  def unquote(:"terminate")(arg1, arg2) do
-    :erlang.apply(:"vice", :"terminate", [arg1, arg2])
-  end
-  def unquote(:"code_change")(arg1, arg2, arg3) do
-    :erlang.apply(:"vice", :"code_change", [arg1, arg2, arg3])
   end
 end

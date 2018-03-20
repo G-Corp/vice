@@ -19,6 +19,7 @@
     to_nothing/1,
     to_arg/1,
     to_karg/1,
+    to_params_string/1,
     to_quote_arg/1,
     to_equal_arg/1,
     to_dotargs/1,
@@ -155,20 +156,21 @@ to_quote_arg(X) ->
 
 to_nothing(_) -> "".
 
-to_dotargs([X, Y]) when is_integer(X), is_list(Y) ->
-  ":" ++ bucs:to_string(X) ++ " " ++ Y;
-to_dotargs([X, Y]) when is_integer(X), is_integer(Y) ->
-  ":" ++ bucs:to_string(X) ++ " " ++ bucs:to_string(Y);
-to_dotargs([X, Y]) when is_integer(X), is_float(Y) ->
-  ":" ++ bucs:to_string(X) ++ " " ++ bucs:to_string(Y);
-to_dotargs([X, Y]) when is_list(X), is_list(Y) ->
-  ":" ++ X ++ " " ++ Y;
-to_dotargs([X, Y]) when is_list(X), is_integer(Y) ->
-  ":" ++ X ++ " " ++ bucs:to_string(Y);
-to_dotargs([X, Y]) when is_list(X), is_float(Y) ->
-  ":" ++ X ++ " " ++ bucs:to_string(Y);
-to_dotargs([X, true]) when is_list(X) ->
-  ":" ++ X.
+to_dotargs(Args) when is_tuple(Args) ->
+  to_dotargs(bucs:to_list(Args));
+to_dotargs(Args) when is_list(Args) ->
+  lists:flatten(do_to_dotargs(Args)).
+do_to_dotargs([X, true]) ->
+  [":", bucs:to_string(X)];
+do_to_dotargs([X, Y]) ->
+  [":", bucs:to_string(X), " ", bucs:to_string(Y)];
+do_to_dotargs([X|Rest]) ->
+  [":", bucs:to_string(X) | to_dotargs(Rest)].
+
+to_params_string(List) when is_list(List) ->
+  " " ++ string:join(
+           [bucs:to_string(Key) ++ "=" ++ bucs:to_string(Value) || {Key, Value} <- List],
+           ":").
 
 to_kvarg([K, V]) when is_list(K), is_list(V) ->
   lists:flatten(io_lib:format(" ~s=~p", [K, V])).

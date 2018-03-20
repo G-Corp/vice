@@ -3,12 +3,13 @@
 -compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
 -include("../include/vice_sox.hrl").
+-behaviour(vice_encoder).
 
 %% API
 -export([
          init/0
          , infos/3
-         , info/3
+         , info/4
          , command/5
          , progress/2
         ]).
@@ -26,7 +27,12 @@
           duration => {"-d", fun bucs:to_binary/1},
           seconds_duration => {"-D", fun bucs:to_float/1},
           bits_per_sample => {"-b", fun bucs:to_integer/1},
-          bitrate => {"-B", fun bucs:to_binary/1},
+          bitrate => {"-B", fun(Value) ->
+                                bucs:to_integer(re:replace(Value, "[^0-9]*$", "", [{return, list}]))
+                            end},
+          bitrate_unit => {"-B", fun(Value) ->
+                                     re:replace(Value, "^[0-9]*", "", [{return, binary}])
+                                 end},
           encoding => {"-e", fun bucs:to_binary/1},
           annotations => {"-a", fun bucs:to_binary/1}
          }).
@@ -42,7 +48,7 @@ init() ->
 infos(State, File, Options) ->
   Labels = buclists:keyfind(labels, 1, Options, atom),
   {ok, maps:fold(fun(Info, _, Acc) ->
-                     case info(State, File, Info) of
+                     case info(State, File, Info, Options) of
                        {ok, Data} ->
                          case Labels of
                            binary ->
@@ -55,12 +61,13 @@ infos(State, File, Options) ->
                      end
                  end, #{}, ?INFOS)}.
 
-info(#state{soxi = Soxi}, File, Info) ->
+info(#state{soxi = Soxi}, File, Info, _Options) ->
   case maps:get(Info, ?INFOS, undefined) of
     undefined ->
       {error, unavailable};
     {Param, ConvertFunction} ->
       Cmd = lists:flatten(io_lib:format(?INFO_FORMAT, [Soxi, Param, File])),
+      lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, Output} ->
           {ok, erlang:apply(ConvertFunction, [vice_prv_stdlib:chomp(Output)])};
@@ -111,4 +118,3 @@ progress(_Bytes, Sofar) ->
 
 %format(FMT, Args) ->
 %  lists:flatten(io_lib:format(FMT, Args)).
-

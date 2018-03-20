@@ -108,7 +108,11 @@ vice_prv_options_test_() ->
         ?assertEqual(":hello world", vice_prv_options:to_dotargs(["hello", "world"])),
         ?assertEqual(":hello 1", vice_prv_options:to_dotargs(["hello", 1])),
         ?assertEqual(":hello 2.0", vice_prv_options:to_dotargs(["hello", 2.0])),
-        ?assertEqual(":hello", vice_prv_options:to_dotargs(["hello", true]))
+        ?assertEqual(":hello", vice_prv_options:to_dotargs(["hello", true])),
+        ?assertEqual(":a:1 hello", vice_prv_options:to_dotargs(["a", 1, "hello"])),
+        ?assertEqual(":a:1 hello", vice_prv_options:to_dotargs({"a", 1, "hello"})),
+        ?assertEqual(":a:1", vice_prv_options:to_dotargs(["a", 1, true])),
+        ?assertEqual(":a:1", vice_prv_options:to_dotargs({"a", 1, true}))
     end,
     fun() ->
         ?assertEqual(" hello=\"world\"", vice_prv_options:to_kvarg(["hello", "world"]))

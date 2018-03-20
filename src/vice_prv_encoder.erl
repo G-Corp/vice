@@ -26,8 +26,9 @@ start_link(Type, Encoders) ->
   gen_server:start_link(?MODULE, {Type, Encoders}, []).
 
 % @hidden
-init({_, []}) ->
-  {stop, missing_encoder};
+init({Type, []}) ->
+  lager:info("~ts encoder not available !", [Type]),
+  ignore;
 init({Type, [Encoder|Rest]}) ->
   case erlang:apply(Encoder, init, []) of
     {ok, State} ->
@@ -40,23 +41,33 @@ init({Type, [Encoder|Rest]}) ->
 
 % @hidden
 handle_call({infos, File, Options}, _, #state{encoder = Encoder,
-                                     state = EncoderState} = State) ->
-  try
-    Reply = erlang:apply(Encoder, infos, [EncoderState, File, Options]),
-    {reply, Reply, State}
-  catch
-    _:_ ->
-      {reply, {error, infos_not_availables}, State}
+                                              state = EncoderState} = State) ->
+  case filelib:is_regular(File) of
+    true ->
+      try
+        Reply = erlang:apply(Encoder, infos, [EncoderState, File, Options]),
+        {reply, Reply, State}
+      catch
+        _:_ ->
+          {reply, {error, infos_not_availables}, State}
+      end;
+    false ->
+      {reply, {error, file_not_found}, State}
   end;
 % @hidden
-handle_call({info, File, Info}, _, #state{encoder = Encoder,
-                                          state = EncoderState} = State) ->
-  try
-    Reply = erlang:apply(Encoder, info, [EncoderState, File, Info]),
-    {reply, Reply, State}
-  catch
-    _:_ ->
-      {reply, {error, info_not_availables}, State}
+handle_call({info, File, Info, Options}, _, #state{encoder = Encoder,
+                                                   state = EncoderState} = State) ->
+  case filelib:is_regular(File) of
+    true ->
+      try
+        Reply = erlang:apply(Encoder, info, [EncoderState, File, Info, Options]),
+        {reply, Reply, State}
+      catch
+        _:_ ->
+          {reply, {error, info_not_availables}, State}
+      end;
+    false ->
+      {reply, {error, file_not_found}, State}
   end;
 handle_call(_Request, _From, State) ->
   Reply = ok,
@@ -70,7 +81,6 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
     {ok, NOptions} ->
       case erlang:apply(Encoder, command, [EncoderState, In, Out, NOptions, Multi]) of
         {ok, Cmd} ->
-          lager:debug("COMMAND : ~p", [Cmd]),
           Ref = erlang:make_ref(),
           vice_prv_status:insert(Ref, self()),
           case Fun of
@@ -80,9 +90,9 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
               gen_server:reply(From, {async, Ref})
           end,
           case vice_command:exec(Cmd, Encoder, Ref) of
-            {ok, _, _} ->
+            {ok, _} ->
               vice_utils:reply(Fun, From, {ok, In, Out});
-            {error, Code, _} ->
+            {error, Code} ->
               vice_utils:reply(Fun, From, {error, In, Out, Code})
           end,
           vice_prv_status:delete(Ref);
@@ -169,4 +179,3 @@ get_preset_file(Options, Type) ->
     false ->
       undefined
   end.
-

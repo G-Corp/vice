@@ -2,12 +2,13 @@
 -module(vice_prv_imagemagick).
 -compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
+-behaviour(vice_encoder).
 
 %% API
 -export([
          init/0
          , infos/3
-         , info/3
+         , info/4
          , command/5
          , progress/2
         ]).
@@ -31,12 +32,23 @@ init() ->
 
 infos(#state{identify = Identify}, File, Options) ->
   Response = #{
-     file_size => get_info(Identify, "%b", File, undefined),
-     filename => get_info(Identify, "%f", File, undefined),
-     page_geometry => get_info(Identify, "%g", File, undefined),
+    file_size => get_info(Identify,
+                          "%b",
+                           File,
+                           fun(Value) ->
+                               bucs:to_integer(re:replace(Value, "[^0-9]*$", "", [{return, list}]))
+                           end),
+     file_size_unit => get_info(Identify,
+                                "%b",
+                                File,
+                                fun(Value) ->
+                                    re:replace(Value, "^[0-9]*", "", [{return, binary}])
+                                end),
+     filename => get_info(Identify, "%f", File, fun bucs:to_binary/1),
+     page_geometry => get_info(Identify, "%g", File, fun bucs:to_binary/1),
      height => get_info(Identify, "%h", File, fun bucs:to_integer/1),
-     unique_colors => get_info(Identify, "%k", File, undefined),
-     file_format => get_info(Identify, "%m", File, undefined),
+     % unique_colors => get_info(Identify, "%k", File, fun bucs:to_binary/1),
+     file_format => get_info(Identify, "%m", File, fun bucs:to_binary/1),
      number_of_images_in_sequence => get_info(Identify, "%n", File, fun bucs:to_integer/1),
      image_index => get_info(Identify, "%p", File, fun bucs:to_integer/1),
      quantum_depth => get_info(Identify, "%q", File, fun bucs:to_integer/1),
@@ -45,11 +57,11 @@ infos(#state{identify = Identify}, File, Options) ->
      x_resolution => get_info(Identify, "%x", File, fun bucs:to_integer/1),
      y_resolution => get_info(Identify, "%y", File, fun bucs:to_integer/1),
      depth => get_info(Identify, "%z", File, fun bucs:to_integer/1),
-     compression_type => get_info(Identify, "%C", File, undefined),
+     compression_type => get_info(Identify, "%C", File, fun bucs:to_binary/1),
      page_height => get_info(Identify, "%H", File, fun bucs:to_integer/1),
      compression_quality => get_info(Identify, "%Q", File, fun bucs:to_integer/1),
      time_delay => get_info(Identify, "%T", File, fun bucs:to_integer/1),
-     resolution_unit => get_info(Identify, "%U", File, undefined),
+     resolution_unit => get_info(Identify, "%U", File, fun bucs:to_binary/1),
      page_width => get_info(Identify, "%W", File, fun bucs:to_integer/1),
      page_x_offset => get_info(Identify, "%X", File, fun bucs:to_integer/1),
      page_y_offset => get_info(Identify, "%Y", File, fun bucs:to_integer/1)
@@ -63,8 +75,8 @@ infos(#state{identify = Identify}, File, Options) ->
       {ok, Response}
   end.
 
-info(State, File, Info) ->
-  case infos(State, File, []) of
+info(State, File, Info, Options) ->
+  case infos(State, File, Options) of
     {ok, #{Info := Value}} ->
       {ok, Value};
     _ ->
@@ -73,6 +85,7 @@ info(State, File, Info) ->
 
 get_info(Identify, Attr, File, Fun) ->
   Cmd = lists:flatten(io_lib:format(?INFOS, [Identify, Attr, File])),
+  lager:debug("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
     {ok, Data} ->
       case Fun of
@@ -329,4 +342,3 @@ format(FMT, Args) ->
 
 progress(_Bytes, Sofar) ->
   Sofar.
-

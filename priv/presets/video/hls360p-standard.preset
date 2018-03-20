@@ -1,0 +1,27 @@
+% Usage: {vice_preset, hls360p}
+{name, "HLS 360p"}.
+{description, "Transcoding preset for HLS 360p"}.
+{options, [
+  {start_number, 0},
+  {hls_list_size, 0},
+  {hls_time, 2},
+  {hls_key_info_file, "enc.keyinfo"},
+  {hls_playlist_type, "vod"},
+  {hls_segment_filename, "video_360_%d.ts"},
+  {output_format, "hls"},
+
+  {video_filtergraph, "scale=\"trunc(oh*a/2)*2:360\""},
+
+  {bitrate, ["v", "400k"]},
+  {vcodec, "libx264"},
+  {output_frame_rate, 25},
+  {output_pixel_format, "yuv420p"},
+  {x264_profile, ["v", "high"]},
+  {x264_level, 4.1},
+  {x264_refs, 1},
+
+  {bitrate, ["a", "128k"]},
+  {output_acodec, "aac"},
+  {strict, "experimental"}
+]}.
+

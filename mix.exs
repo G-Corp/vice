@@ -1,3 +1,7 @@
+# File: mix.exs
+# This file was generated from rebar.config
+# Using rebar3_elixir (https://github.com/G-Corp/rebar3_elixir)
+# MODIFY IT AT YOUR OWN RISK AND ONLY IF YOU KNOW WHAT YOU ARE DOING!
 defmodule Vice.Mixfile do
   use Mix.Project
 
@@ -24,9 +28,9 @@ defmodule Vice.Mixfile do
   defp deps do
     [
       {:lager, "~> 3.6.1"},
-      {:bucs, "~> 1.0.13"},
+      {:bucs, "~> 1.0.15"},
       {:doteki, "~> 1.0.6"},
-      {:poolgirl, "~> 1.1.3"},
+      {:poolgirl, "~> 1.2.0"},
       {:jsx, "~> 2.9.0"}
     ]
   end
@@ -67,9 +71,9 @@ defmodule Vice.Mixfile do
 
   defp trim(x) do
     if Version.compare(System.version, "1.5.0") == :lt do
-      String.strip(x)
+      Kernel.apply(String, :strip, [x])
     else
-      String.trim(x)
+      Kernel.apply(String, :trim, [x])
     end
   end
 end

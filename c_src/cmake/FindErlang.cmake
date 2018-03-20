@@ -38,7 +38,7 @@ EXECUTE_PROCESS(COMMAND
   erl -noshell -eval "io:format(\"~s\", [code:root_dir()])" -s erlang halt
   OUTPUT_VARIABLE ERLANG_OTP_ROOT_DIR)
 
-MESSAGE(STATUS "Using OTP lib: ${ERLANG_OTP_LIB_DIR} - found")
+MESSAGE("-- Using OTP lib: ${ERLANG_OTP_LIB_DIR} - found")
 
 EXECUTE_PROCESS(COMMAND ls ${ERLANG_OTP_LIB_DIR}
   COMMAND grep erl_interface
@@ -54,8 +54,8 @@ EXECUTE_PROCESS(COMMAND ls ${ERLANG_OTP_ROOT_DIR}
   COMMAND tr -d \n
   OUTPUT_VARIABLE ERLANG_ERTS_DIR)
 
-MESSAGE(STATUS "Using erl_interface version: ${ERLANG_EI_DIR}")
-MESSAGE(STATUS "Using erts version: ${ERLANG_ERTS_DIR}")
+MESSAGE("-- Using erl_interface version: ${ERLANG_EI_DIR}")
+MESSAGE("-- Using erts version: ${ERLANG_ERTS_DIR}")
 
 SET(ERLANG_EI_PATH ${ERLANG_OTP_LIB_DIR}/${ERLANG_EI_DIR})
 SET(ERLANG_EI_INCLUDE_PATH ${ERLANG_OTP_LIB_DIR}/${ERLANG_EI_DIR}/include)

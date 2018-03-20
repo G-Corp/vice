@@ -17,4 +17,3 @@ changelog: ## Generate CHANGELOG
 
 release: dist lint tag ## Tag and release to hex.pm
 	$(verbose) $(REBAR) hex publish
-

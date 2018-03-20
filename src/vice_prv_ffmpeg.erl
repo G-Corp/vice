@@ -3,11 +3,12 @@
 -compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
 -include("../include/vice_ffmpeg.hrl").
+-behaviour(vice_encoder).
 
 -export([
          init/0
          , infos/3
-         , info/3
+         , info/4
          , command/5
          , progress/2
         ]).
@@ -18,7 +19,8 @@
           openssl
          }).
 
--define(PROBE, "~s -v quiet -of json -show_format -show_streams -allowed_extensions ALL \"~ts\"").
+-define(PROBE_AE, "~s -v quiet -of json -show_format -show_streams -allowed_extensions \"~ts\" \"~ts\"").
+-define(PROBE, "~s -v quiet -of json -show_format -show_streams \"~ts\"").
 
 init() ->
   case vice_utils:find_tools(record_info(fields, state), ffmpeg) of
@@ -29,8 +31,14 @@ init() ->
   end.
 
 infos(#state{ffprobe = Prober}, File, Options) ->
+  {ProbeCmd, ProberParams} = case lists:keyfind(allowed_extensions, 1, Options) of
+                               {allowed_extensions, Extensions} ->
+                                 {?PROBE_AE, [Prober, Extensions, File]};
+                               false ->
+                                 {?PROBE, [Prober, File]}
+                             end,
   Labels = {labels, buclists:keyfind(labels, 1, Options, atom)},
-  Cmd = lists:flatten(io_lib:format(?PROBE, [Prober, File])),
+  Cmd = lists:flatten(io_lib:format(ProbeCmd, ProberParams)),
   case bucos:run(Cmd) of
     {ok, Output} ->
       {ok, jsx:decode(bucs:to_binary(Output), [Labels, return_maps])};
@@ -38,8 +46,8 @@ infos(#state{ffprobe = Prober}, File, Options) ->
       Error
   end.
 
-info(State, File, Info) ->
-  case infos(State, File, []) of
+info(State, File, Info, Options) ->
+  case infos(State, File, Options) of
     {ok, Infos} ->
       get_info(Infos, Info);
     Error ->

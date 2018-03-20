@@ -99,7 +99,7 @@ M3U8 Options:
 
 * `segment_filename :: string()` : Segments file name (default: `subtitle_%d.vtt`)
 
-* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `true`)
+* `segment_repeat_cue :: true | false` : Repeat the last cue (default: `false`)
 
 * `x_timestamp_map :: {cue_time(), mpeg2_time()}` : Add X-TIMESTAMP-MAP to  maps WebVTT cue timestamps to MPEG-2 (PES) timestamps.
 

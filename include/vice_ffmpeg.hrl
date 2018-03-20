@@ -1,12 +1,17 @@
 -define(OPTIONS, [
+  {cgroup,                 cgexec, "-",                      [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
+  {cgexec,                 cgexec, "-",                      [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
+
   {yes,                    global, "-y",                     [{{vice_prv_options, is_true}, to_nothing}]},
   {fix_sub_duration,       global, "-fix_sub_duration",      [{{vice_prv_options, is_true}, to_nothing}]},
   {canvas_size,            global, "-canvas_size",           [{{erlang, is_integer}, to_arg}]},
-  {filter_complex,         global, "-filter_complex",        [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
+  {filter_complex,         global, "-filter_complex",        [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}, {{bucs, is_kw_list}, to_params_string}]},
   {filter_complex_script,  global, "-filter_complex_script", [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
+  {allowed_extensions,     global, "-allowed_extensions",    [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
 
   {input_position,         input,  "-ss",                    [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {input_eof_position,     input,  "-sseof",                 [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}, {{erlang, is_integer}, to_arg}]},
+  {input_format,           input,  "-f",                     [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
   {input_duration,         input,  "-t",                     [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {decoder,                input,  "-c",                     [{{vice_prv_options, is_list_and_list}, to_dotargs}]},
   {itoffset,               input,  "-itsoffset",             [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}, {{erlang, is_integer}, to_arg}]},
@@ -18,9 +23,10 @@
   {input_audio_channels,   input,  "-ac",                    [{{vice_prv_options, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
   {input_acodec,           input,  "-acodec",                [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
   {guess_layout_max,       input,  "-guess_layout_max",      [{{erlang, is_integer}, to_arg}]},
+  {input_vcodec,           input,  "-vcodec",                [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
   {input_scodec,           input,  "-scodec",                [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
-  {muxdelay,               input,  "-muxdelay",              [{{erlang, is_integer}, to_arg}]},
-  {muxpreload,             input,  "-muxpreload",            [{{erlang, is_integer}, to_arg}]},
+  {muxdelay,               input,  "-muxdelay",              [{{erlang, is_float}, to_arg}, {{erlang, is_integer}, to_arg}]},
+  {muxpreload,             input,  "-muxpreload",            [{{erlang, is_float}, to_arg}, {{erlang, is_integer}, to_arg}]},
   {accurate_seek,          input,  "-accurate_seek",         [{{vice_prv_options, is_true}, to_nothing}]},
 
   {output_format,          output, "-f",                     [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
@@ -34,7 +40,7 @@
   {dframes,                output, "-dframes",               [{{erlang, is_integer}, to_arg}]},
   {frames,                 output, "-frames",                [{{vice_prv_options, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
   {qscale,                 output, "-qscale",                [{{vice_prv_options, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
-  {filter,                 output, "-filter",                [{{vice_prv_options, is_list_and_integer}, to_dotargs}, {{erlang, is_integer}, to_arg}]},
+  {filter,                 output, "-filter",                [{{vice_prv_options, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
   {filter_script,          output, "-filter_script",         [{{vice_prv_options, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]}, % TODO: filename
   {pre,                    output, "-pre",                   [{{vice_prv_options, is_list_and_list}, to_dotargs}, {{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
   {vframes,                output, "-vframes",               [{{erlang, is_integer}, to_arg}]},
@@ -83,6 +89,7 @@
   {x264_profile,           output, "-profile",               [{{vice_prv_options, is_list_and_list}, to_dotargs}]},
   {x264_level,             output, "-level",                 [{{erlang, is_float}, to_arg}]},
   {x264_refs,              output, "-refs",                  [{{erlang, is_integer}, to_arg}]},
+  {x264_params,            output, "-x264-params",           [{{bucs, is_kw_list}, to_params_string}]},
 
   {start_number,           output, "-start_number",          [{{erlang, is_integer}, to_arg}]},
   {hls_list_size,          output, "-hls_list_size",         [{{erlang, is_integer}, to_arg}]},

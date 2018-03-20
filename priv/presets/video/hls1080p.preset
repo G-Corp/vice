@@ -1,23 +1,41 @@
 % Usage: {vice_preset, hls1080p}
+% `keyint=N*2:min-keyint=N:scenecut=-1:ref=4:fullrange=off:b-pyramid=strict:bitrate=B:vbv-bufsize=B*3`
+% avec `N` = framerate et `B` = bitrate
+% Donc pour du 25 fps : `N = 25`
+% 4K : `B = 15400`
+% 1080p : `B = 3850`
+% 720p : `B = 2750`
+% 576p : `B = 1750`
+% 420p : `B = 1750`
+% 360p : `B = 1000`
+
 {name, "HLS 1080p"}.
 {description, "Transcoding preset for HLS 1080p"}.
 {options, [
   {start_number, 0},
   {hls_list_size, 0},
-  % {hls_key_info_file, "enc.keyinfo"},
+  {hls_time, 2},
+  {hls_key_info_file, "enc.keyinfo"},
   {hls_playlist_type, "vod"},
   {hls_segment_filename, "video_1080_%d.ts"},
   {output_format, "hls"},
 
   {video_filtergraph, "scale=\"trunc(oh*a/2)*2:1080\""},
 
-  {bitrate, ["v", "3850k"]},
+  {bitrate, "v", "3850k"},
   {vcodec, "libx264"},
   {output_frame_rate, 25},
   {output_pixel_format, "yuv420p"},
-  {x264_profile, ["v", "high"]},
+  {x264_profile, "v", "high"},
   {x264_level, 4.1},
-  {x264_refs, 1},
+  {x264_params, [{"keyint", 50},
+                 {"min-keyint", 25},
+                 {"scenecut", -1},
+                 {"ref", 4},
+                 {"fullrange", "off"},
+                 {"b-pyramid", "strict"},
+                 {"bitrate", 3850},
+                 {"vbv-bufsize", 11550}]},
 
   {bitrate, ["a", "128k"]},
   {output_acodec, "aac"},
