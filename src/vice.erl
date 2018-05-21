@@ -70,7 +70,7 @@ start_link() ->
 % @doc
 % Return the file type (image, audio or video)
 % @end
--spec type(File :: file:filename_all()) -> video | image | unknow.
+-spec type(File :: file:filename_all()) -> audio | video | image | unknow.
 type(File) ->
   case bucmime:exploded(File) of
     {Type, _} -> bucs:to_atom(Type);

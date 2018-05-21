@@ -166,5 +166,114 @@ vice_prv_options_test_() ->
              [{input, " -t 01:02:03"}],
              vice_prv_options:options(?OPTIONS, [{input_duration, "01:02:03"}])
             )
+    end,
+    fun() ->
+        ?assertEqual(
+           "hello, world!",
+           vice_prv_options:compile(
+             "hello, world!", [])),
+
+        ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             [{what, world}])),
+
+        ?assertEqual(
+           [{hello, beautiful, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}, world}],
+             [{what, beautiful}])),
+
+        ?assertEqual(
+           [bonjour, world],
+           vice_prv_options:compile(
+             [{{hello}}, world],
+             [{hello, bonjour}])),
+
+        ?assertEqual(
+           [{test,
+             [
+              {integer, 123},
+              {string, "hello"},
+              {binary, <<"world">>},
+              {float, 1.2}
+             ]}
+           ],
+           vice_prv_options:compile(
+             [{test, [{integer, {{integer}}},
+                      {string, {{string}}},
+                      {binary, {{binary}}},
+                      {float, {{float}}}]}],
+             [{integer, 123},
+              {string, "hello"},
+              {binary, <<"world">>},
+              {float, 1.2}])),
+
+        ?assertEqual(
+           [{one, [
+                   {hello, world},
+                   {two, [
+                          {bonjour, monde},
+                          {three, [
+                                   {hola, mundo}
+                                  ]}
+                         ]}
+                  ]}],
+           vice_prv_options:compile(
+             [{one, [
+                     {hello, {{one}}},
+                     {two, [
+                            {bonjour, {{two}}},
+                            {three, [
+                                     {hola, {{three}}}
+                                    ]}
+                           ]}
+                    ]}],
+             [{one, world}, {two, monde}, {three, mundo}]))
+    end,
+    fun() ->
+        ?assertEqual(
+           [{sum, 21}],
+           vice_prv_options:compile(
+             [{sum, {{'(integer * 3)'}}}],
+             [{integer, 7}]))
+    end,
+    fun() ->
+        ?assertEqual(
+           [{string, <<"Hello, World!">>}],
+           vice_prv_options:compile(
+             [{string, <<"Hello, {{who  }}!">>}],
+             [{who, "World"}]))
+        , ?assertEqual(
+           [{string, "Hello, World!"}],
+           vice_prv_options:compile(
+             [{string, "Hello, {{who  }}!"}],
+             [{who, <<"World">>}]))
+        , ?assertEqual(
+           [{string, "Hello, World!"}],
+           vice_prv_options:compile(
+             [{string, "Hello, {{  who_{{ type}}  }}!"}],
+             [{type, is}, {who_is, "World"}]))
+        , ?assertEqual(
+           [{string, "John was born 12775 days ago."}],
+           vice_prv_options:compile(
+             [{string, "{{who}} was born {{(age * 365)}} days ago."}],
+             [{who, <<"John">>}, {age, 35}]))
+        , ?assertEqual(
+           [{string, <<"John was born 12775 days ago.">>}],
+           vice_prv_options:compile(
+             [{string, <<"{{who}} was born {{age * 365   }} days ago.">>}],
+             [{who, "John"}, {age, 35}]))
+        , ?assertEqual(
+           [{string, <<"John was born 12775 days ago.">>}],
+           vice_prv_options:compile(
+             [{string, <<"{{who}} was born {{ {{ age }} * 365   }} days ago.">>}],
+             [{who, "John"}, {age, 35}]))
+        , ?assertEqual(
+           [{string, <<"John was born 12775 days ago.">>}],
+           vice_prv_options:compile(
+             [{string, <<"{{who}} was born {{  {{metric}} * 365   }} days ago.">>}],
+             [{who, "John"}, {metric, age}, {age, 35}]))
     end
    ]}.

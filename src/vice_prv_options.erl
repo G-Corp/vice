@@ -4,7 +4,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -endif.
 
--export([options/2]).
+-export([options/2, compile/2]).
 
 -export([
     is_true/1,
@@ -174,6 +174,99 @@ to_params_string(List) when is_list(List) ->
 
 to_kvarg([K, V]) when is_list(K), is_list(V) ->
   lists:flatten(io_lib:format(" ~s=~p", [K, V])).
+
+compile(Preset, []) ->
+  Preset;
+compile(Preset, Data) when is_list(Data) ->
+  compile(Preset, Data, []);
+compile(Preset, Data) when is_map(Data) ->
+  compile(Preset, bucmaps:to_list(Data)).
+
+compile([], _Data, Acc) ->
+  lists:reverse(Acc);
+compile([Element|Rest], Data, Acc) ->
+  compile(Rest, Data, update(Element, Data, Acc)).
+
+update(Element, Data, Acc) when is_tuple(Element) ->
+  case marker(Element) of
+    {true, Marker} ->
+      [evaluate(Marker, Data)|Acc];
+    false ->
+      [compile_tuple(Element, Data)|Acc]
+  end;
+update(Element, Data, Acc) when is_list(Element) ->
+  case bucs:is_string(Element) of
+    true ->
+      [compile_string(Element, Data)|Acc];
+    false ->
+      [compile(Element, Data)|Acc]
+  end;
+update(Element, Data, Acc) when is_binary(Element) ->
+  [compile_string(Element, Data)|Acc];
+update(Element, _Data, Acc) ->
+  [Element|Acc].
+
+marker({{Marker}}) when is_atom(Marker) ->
+  {true, Marker};
+marker(_Element) ->
+  false.
+
+evaluate(Marker, Data) ->
+  case proplists:get_value(Marker, Data, '$undefined$') of
+    '$undefined$' ->
+      do_evaluate(Marker, Data);
+    Value ->
+      Value
+  end.
+do_evaluate(Marker, Data) ->
+  Expr = lists:foldl(fun
+                       ({Key, Value}, Acc) when is_integer(Value); is_float(Value) ->
+                         binary:replace(Acc, bucs:to_binary(Key), bucs:to_binary(Value), [global]);
+                       (_, Acc) ->
+                         Acc
+                     end, bucs:to_binary(Marker), Data),
+  try
+    {ok, Tokens, _} = erl_scan:string(bucs:to_string(<<Expr/binary, ".">>)),
+    {ok, Parsed} = erl_parse:parse_exprs(Tokens),
+    {value, Result, _} = erl_eval:exprs(Parsed, []),
+    Result
+  catch
+    _:_ -> undefined
+  end.
+
+compile_tuple(Tuple, Data) ->
+  list_to_tuple(compile(tuple_to_list(Tuple), Data)).
+
+compile_string(String, Data) ->
+  case re:run(String, "{{[^{}]*}}", [global, {capture, all, binary}]) of
+    nomatch ->
+      String;
+    {match, Matchs} ->
+      compile_string(
+        evaluate_string_markers(lists:flatten(Matchs), String, Data),
+        Data)
+  end.
+
+evaluate_string_markers([], String, _Data) ->
+  String;
+evaluate_string_markers([Marker|Rest], String, Data) ->
+  Value = evaluate(marker_to_atom(Marker), Data),
+  Result = binary:replace(bucs:to_binary(String), Marker, bucs:to_binary(Value)),
+  evaluate_string_markers(
+    Rest,
+    case is_list(String) of
+      true ->
+        bucs:to_string(Result);
+      false ->
+        Result
+    end,
+    Data).
+
+
+marker_to_atom(M) ->
+  Size = size(M) - 4,
+  <<"{{", N:Size/binary, "}}">> = M,
+  bucs:to_atom(bucbinary:trim(N, both)).
 
 -ifdef(TEST).
 vice_prv_options_internal_test_() ->

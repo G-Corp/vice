@@ -1,5 +1,5 @@
 %{
-  "bucs": {:hex, :bucs, "1.0.15", "44fc10dc863184fb99b1b7d25af5b1fa06355d0003800629668fbc37f3f9b6bd", [:make, :mix, :rebar3], [], "hexpm"},
+  "bucs": {:hex, :bucs, "1.0.16", "d69a4cd6d1238cd1adc5c95673dbde0f8459a5dbb7d746516434d8c6d935e96f", [:make, :mix, :rebar3], [], "hexpm"},
   "doteki": {:hex, :doteki, "1.0.6", "a953213c8c34e5af8de22cb48779bb6390f0d352d43ece3b75223bd941ec543b", [:make, :mix, :rebar3], [{:bucs, "~> 1.0.11", [hex: :bucs, repo: "hexpm", optional: false]}], "hexpm"},
   "goldrush": {:hex, :goldrush, "0.1.9", "f06e5d5f1277da5c413e84d5a2924174182fb108dabb39d5ec548b27424cd106", [:rebar3], [], "hexpm"},
   "jsx": {:hex, :jsx, "2.9.0", "d2f6e5f069c00266cad52fb15d87c428579ea4d7d73a33669e12679e203329dd", [:mix, :rebar3], [], "hexpm"},

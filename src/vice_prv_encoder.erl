@@ -79,7 +79,9 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
                                                                   state = EncoderState} = State) ->
   case update_with_preset(Options, Type) of
     {ok, NOptions} ->
-      case erlang:apply(Encoder, command, [EncoderState, In, Out, NOptions, Multi]) of
+      GlobalParams = proplists:get_value(global_params, NOptions, []),
+      CNOptions = vice_prv_options:compile(lists:keydelete(global_params, 1, NOptions), GlobalParams),
+      case erlang:apply(Encoder, command, [EncoderState, In, Out, CNOptions, Multi]) of
         {ok, Cmd} ->
           Ref = erlang:make_ref(),
           vice_prv_status:insert(Ref, self()),

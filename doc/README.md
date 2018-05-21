@@ -4,7 +4,7 @@
 
 Copyright (c) 2014-2016 Grégoire Lejeune, 2016 Botsunit, 2017-2018 G-Corp
 
-__Version:__ 0.0.3
+__Version:__ 0.1.0
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
@@ -49,6 +49,20 @@ For video conversion, VICE use [FFmpeg](https://www.ffmpeg.org).
 
 <table width="100%" border="0" summary="video conversion options">
 <tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>global</td>
+<td><tt>preset</tt></td>
+<td>Use a given preset file.</td>
+<td><tt>string() | atom()</tt></td>
+<td><tt>{preset, hls1080p}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>global_params</tt></td>
+<td>Global parameters.</td>
+<td><tt>[{atom(), term()}]</tt></td>
+<td><tt>[{framerate, 25}, {bitrate, 3950}]</tt></td>
+</tr>
 <tr>
 <td>global</td>
 <td><tt>yes</tt></td>

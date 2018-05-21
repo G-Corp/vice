@@ -236,7 +236,7 @@ __This function is deprecated:__ use convert/4 with `html5webm` preset
 ### type/1 ###
 
 <pre><code>
-type(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; video | image | unknow
+type(File::<a href="file.md#type-filename_all">file:filename_all()</a>) -&gt; audio | video | image | unknow
 </code></pre>
 <br />
 

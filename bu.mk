@@ -186,7 +186,11 @@ endif
 	$(verbose) $(REBAR) as $(REBAR_ENV) compile
 
 tests: ## Run tests
+ifndef TEST_MODULES
 	$(verbose) $(REBAR) eunit
+else
+	$(verbose) $(REBAR) eunit --module=$(TEST_MODULES)
+endif
 
 doc:: ## Generate doc
 ifndef NO_DOC
@@ -250,4 +254,3 @@ endif
 
 help: ## Show this help.
 	$(verbose) echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\033[33m\1\\033[m:\2/' | column -c2 -t -s :)"
-
