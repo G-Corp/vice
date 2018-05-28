@@ -180,6 +180,36 @@ vice_prv_options_test_() ->
              [{what, world}])),
 
         ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             [{<<"what">>, world}])),
+
+        ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             [{"what", world}])),
+
+        ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             #{what => world})),
+
+        ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             #{<<"what">> => world})),
+
+        ?assertEqual(
+           [{hello, world}],
+           vice_prv_options:compile(
+             [{hello, {{what}}}],
+             #{"what" => world})),
+
+        ?assertEqual(
            [{hello, beautiful, world}],
            vice_prv_options:compile(
              [{hello, {{what}}, world}],

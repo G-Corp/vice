@@ -104,17 +104,95 @@ command(State, In, Out, Options, _Multi) ->
 
 gen_command(convert, #state{ffmpeg = Converter}, In, Out, Options) ->
   Options1 = buclists:merge_keylists(1, [{yes, true}], Options),
-  {ok, gen_options(Converter, In, Out, Options1)}.
+  OutPath = filename:dirname(Out),
+  OutFile = filename:basename(Out),
+  gen_options(Converter, In, OutFile, OutPath, Options1).
 
-gen_options(Converter, In, Out, Options) ->
-  Params = vice_prv_options:options(?OPTIONS, Options),
-  InputOptions = buclists:keyfind(input, 1, Params, ""),
-  OutputOptions = buclists:keyfind(output, 1, Params, ""),
-  GlobalOptions = buclists:keyfind(global, 1, Params, ""),
-  lists:flatten(
-    io_lib:format(
-      "~s~s~s -i \"~ts\"~s \"~ts\"",
-      [Converter, GlobalOptions, InputOptions, In, OutputOptions, Out])).
+gen_options(Converter, In, Out, Path, Options) ->
+  case hls_options(Options, Path) of
+    {ok, Options1} ->
+      Params = vice_prv_options:options(?OPTIONS, Options1),
+      InputOptions = buclists:keyfind(input, 1, Params, ""),
+      OutputOptions = buclists:keyfind(output, 1, Params, ""),
+      GlobalOptions = buclists:keyfind(global, 1, Params, ""),
+      Cmd = lists:flatten(
+              io_lib:format(
+                "~s~s~s -i \"~ts\"~s \"~ts\"",
+                [Converter, GlobalOptions, InputOptions, In, OutputOptions, Out])),
+      case Path of
+        "." -> {ok, Cmd};
+        <<".">> -> {ok, Cmd};
+        _ -> {ok, Path, Cmd}
+      end;
+    Error ->
+      Error
+  end.
+
+hls_options(Options, Path) ->
+  case lists:keyfind(hls_key_info, 1, Options) of
+    false ->
+      {ok, Options};
+    {hls_key_info, HLSKeyInfo} ->
+      IV = proplists:get_value(iv, HLSKeyInfo, iv()),
+      case enc_file(Path, proplists:get_value(enc_key, HLSKeyInfo, undefined)) of
+        {ok, EncFile} ->
+          KeyURI = proplists:get_value(key_uri, HLSKeyInfo, EncFile),
+          case enc_key_info_file(Path, KeyURI, EncFile, IV) of
+            {ok, EncKeyInfoFile} ->
+              {ok, [{hls_key_info_file, EncKeyInfoFile}
+                    | lists:keydelete(hls_key_info, 1, Options)]};
+            Error ->
+              Error
+          end;
+        Error ->
+          Error
+      end
+  end.
+
+iv() ->
+  <<Result:128/bits, _/bits>> = crypto:strong_rand_bytes(16),
+  bucbinary:to_hex(Result).
+
+enc_file(_Path, undefined) ->
+  {error, missing_hls_enc_key};
+enc_file(Path, EncKey) ->
+  case filelib:is_regular(EncKey) of
+    true ->
+      bucfile:relative_from(EncKey, Path);
+    false ->
+      case size(bucs:to_binary(EncKey)) of
+        32 ->
+          try
+            ok = bucfile:make_dir(Path),
+            EncFile = filename:join(Path, "enc.key"),
+            ok = file:write_file(EncFile, bucbinary:from_hex(EncKey), [write, binary]),
+            {ok, "enc.key"}
+          catch
+            _:_ ->
+              {error, invalid_hls_enc_key}
+          end;
+        _Other ->
+          {error, invalid_hls_enc_key}
+      end
+  end.
+
+enc_key_info_file(Path, KeyURI, KeyFile, IV) ->
+  try
+    ok = bucfile:make_dir(Path),
+    EncKeyInfoFile = filename:join(Path, "enc.keyinfo"),
+    ok = file:write_file(
+           EncKeyInfoFile,
+           <<
+             (bucs:to_binary(KeyURI))/binary, "\n",
+             (bucs:to_binary(KeyFile))/binary, "\n",
+             (bucs:to_binary(IV))/binary
+           >>,
+           [write, binary]),
+    {ok, "enc.keyinfo"}
+  catch
+    _:_ ->
+      {error, invalid_hls_enc_key}
+  end.
 
 progress(Bytes, {D, T, P}) ->
   Duration = case D of

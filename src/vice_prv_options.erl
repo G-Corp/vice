@@ -178,7 +178,7 @@ to_kvarg([K, V]) when is_list(K), is_list(V) ->
 compile(Preset, []) ->
   Preset;
 compile(Preset, Data) when is_list(Data) ->
-  compile(Preset, Data, []);
+  compile(Preset, normalize(Data), []);
 compile(Preset, Data) when is_map(Data) ->
   compile(Preset, bucmaps:to_list(Data)).
 
@@ -186,6 +186,12 @@ compile([], _Data, Acc) ->
   lists:reverse(Acc);
 compile([Element|Rest], Data, Acc) ->
   compile(Rest, Data, update(Element, Data, Acc)).
+
+normalize([]) -> [];
+normalize([Tuple|Data]) when is_tuple(Tuple), not is_atom(element(1, Tuple)) ->
+  [setelement(1, Tuple, bucs:to_atom(element(1, Tuple)))|normalize(Data)];
+normalize([Element|Data]) ->
+  [Element|normalize(Data)].
 
 update(Element, Data, Acc) when is_tuple(Element) ->
   case marker(Element) of

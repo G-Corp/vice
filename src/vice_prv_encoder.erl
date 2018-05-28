@@ -82,22 +82,15 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
       GlobalParams = proplists:get_value(global_params, NOptions, []),
       CNOptions = vice_prv_options:compile(lists:keydelete(global_params, 1, NOptions), GlobalParams),
       case erlang:apply(Encoder, command, [EncoderState, In, Out, CNOptions, Multi]) of
+        {ok, Path, Cmd} ->
+          case bucfile:make_dir(Path) of
+            ok ->
+              bucos:in(Path, fun run_command/6, [From, Encoder, Cmd, Fun, In, Out]);
+            Error ->
+              vice_utils:reply(Fun, From, Error)
+          end;
         {ok, Cmd} ->
-          Ref = erlang:make_ref(),
-          vice_prv_status:insert(Ref, self()),
-          case Fun of
-            sync ->
-              ok;
-            _ ->
-              gen_server:reply(From, {async, Ref})
-          end,
-          case vice_command:exec(Cmd, Encoder, Ref) of
-            {ok, _} ->
-              vice_utils:reply(Fun, From, {ok, In, Out});
-            {error, Code} ->
-              vice_utils:reply(Fun, From, {error, In, Out, Code})
-          end,
-          vice_prv_status:delete(Ref);
+          run_command(From, Encoder, Cmd, Fun, In, Out);
         Error ->
           vice_utils:reply(Fun, From, Error)
       end;
@@ -108,6 +101,23 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
   {noreply, State};
 handle_cast(_Msg, State) ->
   {noreply, State}.
+
+run_command(From, Encoder, Cmd, Fun, In, Out) ->
+  Ref = erlang:make_ref(),
+  vice_prv_status:insert(Ref, self()),
+  case Fun of
+    sync ->
+      ok;
+    _ ->
+      gen_server:reply(From, {async, Ref})
+  end,
+  case vice_command:exec(Cmd, Encoder, Ref) of
+    {ok, _} ->
+      vice_utils:reply(Fun, From, {ok, In, Out});
+    {error, Code} ->
+      vice_utils:reply(Fun, From, {error, In, Out, Code})
+  end,
+  vice_prv_status:delete(Ref).
 
 % @hidden
 handle_info(_Info, State) ->
@@ -120,7 +130,6 @@ terminate(_Reason, _State) ->
 % @hidden
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
-
 
 update_with_preset(Options, Type) ->
   case get_preset_file(Options, Type) of

@@ -1,7 +1,4 @@
 -define(OPTIONS, [
-  {cgroup,                 cgexec, "-",                      [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
-  {cgexec,                 cgexec, "-",                      [{{erlang, is_list}, to_arg}, {{erlang, is_binary}, to_arg}]},
-
   {yes,                    global, "-y",                     [{{vice_prv_options, is_true}, to_nothing}]},
   {fix_sub_duration,       global, "-fix_sub_duration",      [{{vice_prv_options, is_true}, to_nothing}]},
   {canvas_size,            global, "-canvas_size",           [{{erlang, is_integer}, to_arg}]},

@@ -205,9 +205,9 @@ distclean:: $(DISTCLEAN) ## Clean the distribution
 
 dev: compile-erl
 ifdef ERL_CONFIG
-	$(verbose) erl -pa _build/$(REBAR_ENV)/lib/*/ebin _build/$(REBAR_ENV)/lib/*/include -config ${ERL_CONFIG} -name ${NODE_NAME}@${NODE_HOST} -setcookie ${current_dir}
+	$(verbose) erl -pa $(CURDIR)/_build/$(REBAR_ENV)/lib/*/ebin $(CURDIR)/_build/$(REBAR_ENV)/lib/*/include -config ${ERL_CONFIG} -name ${NODE_NAME}@${NODE_HOST} -setcookie ${current_dir}
 else
-	$(verbose) erl -pa _build/$(REBAR_ENV)/lib/*/ebin _build/$(REBAR_ENV)/lib/*/include -name ${NODE_NAME}@${NODE_HOST} -setcookie ${current_dir}
+	$(verbose) erl -pa $(CURDIR)/_build/$(REBAR_ENV)/lib/*/ebin $(CURDIR)/_build/$(REBAR_ENV)/lib/*/include -name ${NODE_NAME}@${NODE_HOST} -setcookie ${current_dir}
 endif
 
 dist-erl: clean compile-erl tests $(LINT) $(XREF) doc

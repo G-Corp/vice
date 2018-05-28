@@ -1,0 +1,17 @@
+{name, "HLS generic video stream"}.
+{description, "Generic transcoding preset for HLS video stream"}.
+{parameters, [source_media_stream,
+              bitrate]}.
+{options, [
+  {no_video_recording, true},
+  {start_number, 0},
+  {hls_list_size, 0},
+  {hls_time, 2},
+	% {hls_key_info_file, {{keyinfo_file}}}, % "enc.keyinfo"
+	{hls_playlist_type, "vod"},
+	{hls_segment_filename, "audio_{{bitrate}}_%d.ts"}, % 320
+	{map, "0:{{source_media_stream}}"}, % 0
+  {bitrate, ["a", "{{bitrate}}k"]},
+  {output_acodec, "aac"},
+	{output_format, "hls"}
+]}.

@@ -660,6 +660,13 @@ For video conversion, VICE use [FFmpeg](https://www.ffmpeg.org).
 </tr>
 <tr>
 <td>output</td>
+<td><tt>hls_key_info</tt></td>
+<td></td>
+<td><tt>[{key_uri, string()}, {enc_key, string() | file:filename_all()}, {iv, string()}]</tt></td>
+<td><tt></tt></td>
+</tr>
+<tr>
+<td>output</td>
 <td><tt>hls_playlist_type</tt></td>
 <td></td>
 <td><tt></tt></td>
