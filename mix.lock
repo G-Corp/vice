@@ -1,8 +1,9 @@
 %{
-  "bucs": {:hex, :bucs, "1.0.16", "d69a4cd6d1238cd1adc5c95673dbde0f8459a5dbb7d746516434d8c6d935e96f", [:make, :mix, :rebar3], [], "hexpm"},
-  "doteki": {:hex, :doteki, "1.0.6", "a953213c8c34e5af8de22cb48779bb6390f0d352d43ece3b75223bd941ec543b", [:make, :mix, :rebar3], [{:bucs, "~> 1.0.11", [hex: :bucs, repo: "hexpm", optional: false]}], "hexpm"},
+  "bucs": {:git, "git://github.com/G-Corp/bucs.git", "042a7144b6729579c2d1a85eba475cbd70719484", [branch: "master"]},
+  "doteki": {:git, "git://github.com/G-Corp/doteki.git", "645337f8e037b88c6a4a71adc75a34a462bcb638", [branch: "master"]},
+  "file_signatures": {:hex, :file_signatures, "0.1.7", "9f9c9e5a6dc8ab9ef628dc2462a4b9c236bbf1770d470c4a5887ce78e4bb24f5", [:make, :mix, :rebar3], [], "hexpm"},
   "goldrush": {:hex, :goldrush, "0.1.9", "f06e5d5f1277da5c413e84d5a2924174182fb108dabb39d5ec548b27424cd106", [:rebar3], [], "hexpm"},
   "jsx": {:hex, :jsx, "2.9.0", "d2f6e5f069c00266cad52fb15d87c428579ea4d7d73a33669e12679e203329dd", [:mix, :rebar3], [], "hexpm"},
   "lager": {:hex, :lager, "3.6.2", "2c72950a0e75ffd927dd35bc85ea30e7680a264c4bbd08b328250871ac456cc2", [:rebar3], [{:goldrush, "0.1.9", [hex: :goldrush, repo: "hexpm", optional: false]}], "hexpm"},
-  "poolgirl": {:hex, :poolgirl, "1.2.0", "f7eb4b6a6263284df7035ddc1a35cc3b77c97cee915ca71a56203ce9557e3e06", [:make, :mix, :rebar3], [{:doteki, "~> 1.0.6", [hex: :doteki, repo: "hexpm", optional: false]}], "hexpm"},
+  "poolgirl": {:git, "git://github.com/G-Corp/poolgirl.git", "41624a3210624674af4bd277c94bc85c936d452e", [branch: "master"]},
 }

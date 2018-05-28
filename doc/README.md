@@ -58,6 +58,13 @@ VICE is a fork and rewrite of [erlffmpeg](https://github.com/emedia-project/erlf
 <td><tt>string() | binary()</tt></td>
 <td><tt>{cgexec, "/usr/bin/cgexec"}</tt></td>
 </tr>
+<tr>
+<td>global</td>
+<td><tt>type</tt></td>
+<td>Allow you to force the input type.</td>
+<td><tt>video</tt> | <tt>audio</tt> | <tt>image</tt></td>
+<td><tt>{cgexec, "/usr/bin/cgexec"}</tt></td>
+</tr>
 </table>
 
 

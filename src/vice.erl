@@ -72,8 +72,30 @@ start_link() ->
 % @end
 -spec type(File :: file:filename_all()) -> audio | video | image | unknow.
 type(File) ->
+  case type_by_ext(File) of
+    unknow ->
+      case file_signatures:signature(File) of
+        {error, _Error} ->
+          unknow;
+        undefined ->
+          unknow;
+        Type ->
+          type_by_ext(<<"x.", (bucs:to_binary(Type))/binary>>)
+      end;
+    Type ->
+      Type
+  end.
+
+type_by_ext(File) ->
   case bucmime:exploded(File) of
-    {Type, _} -> bucs:to_atom(Type);
+    {Type, _} ->
+      AType = bucs:to_atom(Type),
+      case lists:member(AType, [audio, video, image]) of
+        true ->
+          AType;
+        false ->
+          unknow
+      end;
     _ -> unknow
   end.
 

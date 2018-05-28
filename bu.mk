@@ -238,7 +238,7 @@ local.rebar: ## Install rebar for Mix
 
 # Update
 
-BU_MK_REPO ?= https://github.com/botsunit/bu.mk
+BU_MK_REPO ?= https://github.com/G-Corp/bu.mk
 BU_MK_COMMIT ?=
 BU_MK_BUILD_DIR ?= .bu.mk.build
 

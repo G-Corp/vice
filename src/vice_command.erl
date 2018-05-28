@@ -5,7 +5,7 @@
 -export([exec/4, get_data/2]).
 
 exec(Command, Options, Module, Ref) ->
-  lager:debug("COMMAND : ~p", [Command]),
+  lager:debug("COMMAND : ~p: ~p", [Command, Options]),
   bucos:run(
     Command,
     [

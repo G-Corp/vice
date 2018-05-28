@@ -106,7 +106,8 @@ gen_command(convert, #state{ffmpeg = Converter}, In, Out, Options) ->
   Options1 = buclists:merge_keylists(1, [{yes, true}], Options),
   OutPath = filename:dirname(Out),
   OutFile = filename:basename(Out),
-  gen_options(Converter, In, OutFile, OutPath, Options1).
+  InFile = bucfile:relative_from(In, OutPath),
+  gen_options(Converter, InFile, OutFile, OutPath, Options1).
 
 gen_options(Converter, In, Out, Path, Options) ->
   case hls_options(Options, Path) of
