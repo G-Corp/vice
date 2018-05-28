@@ -2,9 +2,9 @@
 -module(vice_command).
 -compile([{parse_transform, lager_transform}]).
 
--export([exec/3, get_data/2]).
+-export([exec/4, get_data/2]).
 
-exec(Command, Module, Ref) ->
+exec(Command, Options, Module, Ref) ->
   lager:debug("COMMAND : ~p", [Command]),
   bucos:run(
     Command,
@@ -13,6 +13,7 @@ exec(Command, Module, Ref) ->
      stdout_on_strerr,
      {return, list, all},
      {on_data, {fun ?MODULE:get_data/2, {Module, Ref, {undefined, undefined, 0.0}}}}
+     | Options
     ]
    ).
 

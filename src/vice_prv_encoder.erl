@@ -79,18 +79,19 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
                                                                   state = EncoderState} = State) ->
   case update_with_preset(Options, Type) of
     {ok, NOptions} ->
+      RunOptions = get_exec_options(Options),
       GlobalParams = proplists:get_value(global_params, NOptions, []),
       CNOptions = vice_prv_options:compile(lists:keydelete(global_params, 1, NOptions), GlobalParams),
       case erlang:apply(Encoder, command, [EncoderState, In, Out, CNOptions, Multi]) of
         {ok, Path, Cmd} ->
           case bucfile:make_dir(Path) of
             ok ->
-              bucos:in(Path, fun run_command/6, [From, Encoder, Cmd, Fun, In, Out]);
+              run_command(From, Encoder, Cmd, [{cd, bucs:to_string(Path)}|RunOptions], Fun, In, Out);
             Error ->
               vice_utils:reply(Fun, From, Error)
           end;
         {ok, Cmd} ->
-          run_command(From, Encoder, Cmd, Fun, In, Out);
+          run_command(From, Encoder, Cmd, RunOptions, Fun, In, Out);
         Error ->
           vice_utils:reply(Fun, From, Error)
       end;
@@ -102,7 +103,14 @@ handle_cast({convert, In, Out, Options, Multi, Fun, From}, #state{type = Type,
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
-run_command(From, Encoder, Cmd, Fun, In, Out) ->
+get_exec_options(Options) ->
+  buclists:delete_if(fun
+                       ({cgroup, _}) -> false;
+                       ({cgexec, _}) -> false;
+                       (_) -> true
+                     end, Options).
+
+run_command(From, Encoder, Cmd, Options, Fun, In, Out) ->
   Ref = erlang:make_ref(),
   vice_prv_status:insert(Ref, self()),
   case Fun of
@@ -111,7 +119,7 @@ run_command(From, Encoder, Cmd, Fun, In, Out) ->
     _ ->
       gen_server:reply(From, {async, Ref})
   end,
-  case vice_command:exec(Cmd, Encoder, Ref) of
+  case vice_command:exec(Cmd, Options, Encoder, Ref) of
     {ok, _} ->
       vice_utils:reply(Fun, From, {ok, In, Out});
     {error, Code} ->

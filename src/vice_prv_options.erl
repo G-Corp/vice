@@ -31,7 +31,7 @@ options(OptionsDef, Options) ->
                 ({Option, Value}, OptionStrings) ->
                   case lists:keyfind(Option, 1, OptionsDef) of
                     false ->
-                      error_logger:error_msg("Invalid option ~p", [Option]),
+                      error_logger:warning_msg("Invalid option ~p", [Option]),
                       OptionStrings;
                     {Option, Level, Param, Validators} ->
                       Str = build_option_string(Param, Value, Validators),
@@ -41,7 +41,7 @@ options(OptionsDef, Options) ->
                 ({Option, N, Value}, OptionStrings) ->
                   case lists:keyfind(Option, 1, OptionsDef) of
                     false ->
-                      error_logger:error_msg("Invalid option ~p", [Option]),
+                      error_logger:warning_msg("Invalid option ~p", [Option]),
                       OptionStrings;
                     {Option, Level, Param, Validators} ->
                       Str = build_option_string(Param, Value, Validators),

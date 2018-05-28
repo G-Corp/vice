@@ -29,6 +29,26 @@ VICE is a fork and rewrite of <a href="https://github.com/emedia-project/erlffmp
 ...
 </pre>
 
+<h3>Common pptions</h3>
+
+<table width="100%" border="0" summary="video conversion options">
+<tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>global</td>
+<td><tt>cgroup</tt></td>
+<td>Execute encoder in the given cgroup.</td>
+<td><tt>string() | binary()</tt></td>
+<td><tt>{cgroup, "cpu:/erlang.vice"}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>cgexec</tt></td>
+<td>Path to the <tt>cgexec</tt> executable.</td>
+<td><tt>string() | binary()</tt></td>
+<td><tt>{cgexec, "/usr/bin/cgexec"}</tt></td>
+</tr>
+</table>
+
 <h3>Video</h3>
 
 For video conversion, VICE use <a href="https://www.ffmpeg.org">FFmpeg</a>.
