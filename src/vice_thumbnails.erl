@@ -104,31 +104,36 @@ thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid}) ->
   Sprite = buclists:keyfind(sprite, 1, Options, true),
   SpritesPath = filename:join(OutPath, OutName),
   AllSprites = filename:join(SpritesPath, "*.png"),
-  vice:convert(AllSprites, [{geometry, Width}], sync),
-  [F|_] = Sprites = filelib:wildcard(AllSprites),
-  Response = case {vice:infos(F), vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)])} of
-    {{ok, #{page_width := Width,
-            page_height := Height,
-            page_x_offset := X,
-            page_y_offset := Y}},
-     {ok, Duration}} ->
-      {Lines, Columns} = vice_utils:tile(length(Sprites)),
-      case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
-        {ok, VttFile} ->
-          {ok, In, VttFile};
-        Error ->
-          lager:error("Failed to generate thumbnails VTT: ~p", [Error]),
+  Response = case vice:convert(AllSprites, [{geometry, Width}], sync) of
+    {ok, _Input, _Output} ->
+      [F|_] = Sprites = filelib:wildcard(bucs:to_string(AllSprites)),
+      case {vice:infos(F), vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)])} of
+        {{ok, #{page_width := Width,
+                page_height := Height,
+                page_x_offset := X,
+                page_y_offset := Y}},
+         {ok, Duration}} ->
+          {Lines, Columns} = vice_utils:tile(length(Sprites)),
+          case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
+            {ok, VttFile} ->
+              {ok, In, VttFile};
+            Error ->
+              lager:error("Failed to generate thumbnails VTT: ~p", [Error]),
+              bucfile:remove_recursive(SpritesPath),
+              {error, In, OutName, output_vtt_error}
+          end;
+        {{ok, _}, Error} ->
+          lager:error("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
           bucfile:remove_recursive(SpritesPath),
-          {error, In, OutName, output_vtt_error}
+          {error, In, OutName, source_duration_unavailable};
+        {Error, _} ->
+          lager:error("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
+          bucfile:remove_recursive(SpritesPath),
+          {error, In, OutName, sprite_creation_error}
       end;
-    {{ok, _}, Error} ->
-      lager:error("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
-      bucfile:remove_recursive(SpritesPath),
-      {error, In, OutName, source_duration_unavailable};
-    {Error, _} ->
-      lager:error("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
-      bucfile:remove_recursive(SpritesPath),
-      {error, In, OutName, sprite_creation_error}
+    {error, Reason} ->
+      lager:error("Failed to convert sprites ~p", [Reason]),
+      {error, In, OutName, sprite_conversion_error}
   end,
   send_response(Response, FunOrPid);
 thumbnails_finalize({error, _, _, Code} = Result, {_, _, _, FunOrPid}) ->
@@ -154,7 +159,7 @@ allowed_extensions(Movie) ->
   end.
 
 generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, false) ->
-  VttFile = filename:join(OutPath, OutName ++ ".vtt"),
+  VttFile = filename:join(OutPath, bucs:to_string(OutName) ++ ".vtt"),
   lager:debug("Will generate ~ts", [VttFile]),
   case file:open(VttFile, [write]) of
     {ok, IO} ->
@@ -167,20 +172,40 @@ generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, 
       Error
   end;
 
-generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, true) ->
-  vice:convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync),
-  VttFile = filename:join(OutPath, OutName ++ ".vtt"),
-  SpritesPath = filename:join(OutPath, OutName),
-  bucfile:remove_recursive(SpritesPath),
-  case file:open(VttFile, [write]) of
-    {ok, IO} ->
-      io:format(IO, "WEBVTT~n", []),
-      vvtline(length(AllSprites), 0, 0, 0, Every, Duration, join_file(AssetsPath, OutName ++ ".png"), Width, Height, Lines, Columns, IO),
-      file:close(IO),
-      {ok, VttFile};
+generate_vtt(OutName, OutPath, [FirstSprite|_] = AllSprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, true) ->
+  SpritesStar = filename:join(filename:dirname(FirstSprite), "*.png"),
+  % case vice:convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync) of
+  case vice:convert([SpritesStar], filename:join(OutPath, bucs:to_string(OutName) ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync) of
+    {ok, _Input, Output} ->
+      case optimize(Output) of
+        {ok, _File} ->
+          VttFile = filename:join(OutPath, bucs:to_string(OutName) ++ ".vtt"),
+          SpritesPath = filename:join(OutPath, OutName),
+          bucfile:remove_recursive(SpritesPath),
+          case file:open(VttFile, [write]) of
+            {ok, IO} ->
+              io:format(IO, "WEBVTT~n", []),
+              vvtline(length(AllSprites), 0, 0, 0, Every, Duration, join_file(AssetsPath, bucs:to_string(OutName) ++ ".png"), Width, Height, Lines, Columns, IO),
+              file:close(IO),
+              {ok, VttFile};
+            Error ->
+              lager:error("Failed to create thumbnails VTT file: ~p", [Error]),
+              Error
+          end;
+        {error, Reason} ->
+          lager:error("Image optimization error: ~p", [Reason]),
+          {error, Reason}
+      end;
     Error ->
-      lager:error("Failed to create thumbnails VTT file: ~p", [Error]),
       Error
+  end.
+
+optimize(File) ->
+  case bucs:function_exists(image_optimizer, optimize, 1) of
+    true ->
+      image_optimizer:optimize(File);
+    false ->
+      {ok, File}
   end.
 
 vvtline(0, _, _, _, _, _, _, _, _, _, _, _) ->

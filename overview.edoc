@@ -703,6 +703,51 @@ For video conversion, VICE use <a href="https://www.ffmpeg.org">FFmpeg</a>.
 </tr>
 </table>
 
+<h3>Video Thumbnails</h3>
+
+To generate video thumbnails, VICE use <a href="https://www.imagemagick.org">ImageMagick</a><sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&amp;entry=78333969">&#174;</a></sup> and <a href="https://www.ffmpeg.org">FFmpeg</a>. If you want to <i>optimize</i> output images, you must add <a href="https://github.com/G-Corp/image_optimizer">image_optimizer</a> in your project dependencies and install <a href="https://pngquant.org/">pngquand</a> or <a href="http://optipng.sourceforge.net/">OptiPNG</a>.
+
+<h4>Options</h4>
+
+<table width="100%" border="0" summary="video conversion options">
+<tr><th>Type</th><th>Name</th><th>Description</th><th>Value</th><th>Example</th></tr>
+<tr>
+<td>global</td>
+<td><tt>every</tt></td>
+<td>Generate a thumbnail _every_ seconds.</td>
+<td><tt>integer()</tt></td>
+<td><tt>{every, 6}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>width</tt></td>
+<td>Thumbnail image width.</td>
+<td><tt>integer()</tt></td>
+<td><tt>{width, 100}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>out_path</tt></td>
+<td>Output path.</td>
+<td><tt>string() | binary()</tt></td>
+<td><tt>{out_path, "my_folder"}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>assets_path</tt></td>
+<td>Assets path.</td>
+<td><tt>string() | binary()</tt></td>
+<td><tt>{assets_path, "http://mysite.com/video/1/thumbnails"}</tt></td>
+</tr>
+<tr>
+<td>global</td>
+<td><tt>sprite</tt></td>
+<td>Generate a single image.</td>
+<td><tt>true | false</tt></td>
+<td><tt>{sprite, true}</tt></td>
+</tr>
+</table>
+
 <h3>Audio</h3>
 
 For audio conversion, VICE use <a href="http://sox.sourceforge.net/">SoX</a>.
@@ -1135,7 +1180,6 @@ For image conversion, VICE use <a href="https://www.imagemagick.org">ImageMagick
 <td><tt>{tile, 234, 186, ignore_ration}</tt></td>
 </tr>
 </table>
-
 <h3>Licence</h3>
 
 <p>
