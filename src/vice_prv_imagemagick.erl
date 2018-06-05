@@ -184,7 +184,7 @@ get_face_on_eyes(In, W, H, Options) ->
 % convert options
 
 convert_options(Options) ->
-  convert_option(Options, []).
+  convert_option(Options, ["-monitor"]).
 
 convert_option([], Acc) ->
   string:join(lists:reverse(Acc), " ");
@@ -281,24 +281,30 @@ convert_option([_|Rest], Acc) ->
 % mogrify options
 
 mogrify_options(Options) ->
-  mogrify_option(Options, []).
+  mogrify_option(Options, ["-monitor"]).
 
 mogrify_option([], Acc) ->
   string:join(lists:reverse(Acc), " ");
 mogrify_option([Option|Rest], Acc) when element(1, Option) == geometry ->
-  mogrify_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]).
+  mogrify_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]);
+
+mogrify_option([_|Rest], Acc) ->
+  mogrify_option(Rest, Acc).
 
 % montage options
 
 montage_options(Options) ->
-  montage_option(Options, []).
+  montage_option(Options, ["-monitor"]).
 
 montage_option([], Acc) ->
   string:join(lists:reverse(Acc), " ");
 montage_option([Option|Rest], Acc) when element(1, Option) == geometry ->
   montage_option(Rest, [format("-geometry ~ts", [geometry(Option)])|Acc]);
 montage_option([Option|Rest], Acc) when element(1, Option) == tile ->
-  montage_option(Rest, [format("-tile ~ts", [geometry(Option)])|Acc]).
+  montage_option(Rest, [format("-tile ~ts", [geometry(Option)])|Acc]);
+
+montage_option([_|Rest], Acc) ->
+  montage_option(Rest, Acc).
 
 % Common geometry
 
@@ -338,5 +344,10 @@ geometry({_, Width, Height, X, Y}) when X < 0, Y < 0->
 format(FMT, Args) ->
   lists:flatten(io_lib:format(FMT, Args)).
 
-progress(_Bytes, Sofar) ->
-  Sofar.
+progress(Bytes, Sofar) ->
+  case re:run(Bytes, "([0-9]*)%", [{capture, all_but_first, list}]) of
+    {match, [Percent]} ->
+      {undefined, undefined, bucs:to_float(Percent)};
+    _ ->
+      Sofar
+  end.

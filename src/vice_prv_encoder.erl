@@ -106,19 +106,20 @@ get_exec_options(Options) ->
   buclists:delete_if(fun
                        ({cgroup, _}) -> false;
                        ({cgexec, _}) -> false;
+                       ({cmd_options, _}) -> false;
                        (_) -> true
                      end, Options).
 
 run_command(From, Encoder, Cmd, Options, Fun, In, Out) ->
-  Ref = erlang:make_ref(),
-  vice_prv_status:insert(Ref, self()),
+  CmdOptions = proplists:get_value(cmd_options, Options, erlang:make_ref()),
+  Ref = vice_prv_status:insert(CmdOptions, self()),
   case Fun of
     sync ->
       ok;
     _ ->
       gen_server:reply(From, {async, Ref})
   end,
-  case vice_command:exec(Cmd, Options, Encoder, Ref) of
+  case vice_command:exec(Cmd, proplists:delete(cmd_options, Options), Encoder, Ref) of
     {ok, _} ->
       vice_utils:reply(Fun, From, {ok, In, Out});
     {error, Code} ->

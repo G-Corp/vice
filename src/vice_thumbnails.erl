@@ -62,20 +62,24 @@ generate(Movie, OutName, Options, Fun) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   SpritesPath = filename:join(OutPath, OutName),
+  Sprite = buclists:keyfind(sprite, 1, Options, true),
+  Width = buclists:keyfind(width, 1, Options, 150),
   ResultFunOrPid = case Fun of
                      sync ->
                        self();
                      Other ->
                        Other
                    end,
-
   case bucfile:make_dir(SpritesPath) of
     ok ->
       SpritesFiles = filename:join(SpritesPath, "%016d.png"),
+      CmdOptions = [{ref, erlang:make_ref()}, {on, get_stages_number(Sprite)}],
       case vice:convert(Movie, SpritesFiles, [{output_format, "image2"},
-                                         {video_filtergraph, "fps=1/" ++ bucs:to_string(Every)},
-                                         {type, video}|allowed_extensions(Movie)],
-                   {fun ?MODULE:thumbnails_finalize/2, {Movie, OutName, Options, ResultFunOrPid}}) of
+                                              {video_filtergraph, <<"fps=1/", (bucs:to_binary(Every))/binary, ",scale=", (bucs:to_binary(Width))/binary, ":-1">>},
+                                              {type, video},
+                                              {cmd_options, [{stage, 1}|CmdOptions]}
+                                              |allowed_extensions(Movie)],
+                        {fun ?MODULE:thumbnails_finalize/2, {Movie, OutName, Options, ResultFunOrPid, CmdOptions}}) of
         {async, Ref} ->
           case is_pid(ResultFunOrPid) of
             true ->
@@ -95,44 +99,41 @@ generate(Movie, OutName, Options, Fun) ->
   end.
 
 % @hidden
-thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid}) ->
+get_stages_number(true) -> 2;
+get_stages_number(_) -> 1.
+
+% @hidden
+thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid, CmdOptions}) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   AssetsPath = buclists:keyfind(assets_path, 1, Options, ""),
-  Width = buclists:keyfind(width, 1, Options, 150),
   Sprite = buclists:keyfind(sprite, 1, Options, true),
   SpritesPath = filename:join(OutPath, OutName),
   AllSprites = filename:join(SpritesPath, "*.png"),
-  Response = case vice:convert(AllSprites, [{geometry, Width}], sync) of
-    {ok, _Input, _Output} ->
-      [F|_] = Sprites = filelib:wildcard(bucs:to_string(AllSprites)),
-      case {vice:infos(F), vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)])} of
-        {{ok, #{page_width := Width,
-                page_height := Height,
-                page_x_offset := X,
-                page_y_offset := Y}},
-         {ok, Duration}} ->
-          {Lines, Columns} = vice_utils:tile(length(Sprites)),
-          case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite) of
-            {ok, VttFile} ->
-              {ok, In, VttFile};
-            Error ->
-              error_logger:error_msg("Failed to generate thumbnails VTT: ~p", [Error]),
-              bucfile:remove_recursive(SpritesPath),
-              {error, In, OutName, output_vtt_error}
-          end;
-        {{ok, _}, Error} ->
-          error_logger:error_msg("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
+  [F|_] = Sprites = filelib:wildcard(bucs:to_string(AllSprites)),
+  Response = case {vice:infos(F), vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)])} of
+    {{ok, #{page_width := Width,
+            page_height := Height,
+            page_x_offset := X,
+            page_y_offset := Y}},
+     {ok, Duration}} ->
+      {Lines, Columns} = vice_utils:tile(length(Sprites)),
+      case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite, CmdOptions) of
+        {ok, VttFile} ->
+          {ok, In, VttFile};
+        Error ->
+          error_logger:error_msg("Failed to generate thumbnails VTT: ~p", [Error]),
           bucfile:remove_recursive(SpritesPath),
-          {error, In, OutName, source_duration_unavailable};
-        {Error, _} ->
-          error_logger:error_msg("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
-          bucfile:remove_recursive(SpritesPath),
-          {error, In, OutName, sprite_creation_error}
+          {error, In, OutName, output_vtt_error}
       end;
-    {error, Reason} ->
-      error_logger:error_msg("Failed to convert sprites ~p", [Reason]),
-      {error, In, OutName, sprite_conversion_error}
+    {{ok, _}, Error} ->
+      error_logger:error_msg("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
+      bucfile:remove_recursive(SpritesPath),
+      {error, In, OutName, source_duration_unavailable};
+    {Error, _} ->
+      error_logger:error_msg("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
+      bucfile:remove_recursive(SpritesPath),
+      {error, In, OutName, sprite_creation_error}
   end,
   send_response(Response, FunOrPid);
 thumbnails_finalize({error, _, _, Code} = Result, {_, _, _, FunOrPid}) ->
@@ -157,7 +158,16 @@ allowed_extensions(Movie) ->
     _Ext -> []
   end.
 
-generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, false) ->
+generate_vtt(OutName,
+             OutPath,
+             AllSprites,
+             AssetsPath,
+             Every,
+             Duration,
+             _Lines, _Columns,
+             Width,
+             Height,
+             _X, _Y, false, _CmdOptions) ->
   VttFile = filename:join(OutPath, bucs:to_string(OutName) ++ ".vtt"),
   case file:open(VttFile, [write]) of
     {ok, IO} ->
@@ -170,10 +180,27 @@ generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, 
       Error
   end;
 
-generate_vtt(OutName, OutPath, [FirstSprite|_] = AllSprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, true) ->
+generate_vtt(OutName,
+             OutPath,
+             [FirstSprite|_] = AllSprites,
+             AssetsPath,
+             Every,
+             Duration,
+             Lines,
+             Columns,
+             Width,
+             Height,
+             X,
+             Y,
+             true,
+             CmdOptions) ->
   SpritesStar = filename:join(filename:dirname(FirstSprite), "*.png"),
-  % case vice:convert(AllSprites, filename:join(OutPath, OutName ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync) of
-  case vice:convert([SpritesStar], filename:join(OutPath, bucs:to_string(OutName) ++ ".png"), [{tile, Columns, Lines}, {geometry, Width, Height, X, Y}], sync) of
+  case vice:convert([SpritesStar],
+                    filename:join(OutPath, bucs:to_string(OutName) ++ ".png"),
+                    [{tile, Columns, Lines},
+                     {geometry, Width, Height, X, Y},
+                     {cmd_options, [{stage, 2}|CmdOptions]}],
+                    sync) of
     {ok, _Input, Output} ->
       case optimize(Output) of
         {ok, _File} ->

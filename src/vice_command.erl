@@ -4,6 +4,7 @@
 -export([exec/4, get_data/2]).
 
 exec(Command, Options, Module, Ref) ->
+  error_logger:warning_msg("RUN ~ts", [Command]),
   bucos:run(
     Command,
     [
@@ -18,37 +19,5 @@ exec(Command, Options, Module, Ref) ->
 get_data(Bytes, {Module, Ref, Sofar}) ->
   {_, _, Percent} = NSofar = Module:progress(Bytes, Sofar),
   vice_prv_status:value(Ref, Percent),
-  error_logger:info_msg("[~p] convert ~p%", [Ref, Percent]),
+  error_logger:info_msg("[~p] convert ~p%", [Ref, vice_prv_status:value(Ref)]),
   {Module, Ref, NSofar}.
-
-% exec(Command, Module, Ref) ->
-%   Port = erlang:open_port({spawn, Command}, [stream, in, eof, hide, exit_status, stderr_to_stdout]),
-%   vice_prv_status:port(Ref, Port),
-%   get_data(Port, Module, Ref, {undefined, undefined, 0.0}).
-%
-% get_data(Port, Module, Ref, Sofar) ->
-%   receive
-%     {Port, {data, Bytes}} ->
-%       {_, _, Percent} = NSofar = Module:progress(Bytes, Sofar),
-%       vice_prv_status:value(Ref, Percent),
-%       error_logger:info_msg("[~p] convert ~p%", [Ref, Percent]),
-%       get_data(Port, Module, Ref, NSofar);
-%     {Port, eof} ->
-%       Port ! {self(), close},
-%       receive
-%         {Port, closed} ->
-%           true
-%       end,
-%       receive
-%         {'EXIT', Port, _} ->
-%           ok
-%       after 1 ->
-%               ok
-%       end,
-%       receive
-%         {Port, {exit_status, 0}} ->
-%           {ok, 0, Sofar};
-%         {Port, {exit_status, Code}} ->
-%           {error, Code, Sofar}
-%       end
-%   end.

@@ -8,6 +8,7 @@
          , delete/1
          , value/2
          , value/1
+         , next/1
          , port/2
          , port/1
          , pid/1
@@ -23,16 +24,37 @@ exist() ->
       ok
   end.
 
-insert(Ref, Pid) when is_reference(Ref), is_pid(Pid) ->
+insert(Ref, Pid) when is_pid(Pid) ->
   insert(Ref, Pid, undefined).
 
-insert(Ref, Pid, Port) when is_reference(Ref), is_pid(Pid), (is_port(Port) orelse Port == undefined) ->
+insert(Ref, Pid, Port) when is_pid(Pid),
+                            (is_port(Port) orelse Port == undefined) ->
   insert(Ref, Pid, Port, 0.0).
 
-insert(Ref, Pid, Port, Value) when is_reference(Ref), is_pid(Pid), (is_port(Port) orelse Port == undefined) ->
+insert(Ref, Pid, Port, Value) when is_reference(Ref),
+                                   is_pid(Pid),
+                                   (is_port(Port) orelse Port == undefined) ->
+  insert([{ref, Ref}], Pid, Port, Value);
+insert(Options, Pid, Port, Value) when is_list(Options),
+                                       is_pid(Pid),
+                                       (is_port(Port) orelse Port == undefined) ->
+  do_insert(
+    proplists:get_value(ref, Options, erlang:make_ref()),
+    Pid,
+    Port,
+    Value,
+    proplists:get_value(stage, Options, 1),
+    proplists:get_value(on, Options, 1)
+   ).
+
+do_insert(Ref, Pid, Port, Value, Stage, On) when is_reference(Ref),
+                                            is_pid(Pid),
+                                            (is_port(Port) orelse Port == undefined),
+                                            is_integer(Stage),
+                                            is_integer(On) ->
   exist(),
-  ets:insert(?TABLE, {Ref, Pid, Port, Value}),
-  ok.
+  ets:insert(?TABLE, {Ref, Pid, Port, Value, Stage, On}),
+  Ref.
 
 delete(Ref) when is_reference(Ref) ->
   exist(),
@@ -49,8 +71,24 @@ value(Ref, Value) when is_reference(Ref) ->
 value(Ref) when is_reference(Ref) ->
   exist(),
   case ets:lookup(?TABLE, Ref) of
-    [{Ref, _Pid, _Port, Value}] ->
-      Value;
+    [{Ref, _Pid, _Port, Value, Stage, On}] ->
+      (((Stage - 1) / On) * 100) + (Value / On);
+    _ ->
+      undefined
+  end.
+
+next(Ref) when is_reference(Ref) ->
+  exist(),
+  case ets:lookup(?TABLE, Ref) of
+    [{Ref, _Pid, _Port, _Value, Stage, On}] ->
+      case Stage < On of
+        true ->
+          case ets:update_element(?TABLE, Ref, {5, Stage + 1}) of
+            true -> Stage + 1;
+            false -> error
+          end;
+        false -> On
+      end;
     _ ->
       undefined
   end.
@@ -65,7 +103,7 @@ port(Ref, Port) when is_reference(Ref), is_port(Port) ->
 port(Ref) when is_reference(Ref) ->
   exist(),
   case ets:lookup(?TABLE, Ref) of
-    [{Ref, _Pid, Port, _Value}] ->
+    [{Ref, _Pid, Port, _Value, _Stage, _On}] ->
       Port;
     _ ->
       undefined
@@ -74,9 +112,8 @@ port(Ref) when is_reference(Ref) ->
 pid(Ref) when is_reference(Ref) ->
   exist(),
   case ets:lookup(?TABLE, Ref) of
-    [{Ref, Pid, _Port, _Value}] ->
+    [{Ref, Pid, _Port, _Value, _Stage, _On}] ->
       Pid;
     _ ->
       undefined
   end.
-
