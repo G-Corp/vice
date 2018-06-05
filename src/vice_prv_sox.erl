@@ -1,6 +1,5 @@
 % @hidden
 -module(vice_prv_sox).
--compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
 -include("../include/vice_sox.hrl").
 -behaviour(vice_encoder).
@@ -67,7 +66,6 @@ info(#state{soxi = Soxi}, File, Info, _Options) ->
       {error, unavailable};
     {Param, ConvertFunction} ->
       Cmd = lists:flatten(io_lib:format(?INFO_FORMAT, [Soxi, Param, File])),
-      lager:debug("COMMAND : ~p", [Cmd]),
       case bucos:run(Cmd) of
         {ok, Output} ->
           {ok, erlang:apply(ConvertFunction, [vice_prv_stdlib:chomp(Output)])};

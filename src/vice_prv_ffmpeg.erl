@@ -1,6 +1,5 @@
 % @hidden
 -module(vice_prv_ffmpeg).
--compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
 -include("../include/vice_ffmpeg.hrl").
 -behaviour(vice_encoder).

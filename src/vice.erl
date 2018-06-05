@@ -1,5 +1,4 @@
 -module(vice).
--compile([{parse_transform, lager_transform}]).
 -behaviour(gen_server).
 -include("../include/vice.hrl").
 
@@ -305,10 +304,10 @@ code_change(_OldVsn, State, _Extra) ->
 % Private
 
 start_encoders(Type) ->
-  lager:debug("Start ~p encoder...", [Type]),
+  error_logger:info_msg("Start ~p encoder...", [Type]),
   case doteki:get_env([vice, encoders, Type], maps:get(Type, ?DEFAULT_ENCODERS, undefined)) of
     undefined ->
-          lager:error("Encoder for ~p undefined.", [Type]),
+          error_logger:error_msg("Encoder for ~p undefined.", [Type]),
           false;
     Encoders ->
       case poolgirl:add_pool(Type, {vice_prv_encoder,
@@ -316,10 +315,10 @@ start_encoders(Type) ->
                                     [Type, Encoders]},
                              #{allow_empty_pool => false}) of
         {ok, N} ->
-          lager:debug("~p ~p encoder started!", [N, Type]),
+          error_logger:info_msg("~p ~p encoder started!", [N, Type]),
           true;
         {error, Reason} ->
-          lager:error("Faild to start ~p encoder: ~p", [Type, Reason]),
+          error_logger:error_msg("Faild to start ~p encoder: ~p", [Type, Reason]),
           false
       end
   end.

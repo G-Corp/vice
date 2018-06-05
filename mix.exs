@@ -19,7 +19,7 @@ defmodule Vice.Mixfile do
 
   def application do
     [
-       applications: [:compiler, :poolgirl, :lager],
+       applications: [:compiler, :poolgirl],
        env: [],
        mod: {:vice_app, []}
     ]
@@ -27,7 +27,6 @@ defmodule Vice.Mixfile do
 
   defp deps do
     [
-      {:lager, "~> 3.6.1"},
       {:bucs, git: "git://github.com/G-Corp/bucs.git", branch: "master"},
       {:doteki, git: "git://github.com/G-Corp/doteki.git", branch: "master"},
       {:poolgirl, git: "git://github.com/G-Corp/poolgirl.git", branch: "master"},

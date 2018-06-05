@@ -8,9 +8,7 @@
        {ref,"645337f8e037b88c6a4a71adc75a34a462bcb638"}},
   0},
  {<<"file_signatures">>,{pkg,<<"file_signatures">>,<<"0.1.7">>},0},
- {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.9.0">>},0},
- {<<"lager">>,{pkg,<<"lager">>,<<"3.6.2">>},0},
  {<<"poolgirl">>,
   {git,"git://github.com/G-Corp/poolgirl.git",
        {ref,"41624a3210624674af4bd277c94bc85c936d452e"}},
@@ -18,7 +16,5 @@
 [
 {pkg_hash,[
  {<<"file_signatures">>, <<"9F9C9E5A6DC8AB9EF628DC2462A4B9C236BBF1770D470C4A5887CE78E4BB24F5">>},
- {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>},
- {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>},
- {<<"lager">>, <<"2C72950A0E75FFD927DD35BC85EA30E7680A264C4BBD08B328250871AC456CC2">>}]}
+ {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>}]}
 ].

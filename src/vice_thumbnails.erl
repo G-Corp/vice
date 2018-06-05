@@ -1,5 +1,4 @@
 -module(vice_thumbnails).
--compile([{parse_transform, lager_transform}]).
 
 -export([
          generate/2
@@ -118,26 +117,26 @@ thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid}) ->
             {ok, VttFile} ->
               {ok, In, VttFile};
             Error ->
-              lager:error("Failed to generate thumbnails VTT: ~p", [Error]),
+              error_logger:error_msg("Failed to generate thumbnails VTT: ~p", [Error]),
               bucfile:remove_recursive(SpritesPath),
               {error, In, OutName, output_vtt_error}
           end;
         {{ok, _}, Error} ->
-          lager:error("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
+          error_logger:error_msg("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
           bucfile:remove_recursive(SpritesPath),
           {error, In, OutName, source_duration_unavailable};
         {Error, _} ->
-          lager:error("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
+          error_logger:error_msg("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
           bucfile:remove_recursive(SpritesPath),
           {error, In, OutName, sprite_creation_error}
       end;
     {error, Reason} ->
-      lager:error("Failed to convert sprites ~p", [Reason]),
+      error_logger:error_msg("Failed to convert sprites ~p", [Reason]),
       {error, In, OutName, sprite_conversion_error}
   end,
   send_response(Response, FunOrPid);
 thumbnails_finalize({error, _, _, Code} = Result, {_, _, _, FunOrPid}) ->
-  lager:error("Failed to generate thumbnails: ~p", [Code]),
+  error_logger:error_msg("Failed to generate thumbnails: ~p", [Code]),
   send_response(Result, FunOrPid).
 
 send_response(Response, Pid) when is_pid(Pid) ->
@@ -160,7 +159,6 @@ allowed_extensions(Movie) ->
 
 generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, _Columns, Width, Height, _X, _Y, false) ->
   VttFile = filename:join(OutPath, bucs:to_string(OutName) ++ ".vtt"),
-  lager:debug("Will generate ~ts", [VttFile]),
   case file:open(VttFile, [write]) of
     {ok, IO} ->
       io:format(IO, "WEBVTT~n", []),
@@ -168,7 +166,7 @@ generate_vtt(OutName, OutPath, AllSprites, AssetsPath, Every, Duration, _Lines, 
       file:close(IO),
       {ok, VttFile};
     Error ->
-      lager:error("Failed to create thumbnails VTT file: ~p", [Error]),
+      error_logger:error_msg("Failed to create thumbnails VTT file: ~p", [Error]),
       Error
   end;
 
@@ -189,11 +187,11 @@ generate_vtt(OutName, OutPath, [FirstSprite|_] = AllSprites, AssetsPath, Every, 
               file:close(IO),
               {ok, VttFile};
             Error ->
-              lager:error("Failed to create thumbnails VTT file: ~p", [Error]),
+              error_logger:error_msg("Failed to create thumbnails VTT file: ~p", [Error]),
               Error
           end;
         {error, Reason} ->
-          lager:error("Image optimization error: ~p", [Reason]),
+          error_logger:error_msg("Image optimization error: ~p", [Reason]),
           {error, Reason}
       end;
     Error ->

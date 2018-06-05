@@ -1,11 +1,9 @@
 % @hidden
 -module(vice_command).
--compile([{parse_transform, lager_transform}]).
 
 -export([exec/4, get_data/2]).
 
 exec(Command, Options, Module, Ref) ->
-  lager:debug("COMMAND : ~p: ~p", [Command, Options]),
   bucos:run(
     Command,
     [
@@ -20,7 +18,7 @@ exec(Command, Options, Module, Ref) ->
 get_data(Bytes, {Module, Ref, Sofar}) ->
   {_, _, Percent} = NSofar = Module:progress(Bytes, Sofar),
   vice_prv_status:value(Ref, Percent),
-  lager:debug("[~p] convert ~p%", [Ref, Percent]),
+  error_logger:info_msg("[~p] convert ~p%", [Ref, Percent]),
   {Module, Ref, NSofar}.
 
 % exec(Command, Module, Ref) ->
@@ -33,7 +31,7 @@ get_data(Bytes, {Module, Ref, Sofar}) ->
 %     {Port, {data, Bytes}} ->
 %       {_, _, Percent} = NSofar = Module:progress(Bytes, Sofar),
 %       vice_prv_status:value(Ref, Percent),
-%       lager:debug("[~p] convert ~p%", [Ref, Percent]),
+%       error_logger:info_msg("[~p] convert ~p%", [Ref, Percent]),
 %       get_data(Port, Module, Ref, NSofar);
 %     {Port, eof} ->
 %       Port ! {self(), close},

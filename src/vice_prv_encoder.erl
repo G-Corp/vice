@@ -1,6 +1,5 @@
 % @hidden
 -module(vice_prv_encoder).
--compile([{parse_transform, lager_transform}]).
 -behaviour(gen_server).
 
 %% API
@@ -27,7 +26,7 @@ start_link(Type, Encoders) ->
 
 % @hidden
 init({Type, []}) ->
-  lager:info("~ts encoder not available !", [Type]),
+  error_logger:info_msg("~ts encoder not available !", [Type]),
   ignore;
 init({Type, [Encoder|Rest]}) ->
   case erlang:apply(Encoder, init, []) of
@@ -144,7 +143,7 @@ update_with_preset(Options, Type) ->
     undefined ->
       {ok, Options};
     File ->
-      lager:info("Preset file : ~s", [File]),
+      error_logger:info_msg("Preset file : ~s", [File]),
       case file:consult(File) of
         {ok, [List]} when is_list(List) ->
           update_options(Options, List);
@@ -159,7 +158,7 @@ update_options(Options, Preset) ->
   PresetDesc = buclists:keyfind(description, 1, Preset, "<no description>"),
   PresetName = buclists:keyfind(name, 1, Preset, "<no name>"),
   Presets = buclists:keyfind(options, 1, Preset, []),
-  lager:info("Use preset ~s : ~s", [PresetName, PresetDesc]),
+  error_logger:info_msg("Use preset ~s : ~s", [PresetName, PresetDesc]),
   merge_options(Presets, lists:keydelete(preset, 1, Options)).
 
 merge_options([], Options) ->

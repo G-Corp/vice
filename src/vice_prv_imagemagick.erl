@@ -1,6 +1,5 @@
 % @hidden
 -module(vice_prv_imagemagick).
--compile([{parse_transform, lager_transform}]).
 -include_lib("bucs/include/bucs.hrl").
 -behaviour(vice_encoder).
 
@@ -85,7 +84,6 @@ info(State, File, Info, Options) ->
 
 get_info(Identify, Attr, File, Fun) ->
   Cmd = lists:flatten(io_lib:format(?INFOS, [Identify, Attr, File])),
-  lager:debug("COMMAND : ~p", [Cmd]),
   case bucos:run(Cmd) of
     {ok, Data} ->
       case Fun of
