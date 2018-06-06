@@ -65,7 +65,7 @@ to_string(Subs, Type) ->
 % @end
 -spec to_string(Subs :: subs(),
                 Type :: srt | webvtt,
-                Options :: map()) -> {ok, string(), integer(), float(), cue()} | no_data.
+                Options :: map() | list()) -> {ok, string(), integer(), float(), cue()} | no_data.
 to_string(Subs, Type, Options) ->
   vice_prv_subs_writer:to_string(Subs, Type, Options).
 
@@ -111,20 +111,21 @@ to_file(Subs, File) ->
 % @end
 -spec to_file(Subs :: subs(),
               File :: file:filename_all(),
-              Options :: map()) -> ok | no_data | {error, term()}.
+              Options :: map() | list()) -> ok | no_data | {error, term()}.
 to_file(Subs, File, Options) ->
-  case filename:extension(File) of
-    ".srt" ->
-      to_file(Subs, File, Options, srt);
-    ".webvtt" ->
-      to_file(Subs, File, Options, webvtt);
-    ".vtt" ->
-      to_file(Subs, File, Options, webvtt);
-    ".m3u8" ->
-      to_file(Subs, File, Options, m3u8);
-    _ ->
-      {error, invalid_type}
+  case type(filename:extension(File)) of
+    {ok, Type} ->
+      to_file(Subs, File, Options, Type);
+    Error ->
+      Error
   end.
+
+type(".srt") -> {ok, str};
+type(".webvtt") -> {ok, webvtt};
+type(".vtt") -> {ok, webvtt};
+type(".m3u8") -> {ok, m3u8};
+type(Other) when is_list(Other) -> {error, invalid_type};
+type(Other) -> type(bucs:to_string(Other)).
 
 % @doc
 % Generate a subtitle file in the given format.
@@ -159,7 +160,7 @@ to_file(Subs, File, Options) ->
 % @end
 -spec to_file(Subs :: subs(),
               File :: file:filename_all(),
-              Options :: map(),
+              Options :: map() | list(),
               Type :: webvtt | srt | m3u8) -> ok | no_data | {error, term()}.
 to_file(Subs, File, Options, Type) ->
   vice_prv_subs_writer:to_file(Subs, Type, File, Options).

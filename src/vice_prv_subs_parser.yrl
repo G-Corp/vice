@@ -55,6 +55,14 @@ Time -> digit colon digit colon digit comma digit : #{hh => digit('$1'),
                                                       mm => digit('$3'),
                                                       ss => digit('$5'),
                                                       ex => digit('$7')}.
+Time -> digit colon digit period digit : #{hh => "00",
+                                           mm => digit('$1'),
+                                           ss => digit('$3'),
+                                           ex => digit('$5')}.
+Time -> digit colon digit comma digit : #{hh => "00",
+                                          mm => digit('$1'),
+                                          ss => digit('$3'),
+                                          ex => digit('$5')}.
 
 CodecPrivate -> string Newlines : is_webvtt('$1').
 CodecPrivate -> string newline NSRBlocks : maps:merge(is_webvtt('$1'), '$3').
@@ -145,4 +153,3 @@ cue_settings({string, _, Settings}) ->
 
 digit({digit, _, D}) -> D.
 string({string, _, S}) -> S.
-

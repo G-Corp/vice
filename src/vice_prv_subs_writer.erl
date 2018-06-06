@@ -78,7 +78,7 @@ webvtt_headers(_) ->
 to_file(Subs, m3u8, File, Options) ->
   case m3u8_segments(Subs, filename:dirname(File), options(Options)) of
     {ok, Segments, MaxDuration} ->
-      file:write_file(
+      write_file(
         File,
         lists:flatten(
           io_lib:format(
@@ -87,13 +87,13 @@ to_file(Subs, m3u8, File, Options) ->
              vice_prv_stdlib:ceil(MaxDuration),
              string:join(segments(Segments), "\n")
             ])));
-    Other ->
-      Other
+    Error ->
+      Error
   end;
 to_file(Subs, Type, File, Options) ->
   case to_string(Subs, Type, Options) of
     {ok, Data, _, _, _} ->
-      file:write_file(File, Data);
+      write_file(File, Data);
     Other ->
       Other
   end.
@@ -122,7 +122,7 @@ m3u8_segments(Subs, Path, #{segment_time := Duration,
     {ok, _Data, _NewFrom, _SegmentDuration, PreviousCue} ->
       {ok, lists:reverse(Acc), MaxDuration};
     {ok, Data, NewFrom, SegmentDuration, LastCue} ->
-      file:write_file(filename:join([Path, SegmentFile]), Data),
+      write_file(filename:join([Path, SegmentFile]), Data),
       m3u8_segments(
         Subs,
         Path,
@@ -172,7 +172,7 @@ to_subs([#{duration := #{from := #{hh := FHH, mm := FMM, ss := FSS, ex := FMS},
       {ok, string:join(lists:reverse(Acc), "\n\n"), CID, TotalDuration/1000, LastCue}
   end.
 
-options(Options) ->
+options(Options) when is_map(Options) ->
   Opts = #{from := From,
            to := To,
            duration := Duration} = maps:merge(?DEFAULT_OPTIONS, Options),
@@ -180,7 +180,9 @@ options(Options) ->
   To1 = to_ms(To),
   Opts#{from => From1,
         to => To1,
-        duration => duration(From1, To1, Duration)}.
+        duration => duration(From1, To1, Duration)};
+options(Options) when is_list(Options) ->
+  options(bucmaps:from_list(Options)).
 
 to_ms(Value, Default) ->
   case to_ms(Value) of
@@ -225,6 +227,14 @@ duration(From, To, _) when To > From ->
   To - From;
 duration(_, _, _) ->
   undefined.
+
+write_file(File, Data) ->
+  case bucfile:make_dir(filename:dirname(File)) of
+    ok ->
+      file:write_file(File, Data);
+    Error ->
+      Error
+  end.
 
 % %d
 % %cNd

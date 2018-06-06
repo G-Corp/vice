@@ -84,7 +84,7 @@ Equivalent to [`to_file(Subs, File, #{})`](#to_file-3).
 ### to_file/3 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map()) -&gt; ok | no_data | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map() | list()) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
@@ -132,7 +132,7 @@ SRT and WEBVTT options:
 ### to_file/4 ###
 
 <pre><code>
-to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map(), Type::webvtt | srt | m3u8) -&gt; ok | no_data | {error, term()}
+to_file(Subs::<a href="#type-subs">subs()</a>, File::<a href="file.md#type-filename_all">file:filename_all()</a>, Options::map() | list(), Type::webvtt | srt | m3u8) -&gt; ok | no_data | {error, term()}
 </code></pre>
 <br />
 
@@ -190,7 +190,7 @@ Equivalent to [`to_string(Subs, Type, #{})`](#to_string-3).
 ### to_string/3 ###
 
 <pre><code>
-to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::map()) -&gt; {ok, string(), integer(), float(), <a href="#type-cue">cue()</a>} | no_data
+to_string(Subs::<a href="#type-subs">subs()</a>, Type::srt | webvtt, Options::map() | list()) -&gt; {ok, string(), integer(), float(), <a href="#type-cue">cue()</a>} | no_data
 </code></pre>
 <br />
 
