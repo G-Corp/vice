@@ -55,6 +55,10 @@ Time -> digit colon digit colon digit comma digit : #{hh => digit('$1'),
                                                       mm => digit('$3'),
                                                       ss => digit('$5'),
                                                       ex => digit('$7')}.
+Time -> digit colon digit colon digit colon digit : #{hh => digit('$1'),
+                                                      mm => digit('$3'),
+                                                      ss => digit('$5'),
+                                                      ex => digit('$7')}.
 Time -> digit colon digit period digit : #{hh => "00",
                                            mm => digit('$1'),
                                            ss => digit('$3'),
@@ -89,11 +93,11 @@ Region -> region newline Text : '$3'.
 Region -> region space newline Text : '$4'.
 
 Text -> string newline Text : string('$1') ++ "\n" ++ '$3'.
-% Text -> digit Text : digit('$1') ++ '$2'.
 Text -> string Newlines : string('$1').
 Text -> string : string('$1').
 Text -> period Text : "." ++ '$2'.
 Text -> space Text : " " ++ '$2'.
+Text -> digit Text : digit('$1') ++ '$2'.
 
 StyleText -> colon colon string newline Text : "::" ++ string('$3') ++ "\n" ++ '$5'.
 StyleText -> colon colon string newline Text StyleText : "::" ++ string('$3') ++ "\n" ++ '$5' ++ "\n" ++ '$6'.

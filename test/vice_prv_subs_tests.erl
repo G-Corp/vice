@@ -75,6 +75,104 @@ vice_prv_subs_tests_test_() ->
            end),
         ?assertContinueIfMatch(
            {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n42 Hello World..."),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "42 Hello World..."}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n42Hello World..."),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "42Hello World..."}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n- Hello World..."),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "- Hello World..."}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n— Hello World...\n— Olleh Dlrow"),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "— Hello World...\n— Olleh Dlrow"}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00:000 --> 00:00:01:000\nHello World"),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "Hello World"}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n: Hello World"),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => ": Hello World"}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
+           vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\n<v Fred>Hi, my name is Fred"),
+           Tokens,
+           fun(T) ->
+               ?assertEqual(
+                  {ok, #{cues => [#{duration => #{duration => 1.0,
+                                                  from => #{ex => "000", hh => "00", mm => "00", ss => "00"},
+                                                  id => 0,
+                                                  length => 1000,
+                                                  to => #{ex => "000", hh => "00", mm => "00", ss => "01"}},
+                                    text => "<v Fred>Hi, my name is Fred"}]}},
+                  vice_prv_subs_parser:parse(T))
+           end),
+        ?assertContinueIfMatch(
+           {ok, _, _, Tokens},
            vice_prv_subs:tokenize("00:00:00,000 --> 00:00:01,000\nHello World\nThis is good!"),
            Tokens,
            fun(T) ->
