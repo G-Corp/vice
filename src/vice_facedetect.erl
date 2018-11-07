@@ -79,7 +79,12 @@ init() ->
              Dir ->
                filename:join(Dir, ?LIBNAME)
            end,
-  erlang:load_nif(SoName, 0).
+  case filelib:wildcard([SoName|".*"]) of
+    [_|_] ->
+      erlang:load_nif(SoName, 0);
+    _ ->
+      ok
+  end.
 
 not_loaded(Line) ->
-  exit({not_loaded, [{module, ?MODULE}, {line, Line}]}).
+  {error, {not_loaded, [{module, ?MODULE}, {line, Line}]}}.
