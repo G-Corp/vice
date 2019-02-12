@@ -70,31 +70,40 @@ generate(Movie, OutName, Options, Fun) ->
                      Other ->
                        Other
                    end,
-  case bucfile:make_dir(SpritesPath) of
-    ok ->
-      SpritesFiles = filename:join(SpritesPath, "%016d.png"),
-      CmdOptions = [{ref, erlang:make_ref()}, {on, get_stages_number(Sprite)}],
-      case vice:convert(Movie, SpritesFiles, [{output_format, "image2"},
-                                              {video_filtergraph, <<"fps=1/", (bucs:to_binary(Every))/binary, ",scale=", (bucs:to_binary(Width))/binary, ":-1">>},
-                                              {type, video},
-                                              {cmd_options, [{stage, 1}|CmdOptions]}
-                                              |allowed_extensions(Movie)],
-                        {fun ?MODULE:thumbnails_finalize/2, {Movie, OutName, Options, ResultFunOrPid, CmdOptions}}) of
-        {async, Ref} ->
-          case is_pid(ResultFunOrPid) of
-            true ->
-              receive
-                {ok, _In, Out} -> {ok, Out};
-                {error, _In, _Out, Code} -> {error, Code};
-                Unknow -> {error, {invalid_response, Unknow}}
+  case vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)]) of
+    {ok, Duration} when Duration > Every ->
+      case bucfile:make_dir(SpritesPath) of
+        ok ->
+          SpritesFiles = filename:join(SpritesPath, "%016d.png"),
+          CmdOptions = [{ref, erlang:make_ref()}, {on, get_stages_number(Sprite)}],
+          case vice:convert(Movie, SpritesFiles, [{output_format, "image2"},
+                                                  {video_filtergraph, <<"fps=1/", (bucs:to_binary(Every))/binary, ",scale=", (bucs:to_binary(Width))/binary, ":-1">>},
+                                                  {type, video},
+                                                  {cmd_options, [{stage, 1}|CmdOptions]}
+                                                  |allowed_extensions(Movie)],
+                            {fun ?MODULE:thumbnails_finalize/2, {Duration, OutName, Options, ResultFunOrPid, CmdOptions}}) of
+            {async, Ref} ->
+              case is_pid(ResultFunOrPid) of
+                true ->
+                  receive
+                    {ok, _In, Out} -> {ok, Out};
+                    {error, _In, _Out, Code} -> {error, Code};
+                    Unknow -> {error, {invalid_response, Unknow}}
+                  end;
+                false ->
+                  {async, Ref}
               end;
-            false ->
-              {async, Ref}
+            Error ->
+              Error
           end;
         Error ->
           Error
       end;
+    {ok, Duration} ->
+      error_logger:error_msg("Every parameter is bellow video duration => ~p", [Duration]),
+      {error, Duration};
     Error ->
+      error_logger:error_msg("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
       Error
   end.
 
@@ -103,7 +112,7 @@ get_stages_number(true) -> 2;
 get_stages_number(_) -> 1.
 
 % @hidden
-thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid, CmdOptions}) ->
+thumbnails_finalize({ok, In, _Out}, {Duration, OutName, Options, FunOrPid, CmdOptions}) ->
   Every = buclists:keyfind(every, 1, Options, 1),
   OutPath = buclists:keyfind(out_path, 1, Options, "."),
   AssetsPath = buclists:keyfind(assets_path, 1, Options, ""),
@@ -111,12 +120,11 @@ thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid, CmdOptio
   SpritesPath = filename:join(OutPath, OutName),
   AllSprites = filename:join(SpritesPath, "*.png"),
   [F|_] = Sprites = filelib:wildcard(bucs:to_string(AllSprites)),
-  Response = case {vice:infos(F), vice:info(Movie, duration, [{type, video}|allowed_extensions(Movie)])} of
-    {{ok, #{page_width := Width,
+  Response = case vice:infos(F) of
+    {ok, #{page_width := Width,
             page_height := Height,
             page_x_offset := X,
-            page_y_offset := Y}},
-     {ok, Duration}} ->
+            page_y_offset := Y}} ->
       {Lines, Columns} = vice_utils:tile(length(Sprites)),
       case generate_vtt(OutName, OutPath, Sprites, AssetsPath, Every, Duration, Lines, Columns, Width, Height, X, Y, Sprite, CmdOptions) of
         {ok, VttFile} ->
@@ -126,11 +134,7 @@ thumbnails_finalize({ok, In, _Out}, {Movie, OutName, Options, FunOrPid, CmdOptio
           bucfile:remove_recursive(SpritesPath),
           {error, In, OutName, output_vtt_error}
       end;
-    {{ok, _}, Error} ->
-      error_logger:error_msg("Failed to retrieve video duration when generating thumbnails: ~p", [Error]),
-      bucfile:remove_recursive(SpritesPath),
-      {error, In, OutName, source_duration_unavailable};
-    {Error, _} ->
+    Error ->
       error_logger:error_msg("Failed to retrieve sprite infos when generating thumbnails: ~p", [Error]),
       bucfile:remove_recursive(SpritesPath),
       {error, In, OutName, sprite_creation_error}
