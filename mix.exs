@@ -27,10 +27,10 @@ defmodule Vice.Mixfile do
 
   defp deps do
     [
-      {:bucs, git: "git://github.com/G-Corp/bucs.git", branch: "master"},
-      {:doteki, git: "git://github.com/G-Corp/doteki.git", branch: "master"},
-      {:poolgirl, git: "git://github.com/G-Corp/poolgirl.git", branch: "master"},
-      {:file_signatures, "~> 0.1.7"},
+      {:bucs, "~> 1.1.0"},
+      {:doteki, "~> 1.1.0"},
+      {:poolgirl, "~> 1.3.0"},
+      {:file_signatures, "~> 0.1.9"},
       {:jsx, "~> 2.9.0"}
     ]
   end

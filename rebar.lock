@@ -1,20 +1,14 @@
 {"1.1.0",
-[{<<"bucs">>,
-  {git,"git://github.com/G-Corp/bucs.git",
-       {ref,"042a7144b6729579c2d1a85eba475cbd70719484"}},
-  0},
- {<<"doteki">>,
-  {git,"git://github.com/G-Corp/doteki.git",
-       {ref,"645337f8e037b88c6a4a71adc75a34a462bcb638"}},
-  0},
- {<<"file_signatures">>,{pkg,<<"file_signatures">>,<<"0.1.7">>},0},
+[{<<"bucs">>,{pkg,<<"bucs">>,<<"1.1.0">>},0},
+ {<<"doteki">>,{pkg,<<"doteki">>,<<"1.1.0">>},0},
+ {<<"file_signatures">>,{pkg,<<"file_signatures">>,<<"0.1.9">>},0},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.9.0">>},0},
- {<<"poolgirl">>,
-  {git,"git://github.com/G-Corp/poolgirl.git",
-       {ref,"41624a3210624674af4bd277c94bc85c936d452e"}},
-  0}]}.
+ {<<"poolgirl">>,{pkg,<<"poolgirl">>,<<"1.3.0">>},0}]}.
 [
 {pkg_hash,[
- {<<"file_signatures">>, <<"9F9C9E5A6DC8AB9EF628DC2462A4B9C236BBF1770D470C4A5887CE78E4BB24F5">>},
- {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>}]}
+ {<<"bucs">>, <<"DE79A0D781A7C5F616AB0CF3C61BF67576382DAFFCD2E01A9504FA0342F80A21">>},
+ {<<"doteki">>, <<"B0E1EB99890FD5DEBA656FF0E2BFA1C7A7879A700FBB27E89E119FC0DBF533FD">>},
+ {<<"file_signatures">>, <<"59EE43B66CC9F598DDDB1330FE11004C7969B25ABA2001395F9E60A7F2C17AD5">>},
+ {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>},
+ {<<"poolgirl">>, <<"BCF77543403244F8F8F9CBFA29D6A125FC814C50824183EB22B578C90685B460">>}]}
 ].

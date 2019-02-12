@@ -1238,8 +1238,8 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice.md" class="module">vice</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_encoder.md" class="module">vice_encoder</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/greg/settings/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice.md" class="module">vice</a></td></tr>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_encoder.md" class="module">vice_encoder</a></td></tr>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
+<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
 
