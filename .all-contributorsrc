@@ -1,0 +1,46 @@
+{
+  "projectName": "vice",
+  "projectOwner": "G-Corp",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg)](#contributors)",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "glejeune",
+      "name": "Gregoire Lejeune",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/15168?v=4",
+      "profile": "http://lejeun.es",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "test"
+      ]
+    },
+    {
+      "login": "agombault",
+      "name": "Augustin G",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7051246?v=4",
+      "profile": "https://github.com/agombault",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "sulphur",
+      "name": "P",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/186265?v=4",
+      "profile": "http://twitter.com/sulphur27",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ __Version:__ 0.1.0
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg)](#contributors)
 [![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
 [![Hex.pm](https://img.shields.io/hexpm/v/vice.svg)](https://hex.pm/packages/vice)
 

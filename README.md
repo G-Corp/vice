@@ -8,6 +8,7 @@ __Version:__ 0.1.0
 
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg)](#contributors)
 [![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
 [![Hex.pm](https://img.shields.io/hexpm/v/vice.svg)](https://hex.pm/packages/vice)
 
@@ -1244,3 +1245,14 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 <tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
 <tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
 
+## Contributors ##
+
+Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+| [<img src="https://avatars1.githubusercontent.com/u/15168?v=4" width="100px;"/><br /><sub><b>Gregoire Lejeune</b></sub>](http://lejeun.es)<br />[💻](https://github.com/G-Corp/vice/commits?author=glejeune "Code") [🎨](#design-glejeune "Design") [📖](https://github.com/G-Corp/vice/commits?author=glejeune "Documentation") [⚠️](https://github.com/G-Corp/vice/commits?author=glejeune "Tests") | [<img src="https://avatars2.githubusercontent.com/u/7051246?v=4" width="100px;"/><br /><sub><b>Augustin G</b></sub>](https://github.com/agombault)<br />[💻](https://github.com/G-Corp/vice/commits?author=agombault "Code") [⚠️](https://github.com/G-Corp/vice/commits?author=agombault "Tests") | [<img src="https://avatars2.githubusercontent.com/u/186265?v=4" width="100px;"/><br /><sub><b>P</b></sub>](http://twitter.com/sulphur27)<br />[💻](https://github.com/G-Corp/vice/commits?author=sulphur "Code") [📖](https://github.com/G-Corp/vice/commits?author=sulphur "Documentation") |
+| :---: | :---: | :---: |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/kentcdodds/all-contributors) specification. Contributions of any kind welcome!
