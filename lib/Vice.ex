@@ -6,6 +6,9 @@ defmodule Vice do
   def unquote(:start)() do
     :erlang.apply(:vice, :start, [])
   end
+  def unquote(:stop)() do
+    :erlang.apply(:vice, :stop, [])
+  end
   def unquote(:start_link)() do
     :erlang.apply(:vice, :start_link, [])
   end

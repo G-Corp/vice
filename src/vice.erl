@@ -5,6 +5,7 @@
 %% Common API
 -export([
          start/0
+         , stop/0
          , start_link/0
          , type/1
          , infos/1
@@ -61,6 +62,18 @@
 -spec start() -> {ok, [atom()]} | {error, term()}.
 start() ->
   application:ensure_all_started(vice).
+
+% @doc
+% Stop vice application
+% @end
+-spec stop() -> ok | {error, term()}.
+stop() ->
+  case gen_server:call(?SERVER, app_stop) of
+    ok ->
+      application:stop(vice);
+    Error ->
+      Error
+  end.
 
 % @hidden
 start_link() ->
@@ -278,6 +291,14 @@ handle_call({stop, Worker}, _From, State) ->
         _ ->
           {reply, {error, stopped_job}, State}
       end
+  end;
+handle_call(app_stop, _From, State) ->
+  io:format("~p", [State]),
+  case poolgirl:remove_pools(maps:keys(State)) of
+    ok ->
+      {reply, ok, #{}};
+    {error, Errors} ->
+      {reply, {error, lists:zip(maps:keys(State), Errors)}, State}
   end;
 handle_call(_Request, _From, State) ->
   {reply, {error, missing_encoder}, State}.
