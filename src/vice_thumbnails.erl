@@ -248,7 +248,7 @@ vvtline(N, L, C, Start, Every, Duration, SpriteFile, Width, Height, Lines, Colum
   {NL, NC} = new_position(L, C, Lines, Columns),
   vvtline(N - 1, NL, NC, End, Every, Duration, SpriteFile, Width, Height, Lines, Columns, IO).
 
-new_position(L, C, _Lines, Columns) when C == Columns ->
+new_position(L, C, _Lines, Columns) when C == Columns - 1 ->
   {L + 1, 0};
 new_position(L, C, _Lines, _Columns) ->
   {L, C + 1}.
