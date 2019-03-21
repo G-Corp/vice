@@ -30,4 +30,5 @@ before_install:
 script:
   - mix local.rebar --force
   - mix local.hex --force
+  - make update-packages-registry
   - make dist
