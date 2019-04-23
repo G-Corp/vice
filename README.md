@@ -9,7 +9,6 @@ __Version:__ 0.1.0
 __Authors:__ Gregoire Lejeune ([`gregoire.lejeune@gmail.com`](mailto:gregoire.lejeune@gmail.com)).
 
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg)](#contributors)
-[![Build Status](https://travis-ci.org/G-Corp/vice.svg?branch=master)](https://travis-ci.org/G-Corp/vice)
 [![Hex.pm](https://img.shields.io/hexpm/v/vice.svg)](https://hex.pm/packages/vice)
 
 
@@ -1240,10 +1239,10 @@ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED WAR
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice.md" class="module">vice</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_encoder.md" class="module">vice_encoder</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
-<tr><td><a href="https://github.com/G-Corp/vice/blob/master/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
+<tr><td><a href="https://gitlab.com/glejeune/vice/tree/gitlab-ci/doc/vice.md" class="module">vice</a></td></tr>
+<tr><td><a href="https://gitlab.com/glejeune/vice/tree/gitlab-ci/doc/vice_encoder.md" class="module">vice_encoder</a></td></tr>
+<tr><td><a href="https://gitlab.com/glejeune/vice/tree/gitlab-ci/doc/vice_subtitles.md" class="module">vice_subtitles</a></td></tr>
+<tr><td><a href="https://gitlab.com/glejeune/vice/tree/gitlab-ci/doc/vice_thumbnails.md" class="module">vice_thumbnails</a></td></tr></table>
 
 ## Contributors ##
 
@@ -1251,7 +1250,7 @@ Thanks goes to these wonderful people ([emoji key](https://github.com/kentcdodds
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-<table><tr><td align="center"><a href="http://lejeun.es"><img src="https://avatars1.githubusercontent.com/u/15168?v=4" width="100px;" alt="Gregoire Lejeune"/><br /><sub><b>Gregoire Lejeune</b></sub></a><br /><a href="https://github.com/G-Corp/vice/commits?author=glejeune" title="Code">💻</a> <a href="#design-glejeune" title="Design">🎨</a> <a href="https://github.com/G-Corp/vice/commits?author=glejeune" title="Documentation">📖</a> <a href="https://github.com/G-Corp/vice/commits?author=glejeune" title="Tests">⚠️</a></td><td align="center"><a href="https://github.com/agombault"><img src="https://avatars2.githubusercontent.com/u/7051246?v=4" width="100px;" alt="Augustin G"/><br /><sub><b>Augustin G</b></sub></a><br /><a href="https://github.com/G-Corp/vice/commits?author=agombault" title="Code">💻</a> <a href="https://github.com/G-Corp/vice/commits?author=agombault" title="Tests">⚠️</a></td><td align="center"><a href="http://twitter.com/sulphur27"><img src="https://avatars2.githubusercontent.com/u/186265?v=4" width="100px;" alt="P"/><br /><sub><b>P</b></sub></a><br /><a href="https://github.com/G-Corp/vice/commits?author=sulphur" title="Code">💻</a> <a href="https://github.com/G-Corp/vice/commits?author=sulphur" title="Documentation">📖</a></td></tr></table>
+<table><tr><td align="center"><a href="http://lejeun.es"><img src="https://avatars1.githubusercontent.com/u/15168?v=4" width="100px;" alt="Gregoire Lejeune"/><br /><sub><b>Gregoire Lejeune</b></sub></a><br /><a href="https://gitlab.com/G-Corp/vice/commits/master" title="Code">💻</a> <a href="#design-glejeune" title="Design">🎨</a> <a href="https://gitlab.com/G-Corp/vice/commits/master" title="Documentation">📖</a> <a href="https://gitlab.com/G-Corp/vice/commits/master" title="Tests">⚠️</a></td><td align="center"><a href="https://github.com/agombault"><img src="https://avatars2.githubusercontent.com/u/7051246?v=4" width="100px;" alt="Augustin G"/><br /><sub><b>Augustin G</b></sub></a><br /><a href="https://gitlab.com/G-Corp/vice/commits/master" title="Code">💻</a> <a href="https://gitlab.com/G-Corp/vice/commits/master" title="Tests">⚠️</a></td><td align="center"><a href="http://twitter.com/sulphur27"><img src="https://avatars2.githubusercontent.com/u/186265?v=4" width="100px;" alt="P"/><br /><sub><b>P</b></sub></a><br /><a href="https://gitlab.com/G-Corp/vice/commits/master" title="Code">💻</a> <a href="https://gitlab.com/G-Corp/vice/commits/master" title="Documentation">📖</a></td></tr></table>
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
