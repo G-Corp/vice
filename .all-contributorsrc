@@ -1,8 +1,8 @@
 {
   "projectName": "vice",
   "projectOwner": "G-Corp",
-  "repoType": "github",
-  "repoHost": "https://github.com",
+  "repoType": "gitlab",
+  "repoHost": "https://gitlab.com",
   "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg)](#contributors)",
   "files": [
     "README.md"
