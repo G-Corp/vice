@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(VICE_FACEDETECT)
 if(NOT WIN32)
   string(ASCII 27 Esc)
